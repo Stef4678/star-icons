@@ -1,27 +1,52 @@
 /**
  * Star Icons — the library store.
  *
- * Owns favorites, recents, collections, user tags and search over the bundled
- * packs. Every mutation persists through the plugin and notifies subscribers
- * so open pickers/views can re-render live.
+ * Owns favorites, recents, collections, user tags, search, and — since the
+ * on-demand refactor — the async loading of external icon packs from the
+ * plugin's packs/ folder (only enabled packs are read, keeping startup cost
+ * flat no matter how many packs are shipped).
  */
 
-import { addIcon } from "obsidian";
-import { ALL_ICONS, getIcon } from "../data/icons";
+import { addIcon, App, PluginManifest, normalizePath } from "obsidian";
+import {
+  ALL_ICONS,
+  buildPackFromRaw,
+  EXTERNAL_PACKS,
+  getIcon,
+  ICONS_BY_PACK,
+  isCorePack,
+  isPackMounted,
+  mountPack,
+  PACK_VERSIONS,
+  RawPack,
+} from "../data/icons";
 import { ALL_PACKS, Collection, IconDef, PackId, StarIconsSettings } from "../types";
 import { searchIcons, uid } from "../utils";
 
+interface PackManifestEntry {
+  version: string;
+  count: number;
+}
+
+interface PackManifest {
+  packs: Partial<Record<PackId, PackManifestEntry>>;
+}
+
 export class IconStore {
   private listeners = new Set<() => void>();
+  private manifest: PackManifest = { packs: {} };
+  private pending = new Map<PackId, Promise<void>>();
 
   constructor(
+    private app: App,
+    private getPluginManifest: () => PluginManifest,
     private getSettingsFn: () => StarIconsSettings,
     private save: () => Promise<void>,
   ) {}
 
-  /* --- lifecycle --- */
+  /* --- lifecycle -------------------------------------------------------- */
 
-  /** Register every bundled icon with Obsidian's global icon registry. */
+  /** Register every currently mounted icon with Obsidian's global registry. */
   registerIcons(): void {
     for (const icon of ALL_ICONS) {
       try {
@@ -42,9 +67,102 @@ export class IconStore {
   }
 
   private async mutate(fn: (s: StarIconsSettings) => void): Promise<void> {
-    fn(this.getSettings());
+    fn(this.getSettingsFn());
     await this.save();
     this.notify();
+  }
+
+  /* --- pack loading ------------------------------------------------------ */
+
+  private packDataPath(file: string): string {
+    return normalizePath(
+      `${this.app.vault.configDir}/plugins/${this.getPluginManifest().id}/packs/${file}`,
+    );
+  }
+
+  private async readPackFile(file: string): Promise<unknown> {
+    const text = await this.app.vault.adapter.read(this.packDataPath(file));
+    return JSON.parse(text);
+  }
+
+  /** Load packs/manifest.json (versions + counts, no icon data). */
+  async loadManifest(): Promise<void> {
+    try {
+      this.manifest = (await this.readPackFile("manifest.json")) as PackManifest;
+    } catch (err) {
+      console.warn("[Star Icons] could not read packs/manifest.json", err);
+      this.manifest = { packs: {} };
+    }
+    this.notify();
+  }
+
+  /** Load and register one external pack (idempotent, awaitable). */
+  loadPack(pack: PackId): Promise<void> {
+    if (isCorePack(pack) || isPackMounted(pack)) return Promise.resolve();
+    const inFlight = this.pending.get(pack);
+    if (inFlight) return inFlight;
+
+    const promise = (async () => {
+      try {
+        const raw = (await this.readPackFile(`${pack}.json`)) as RawPack;
+        const defs = buildPackFromRaw(pack, raw);
+        for (const d of defs) {
+          try {
+            addIcon(d.id, d.svg);
+          } catch {
+            /* duplicate or invalid — skip */
+          }
+        }
+        mountPack(pack, defs);
+      } catch (err) {
+        console.warn(`[Star Icons] failed to load pack "${pack}"`, err);
+      } finally {
+        this.pending.delete(pack);
+        this.notify();
+      }
+    })();
+    this.pending.set(pack, promise);
+    return promise;
+  }
+
+  /** Load every enabled external pack (fired at startup, non-blocking). */
+  loadEnabledPacks(): Promise<void> {
+    const s = this.getSettingsFn();
+    const enabled = EXTERNAL_PACKS.filter((p) => s.enabledPacks[p] !== false);
+    return Promise.allSettled(enabled.map((p) => this.loadPack(p))).then(() => undefined);
+  }
+
+  /* --- pack info ---------------------------------------------------------- */
+
+  getPackInfo(pack: PackId): PackManifestEntry {
+    return this.manifest.packs[pack] ?? { version: "?", count: 0 };
+  }
+
+  getPackCount(pack: PackId): number {
+    if (isCorePack(pack)) return ICONS_BY_PACK[pack]?.length ?? 0;
+    return this.manifest.packs[pack]?.count ?? ICONS_BY_PACK[pack]?.length ?? 0;
+  }
+
+  getPackVersion(pack: PackId): string {
+    if (isCorePack(pack)) return PACK_VERSIONS[pack] ?? "1.0.0";
+    return this.manifest.packs[pack]?.version ?? "?";
+  }
+
+  /** Total icons across enabled packs (from the manifest; no pack loading). */
+  totalCount(): number {
+    const s = this.getSettingsFn();
+    return ALL_PACKS.reduce(
+      (sum, p) => sum + (s.enabledPacks[p] !== false ? this.getPackCount(p) : 0),
+      0,
+    );
+  }
+
+  isPackLoaded(pack: PackId): boolean {
+    return isPackMounted(pack);
+  }
+
+  isPackLoading(pack: PackId): boolean {
+    return this.pending.has(pack);
   }
 
   /* --- query --- */
@@ -67,13 +185,6 @@ export class IconStore {
     let icons = this.availableIcons();
     if (packFilter !== "all") icons = icons.filter((i) => i.pack === packFilter);
     return searchIcons(icons, query, limit);
-  }
-
-  countPerPack(): Record<PackId, number> {
-    const s = this.getSettingsFn();
-    const out = Object.fromEntries(ALL_PACKS.map((p) => [p, 0])) as Record<PackId, number>;
-    for (const i of ALL_ICONS) if (s.enabledPacks[i.pack] !== false) out[i.pack]++;
-    return out;
   }
 
   /* --- favorites --- */

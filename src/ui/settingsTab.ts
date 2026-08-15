@@ -7,7 +7,7 @@
 
 import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { StarIconsPlugin } from "../main";
-import { getIcon, PACK_VERSIONS, TOTAL_ICON_COUNT } from "../data/icons";
+import { getIcon } from "../data/icons";
 import { ALL_PACKS, PACK_LABELS, PackId, Rule } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
@@ -131,7 +131,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName("Icon packs").setHeading();
     containerEl.createDiv({
       cls: "setting-item-description",
-      text: `${TOTAL_ICON_COUNT} icons bundled offline — no network needed.`,
+      text: `${this.plugin.store.totalCount().toLocaleString()} icons available — packs load on demand when enabled, no network needed.`,
     });
 
     const descriptions: Record<PackId, string> = {
@@ -154,11 +154,12 @@ export class StarIconsSettingTab extends PluginSettingTab {
     for (const pack of ALL_PACKS) {
       const setting = new Setting(containerEl)
         .setName(PACK_LABELS[pack])
-        .setDesc(`${descriptions[pack]} v${PACK_VERSIONS[pack]}`)
+        .setDesc(`${descriptions[pack]} v${this.plugin.store.getPackVersion(pack)}`)
         .addToggle((t) =>
           t.setValue(s.enabledPacks[pack] !== false).onChange(async (v) => {
             s.enabledPacks[pack] = v;
             await this.plugin.saveSettings();
+            if (v) await this.plugin.store.loadPack(pack);
             this.plugin.refreshIcons();
           }),
         );

@@ -2,7 +2,7 @@
  * Star Icons — rule engine tests (pure logic, no Obsidian runtime needed).
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeAll } from "vitest";
 
 // The `obsidian` npm package is types-only; use runtime stubs for the tests.
 vi.mock("obsidian", () => import("./stubs/obsidian"));
@@ -13,6 +13,9 @@ import {
   matchRule,
   resolveIcon,
 } from "../src/core/ruleEngine";
+import { buildPackFromRaw, mountPack, RawPack } from "../src/data/icons";
+import lucideData from "../src/data/generated/lucide.json";
+import materialData from "../src/data/generated/material.json";
 import {
   DEFAULT_SETTINGS,
   Rule,
@@ -45,6 +48,13 @@ function cond(partial: Partial<RuleCondition> & { type: RuleCondition["type"] })
 function settings(overrides: Partial<StarIconsSettings> = {}): StarIconsSettings {
   return { ...JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), ...overrides };
 }
+
+// The dynamic registry starts with only the bundled core packs; the tests
+// need Lucide + Material mounted so icon validation/resolution works.
+beforeAll(() => {
+  mountPack("lucide", buildPackFromRaw("lucide", lucideData as unknown as RawPack));
+  mountPack("material", buildPackFromRaw("material", materialData as unknown as RawPack));
+});
 
 describe("evaluateCondition", () => {
   it("filename operators", () => {

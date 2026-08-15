@@ -6,6 +6,7 @@
 
 import Module from "node:module";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
@@ -172,6 +173,15 @@ const fakeApp = {
   vault: {
     on: () => eventRef,
     getFiles: () => [fakeFile],
+    configDir: ".obsidian",
+    // Reads the real packs/ directory shipped next to main.js.
+    adapter: {
+      read: async (p) => {
+        const rel = String(p).replace(/\\/g, "/").replace(/^\.obsidian\/plugins\/star-icons\//, "");
+        const file = path.join(root, rel);
+        return readFileSync(file, "utf8");
+      },
+    },
   },
   metadataCache: {
     on: () => eventRef,
@@ -203,6 +213,19 @@ try {
   const plugin = new StarIconsPlugin(fakeApp, manifest);
   await plugin.onload();
   console.log("OK: plugin onload() completed without throwing");
+
+  // The plugin loads packs in the background; wait for them so the
+  // resolution assertions below exercise the real mounted registry.
+  await plugin.store.loadManifest();
+  await plugin.store.loadEnabledPacks();
+  const mounted = plugin.store.isPackLoaded("lucide") && plugin.store.isPackLoaded("openmoji");
+  if (!mounted) {
+    console.error("FAIL: expected packs to be loaded from packs/ directory");
+    process.exit(1);
+  }
+  console.log(
+    `OK: packs loaded on demand (${plugin.store.totalCount().toLocaleString()} icons available)`,
+  );
 
   // Exercise the icon application paths with realistic fixtures.
   plugin.settings.overrides["note.md"] = "si-lucide-home";

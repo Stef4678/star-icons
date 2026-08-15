@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 15,600+ icons bundled offline, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 15,600+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -17,7 +17,9 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **15,634 icons bundled offline** — no network requests, ever:
+- **15,648 icons, fully offline** — no network requests, ever. Packs ship as
+  data files next to the plugin and load **on demand**: only the packs you
+  enable are read, so startup stays fast no matter how many packs we ship:
   - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
   - **Tabler** (5,130) — modern outline icons with official categories & tags
   - **Bootstrap Icons** (2,078) — crisp, rounded web icons
@@ -77,17 +79,17 @@ Manual override  >  Rules (in order)  >  File-type default  >  Global default
 1. Settings → Community plugins → Browse → search **"Star Icons"** → Install → Enable.
 
 ### Manual install (from source)
-1. Download `main.js`, `manifest.json`, `styles.css` from the latest release.
-2. Copy them into `<vault>/.obsidian/plugins/star-icons/`.
+1. Download `main.js`, `manifest.json`, `styles.css` and the **`packs/` folder** from the latest release.
+2. Copy them into `<vault>/.obsidian/plugins/star-icons/` (keep `packs/` as a subfolder).
 3. Reload Obsidian and enable **Star Icons**.
 
 ### Development
 ```bash
 npm install
-npm run dev        # watch mode (esbuild)
-npm run build      # production build -> main.js
-npm test           # rule engine unit tests
-npm run build:icons# regenerate src/data/generated/*.json from node_modules packs
+npm run build:icons   # regenerate src/data/generated/*.json from node_modules packs
+npm run dev           # watch mode (esbuild + packs/ copy)
+npm run build         # production build -> main.js + packs/
+npm test              # rule engine unit tests
 ```
 
 ---

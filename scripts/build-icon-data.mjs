@@ -465,3 +465,16 @@ console.log(`  bootstrap: ${bootstrap ? bootstrap.count + " icons (v" + bootstra
 console.log(`  boxicons : ${boxicons ? boxicons.count + " icons (v" + boxicons.version + ")" : "SKIPPED"}`);
 console.log(`  heroicons: ${heroicons ? heroicons.count + " icons (v" + heroicons.version + ")" : "SKIPPED"}`);
 console.log(`  openmoji : ${openmoji ? openmoji.count + " colored icons (v" + openmoji.version + ")" : "SKIPPED"}`);
+
+/* --- manifest: version + count per external pack (no icon data) ------ */
+
+const manifestPacks = {};
+for (const data of [lucide, material, tabler, unicons, remix, phosphor, bootstrap, boxicons, heroicons, openmoji]) {
+  if (!data) continue;
+  manifestPacks[data.pack] = { version: data.version, count: data.count };
+}
+writeFileSync(
+  join(outDir, "manifest.json"),
+  JSON.stringify({ packs: manifestPacks }, null, 2),
+);
+console.log(`wrote src/data/generated/manifest.json (${Object.keys(manifestPacks).length} packs)`);

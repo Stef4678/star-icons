@@ -1,0 +1,44 @@
+{
+  "packs": {
+    "lucide": {
+      "version": "1.31.0",
+      "count": 2025
+    },
+    "material": {
+      "version": "0.46.0",
+      "count": 225
+    },
+    "tabler": {
+      "version": "3.46.0",
+      "count": 5130
+    },
+    "unicons": {
+      "version": "4.2.0",
+      "count": 1215
+    },
+    "remix": {
+      "version": "4.9.1",
+      "count": 1539
+    },
+    "phosphor": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "bootstrap": {
+      "version": "1.13.1",
+      "count": 2078
+    },
+    "boxicons": {
+      "version": "2.1.4",
+      "count": 814
+    },
+    "heroicons": {
+      "version": "2.2.0",
+      "count": 324
+    },
+    "openmoji": {
+      "version": "17.0.0",
+      "count": 600
+    }
+  }
+}

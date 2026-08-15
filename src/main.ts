@@ -23,7 +23,12 @@ export class StarIconsPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.settings = mergeSettings(await this.loadData());
-    this.store = new IconStore(() => this.settings, () => this.saveSettings());
+    this.store = new IconStore(
+      this.app,
+      () => this.manifest,
+      () => this.settings,
+      () => this.saveSettings(),
+    );
     this.store.registerIcons();
     this.applier = new IconApplier(this, this.app);
 
@@ -48,6 +53,14 @@ export class StarIconsPlugin extends Plugin {
     this.addSettingTab(new StarIconsSettingTab(this.app, this));
 
     if (this.settings.statusBarIndicator) this.initStatusBar();
+
+    // Load pack metadata + enabled packs in the background — onload returns
+    // immediately so Obsidian never waits on the icon data.
+    void this.store
+      .loadManifest()
+      .then(() => this.store.loadEnabledPacks())
+      .then(() => this.refreshIcons())
+      .catch((err) => console.warn("[Star Icons] background pack load failed", err));
 
     this.app.workspace.onLayoutReady(() => this.refreshIcons());
   }

@@ -23,7 +23,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: npm run build:icons && npm run build
 
       - name: Test
         run: npm test
@@ -32,6 +32,7 @@ jobs:
         run: |
           mkdir -p release
           cp main.js manifest.json styles.css release/
+          cp -r packs release/
           cd release && zip -r ../star-icons.zip .
 
       - name: Create GitHub Release
@@ -41,4 +42,15 @@ jobs:
             main.js
             manifest.json
             styles.css
+            packs/manifest.json
+            packs/lucide.json
+            packs/tabler.json
+            packs/bootstrap.json
+            packs/remix.json
+            packs/phosphor.json
+            packs/unicons.json
+            packs/boxicons.json
+            packs/openmoji.json
+            packs/heroicons.json
+            packs/material.json
             star-icons.zip

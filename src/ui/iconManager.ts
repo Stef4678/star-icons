@@ -8,7 +8,7 @@
 
 import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
-import { getIcon, ICONS_BY_PACK, PACK_VERSIONS, TOTAL_ICON_COUNT } from "../data/icons";
+import { getIcon } from "../data/icons";
 import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS } from "../types";
 import { emptyState, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { IconPickerModal } from "./iconPicker";
@@ -102,7 +102,7 @@ export class IconManagerView extends ItemView {
     renderIcon(searchIcon, "search");
     this.searchEl = searchWrap.createEl("input", {
       cls: "si-search-input",
-      attr: { placeholder: `Search ${TOTAL_ICON_COUNT.toLocaleString()}+ icons…`, spellcheck: "false" },
+      attr: { placeholder: "Search icons…", spellcheck: "false" },
     }) as HTMLInputElement;
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
@@ -152,14 +152,14 @@ export class IconManagerView extends ItemView {
   }
 
   private renderHeader(): void {
-    const counts = this.plugin.store.countPerPack();
-    const total = Object.values(counts).reduce((a, b) => a + b, 0);
-    this.headerTitleEl.setText(`${total} icons · ${ALL_PACKS.length} packs · offline`);
+    const store = this.plugin.store;
+    const total = store.totalCount();
+    this.headerTitleEl.setText(`${total.toLocaleString()} icons · ${ALL_PACKS.length} packs · offline`);
 
     this.packChipsEl.empty();
     const chips: { value: string; label: string }[] = [
-      { value: "all", label: `All (${total})` },
-      ...ALL_PACKS.map((p) => ({ value: p, label: `${PACK_LABELS[p]} (${counts[p]})` })),
+      { value: "all", label: `All (${total.toLocaleString()})` },
+      ...ALL_PACKS.map((p) => ({ value: p, label: `${PACK_LABELS[p]} (${store.getPackCount(p).toLocaleString()})` })),
     ];
     for (const chip of chips) {
       const btn = this.packChipsEl.createEl("button", {
@@ -287,8 +287,8 @@ export class IconManagerView extends ItemView {
       const row = packSection.createDiv({ cls: "si-side-item si-side-static" });
       const ic = row.createSpan({ cls: "si-side-item-icon" });
       renderIcon(ic, `si-${pack}-${packSampleIcon[pack]}`);
-      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack]} v${PACK_VERSIONS[pack]}` });
-      row.createSpan({ cls: "si-side-item-count", text: String(ICONS_BY_PACK[pack].length) });
+      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack]} v${this.plugin.store.getPackVersion(pack)}` });
+      row.createSpan({ cls: "si-side-item-count", text: String(this.plugin.store.getPackCount(pack)) });
     }
   }
 
