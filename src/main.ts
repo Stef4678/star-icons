@@ -29,9 +29,18 @@ export class StarIconsPlugin extends Plugin {
 
     this.registerView(ICON_MANAGER_VIEW_TYPE, (leaf) => new IconManagerView(leaf, this));
 
-    this.addRibbonIcon("si-star-sparkle", "Star Icons — open the Icon Manager", () => {
-      void this.openManager();
-    });
+    // Never let a ribbon-icon registration failure take the plugin down.
+    const addRibbon = (icon: string): boolean => {
+      try {
+        this.addRibbonIcon(icon, "Star Icons — open the Icon Manager", () => {
+          void this.openManager();
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    if (!addRibbon("si-star-sparkle")) addRibbon("star");
 
     this.registerCommands();
     this.registerMenus();
