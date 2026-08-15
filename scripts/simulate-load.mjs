@@ -189,9 +189,12 @@ Module._load = function (request, parent, isMain) {
 try {
   const require = createRequire(import.meta.url);
   const mod = require(path.join(root, "main.js"));
-  const StarIconsPlugin = mod.StarIconsPlugin;
-  if (!StarIconsPlugin) {
-    console.error("FAIL: main.js does not export StarIconsPlugin");
+  // Obsidian's loader instantiates the DEFAULT export of main.js.
+  const StarIconsPlugin = mod.default ?? mod.StarIconsPlugin;
+  if (typeof StarIconsPlugin !== "function") {
+    console.error(
+      `FAIL: main.js default export is not a constructor (got ${typeof StarIconsPlugin}) — Obsidian would throw "h is not a constructor"`,
+    );
     process.exit(1);
   }
   const manifest = JSON.parse(

@@ -282,3 +282,6 @@ export class StarIconsPlugin extends Plugin {
     this.registerEvent(this.app.metadataCache.on("changed", refresh));
   }
 }
+
+// Obsidian's plugin loader instantiates the DEFAULT export of main.js.
+export default StarIconsPlugin;
