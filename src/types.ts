@@ -11,6 +11,9 @@ export type PackId =
   | "remix"
   | "phosphor"
   | "bootstrap"
+  | "boxicons"
+  | "heroicons"
+  | "openmoji"
   | "animals"
   | "nature"
   | "science";
@@ -25,6 +28,9 @@ export const ALL_PACKS: PackId[] = [
   "remix",
   "phosphor",
   "bootstrap",
+  "boxicons",
+  "heroicons",
+  "openmoji",
   "animals",
   "nature",
   "science",
@@ -170,6 +176,9 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
     remix: true,
     phosphor: true,
     bootstrap: true,
+    boxicons: true,
+    heroicons: true,
+    openmoji: true,
     animals: true,
     nature: true,
     science: true,
@@ -198,6 +207,9 @@ export const PACK_LABELS: Record<PackId, string> = {
   remix: "Remix Icon",
   phosphor: "Phosphor",
   bootstrap: "Bootstrap Icons",
+  boxicons: "Boxicons",
+  heroicons: "Heroicons",
+  openmoji: "OpenMoji Color",
   animals: "Animals",
   nature: "Nature & Flowers",
   science: "Science",

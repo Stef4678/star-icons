@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-for (const pack of ["lucide", "material", "tabler", "unicons", "remix", "phosphor", "bootstrap"]) {
+for (const pack of ["lucide", "material", "tabler", "unicons", "remix", "phosphor", "bootstrap", "boxicons", "heroicons", "openmoji"]) {
   const data = JSON.parse(readFileSync(path.join(root, "src", "data", "generated", `${pack}.json`), "utf8"));
   let malformed = 0;
   let control = 0;

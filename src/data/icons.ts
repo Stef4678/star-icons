@@ -15,6 +15,9 @@ import uniconsData from "./generated/unicons.json";
 import remixData from "./generated/remix.json";
 import phosphorData from "./generated/phosphor.json";
 import bootstrapData from "./generated/bootstrap.json";
+import boxiconsData from "./generated/boxicons.json";
+import heroiconsData from "./generated/heroicons.json";
+import openmojiData from "./generated/openmoji.json";
 import { STAR_ICONS } from "./packs/star";
 import { EMOJI_PACKS, EmojiIconDef } from "./packs/emoji";
 import { IconDef, PackId } from "../types";
@@ -39,6 +42,9 @@ const UNICONS = uniconsData as RawPack;
 const REMIX = remixData as RawPack;
 const PHOSPHOR = phosphorData as RawPack;
 const BOOTSTRAP = bootstrapData as RawPack;
+const BOXICONS = boxiconsData as RawPack;
+const HEROICONS = heroiconsData as RawPack;
+const OPENMOJI = openmojiData as RawPack;
 
 /** Stroke-based shell (Lucide guidelines: 24×24, 2px stroke, round caps). */
 function strokeShell(inner: string, viewBox = "0 0 24 24"): string {
@@ -53,6 +59,11 @@ function fillShell(inner: string, viewBox: string): string {
 /** Emoji shell: renders the emoji as SVG <text> using the OS emoji font. */
 function emojiShell(emoji: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text x="12" y="12" font-size="19" text-anchor="middle" dominant-baseline="central">${emoji}</text></svg>`;
+}
+
+/** Neutral shell for self-contained full-color SVGs (e.g. OpenMoji). */
+function plainShell(inner: string, viewBox: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${inner}</svg>`;
 }
 
 export function iconId(pack: PackId, name: string): string {
@@ -101,6 +112,9 @@ const UNICONS_ICONS = buildPack("unicons", UNICONS.icons, fillShell);
 const REMIX_ICONS = buildPack("remix", REMIX.icons, fillShell);
 const PHOSPHOR_ICONS = buildPack("phosphor", PHOSPHOR.icons, fillShell);
 const BOOTSTRAP_ICONS = buildPack("bootstrap", BOOTSTRAP.icons, fillShell);
+const BOXICONS_ICONS = buildPack("boxicons", BOXICONS.icons, fillShell);
+const HEROICONS_ICONS = buildPack("heroicons", HEROICONS.icons, strokeShell);
+const OPENMOJI_ICONS = buildPack("openmoji", OPENMOJI.icons, plainShell);
 const ANIMALS_ICONS = buildEmojiPack("animals", EMOJI_PACKS.animals);
 const NATURE_ICONS = buildEmojiPack("nature", EMOJI_PACKS.nature);
 const SCIENCE_ICONS = buildEmojiPack("science", EMOJI_PACKS.science);
@@ -115,6 +129,9 @@ export const ALL_ICONS: IconDef[] = [
   ...REMIX_ICONS,
   ...PHOSPHOR_ICONS,
   ...BOOTSTRAP_ICONS,
+  ...BOXICONS_ICONS,
+  ...HEROICONS_ICONS,
+  ...OPENMOJI_ICONS,
   ...ANIMALS_ICONS,
   ...NATURE_ICONS,
   ...SCIENCE_ICONS,
@@ -129,6 +146,9 @@ export const ICONS_BY_PACK: Record<PackId, IconDef[]> = {
   remix: REMIX_ICONS,
   phosphor: PHOSPHOR_ICONS,
   bootstrap: BOOTSTRAP_ICONS,
+  boxicons: BOXICONS_ICONS,
+  heroicons: HEROICONS_ICONS,
+  openmoji: OPENMOJI_ICONS,
   animals: ANIMALS_ICONS,
   nature: NATURE_ICONS,
   science: SCIENCE_ICONS,
@@ -153,6 +173,9 @@ export const PACK_VERSIONS: Record<PackId, string> = {
   remix: REMIX.version,
   phosphor: PHOSPHOR.version,
   bootstrap: BOOTSTRAP.version,
+  boxicons: BOXICONS.version,
+  heroicons: HEROICONS.version,
+  openmoji: OPENMOJI.version,
   animals: "system emoji",
   nature: "system emoji",
   science: "system emoji",

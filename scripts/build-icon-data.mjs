@@ -321,6 +321,120 @@ function buildBootstrap() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Boxicons (regular, full pack; filenames are prefixed "bx-")         */
+/* ------------------------------------------------------------------ */
+
+function buildBoxicons() {
+  const dir = probe("boxicons", "svg/regular");
+  if (!dir) {
+    console.warn("[boxicons] regular directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    const name = f.slice(3, -4); // strip the "bx-" prefix
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "boxicons",
+    version: pkgVersion("boxicons"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Heroicons (v2 outline, full pack)                                   */
+/* ------------------------------------------------------------------ */
+
+function buildHeroicons() {
+  const dir = probe("heroicons", "24/outline", "outline");
+  if (!dir) {
+    console.warn("[heroicons] outline directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "heroicons",
+    version: pkgVersion("heroicons"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* OpenMoji Color — curated full-color emoji SVGs (CC BY-SA 4.0)       */
+/* ------------------------------------------------------------------ */
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildOpenMoji() {
+  const svgDir = join(root, "node_modules", "openmoji", "color", "svg");
+  const dataFile = join(root, "node_modules", "openmoji", "data", "openmoji.json");
+  if (!existsSync(svgDir) || !existsSync(dataFile)) {
+    console.warn("[openmoji] color svg or metadata not found — skipping");
+    return null;
+  }
+  const data = JSON.parse(readFileSync(dataFile, "utf8"));
+  // Balanced curation: caps per group, no skin-tone variants, no flags.
+  const GROUPS = [
+    ["smileys-emotion", 90],
+    ["animals-nature", 90],
+    ["food-drink", 80],
+    ["travel-places", 80],
+    ["activities", 50],
+    ["objects", 120],
+    ["symbols", 90],
+  ];
+  const usedNames = new Set();
+  const icons = [];
+  for (const [group, cap] of GROUPS) {
+    let taken = 0;
+    for (const entry of data) {
+      if (entry.group !== group) continue;
+      if (entry.skintone || entry.skintone_combination) continue;
+      if (!/^[0-9A-F]+$/.test(entry.hexcode)) continue;
+      const svgFile = join(svgDir, `${entry.hexcode}.svg`);
+      if (!existsSync(svgFile)) continue;
+      const parsed = parseSvg(svgFile);
+      if (!parsed) continue;
+      let name = slugify(entry.annotation) || entry.hexcode.toLowerCase();
+      if (usedNames.has(name)) name = `${name}-${entry.hexcode.toLowerCase()}`;
+      usedNames.add(name);
+      const tags = (entry.tags || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags });
+      taken++;
+      if (taken >= cap) break;
+    }
+  }
+  return {
+    pack: "openmoji",
+    version: pkgVersion("openmoji"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 
 const lucide = buildLucide();
 const material = buildMaterial();
@@ -329,8 +443,11 @@ const unicons = buildUnicons();
 const remix = buildRemix();
 const phosphor = buildPhosphor();
 const bootstrap = buildBootstrap();
+const boxicons = buildBoxicons();
+const heroicons = buildHeroicons();
+const openmoji = buildOpenMoji();
 
-for (const data of [lucide, material, tabler, unicons, remix, phosphor, bootstrap]) {
+for (const data of [lucide, material, tabler, unicons, remix, phosphor, bootstrap, boxicons, heroicons, openmoji]) {
   if (!data) continue;
   const file = join(outDir, `${data.pack}.json`);
   writeFileSync(file, JSON.stringify(data));
@@ -345,3 +462,6 @@ console.log(`  unicons  : ${unicons ? unicons.count + " icons (v" + unicons.vers
 console.log(`  remix    : ${remix ? remix.count + " icons (v" + remix.version + ")" : "SKIPPED"}`);
 console.log(`  phosphor : ${phosphor ? phosphor.count + " icons (v" + phosphor.version + ")" : "SKIPPED"}`);
 console.log(`  bootstrap: ${bootstrap ? bootstrap.count + " icons (v" + bootstrap.version + ")" : "SKIPPED"}`);
+console.log(`  boxicons : ${boxicons ? boxicons.count + " icons (v" + boxicons.version + ")" : "SKIPPED"}`);
+console.log(`  heroicons: ${heroicons ? heroicons.count + " icons (v" + heroicons.version + ")" : "SKIPPED"}`);
+console.log(`  openmoji : ${openmoji ? openmoji.count + " colored icons (v" + openmoji.version + ")" : "SKIPPED"}`);
