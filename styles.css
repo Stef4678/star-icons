@@ -406,7 +406,7 @@
 
 .si-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
   gap: 6px;
 }
 
@@ -727,6 +727,7 @@
 }
 
 .si-manager-body {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
@@ -742,6 +743,17 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* Sidebar toggle lives in the toolbar; only relevant when narrow */
+.si-manager-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.si-side-toggle {
+  display: none;
 }
 
 .si-side-section {
@@ -825,9 +837,13 @@
   min-width: 0;
 }
 
+/* Detail panel as an overlay drawer — never steals width from the grid */
 .si-manager-detail {
-  width: 250px;
-  flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(280px, 85%);
   overflow-y: auto;
   padding: 14px;
   border-left: 1px solid var(--si-border);
@@ -835,11 +851,73 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transform: translateX(100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.18);
+  z-index: 5;
+}
+
+.si-manager-detail:not(.is-empty) {
+  transform: translateX(0);
 }
 
 .si-manager-detail.is-empty {
   align-items: center;
   justify-content: center;
+}
+
+.si-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.si-detail-head-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* --- narrow pane (right sidebar squeezed) ------------------------------ */
+
+.si-manager.is-narrow .si-manager-side {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+  z-index: 4;
+  box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
+}
+
+.si-manager.is-narrow.si-side-open .si-manager-side {
+  transform: translateX(0);
+}
+
+.si-manager.is-narrow .si-side-toggle {
+  display: inline-flex;
+}
+
+.si-manager.is-narrow .si-manager-main {
+  padding: 10px;
+}
+
+.si-manager.is-narrow .si-grid {
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+}
+
+.si-manager.is-narrow .si-tile {
+  padding: 6px 2px 4px;
+}
+
+.si-manager.is-narrow .si-tile-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.si-manager.is-narrow .si-manager-sub {
+  display: none;
 }
 
 .si-detail-hint {

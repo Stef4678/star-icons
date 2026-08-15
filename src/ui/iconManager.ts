@@ -26,6 +26,7 @@ export class IconManagerView extends ItemView {
   private selectedCollection: Collection | null = null;
   private selectedId: string | null = null;
   private unsub?: () => void;
+  private resizeObserver?: ResizeObserver;
 
   private headerTitleEl!: HTMLElement;
   private searchEl!: HTMLInputElement;
@@ -57,11 +58,29 @@ export class IconManagerView extends ItemView {
     this.buildDom();
     this.unsub = this.plugin.store.subscribe(() => this.render());
     this.render();
+    this.resizeObserver = new ResizeObserver(() => this.handleResize());
+    this.resizeObserver.observe(this.contentEl);
+    this.handleResize();
   }
 
   async onClose(): Promise<void> {
     this.unsub?.();
+    this.resizeObserver?.disconnect();
     this.contentEl.empty();
+  }
+
+  /**
+   * Tracks the manager's actual width and collapses chrome when the pane is
+   * too narrow (the icon grid must never be squeezed out of existence).
+   */
+  private handleResize(): void {
+    const width = this.contentEl.clientWidth;
+    this.contentEl.toggleClass("is-narrow", width > 0 && width < 720);
+  }
+
+  /** Close the sidebar overlay on narrow panes after making a selection. */
+  private closeSideIfNarrow(): void {
+    if (this.contentEl.hasClass("is-narrow")) this.contentEl.removeClass("si-side-open");
   }
 
   /* --- DOM scaffold ------------------------------------------------------ */
@@ -92,7 +111,16 @@ export class IconManagerView extends ItemView {
 
     const toolbar = header.createDiv({ cls: "si-manager-toolbar" });
     this.packChipsEl = toolbar.createDiv({ cls: "si-chips" });
-    const density = toolbar.createDiv({ cls: "si-manager-density" });
+    const toolbarRight = toolbar.createDiv({ cls: "si-manager-toolbar-right" });
+    const sideToggle = toolbarRight.createEl("button", {
+      cls: "si-btn si-btn-small si-side-toggle",
+      attr: { type: "button", "aria-label": "Toggle collections panel" },
+    });
+    renderIcon(sideToggle, "panel-left");
+    sideToggle.addEventListener("click", () => {
+      this.contentEl.classList.toggle("si-side-open");
+    });
+    const density = toolbarRight.createDiv({ cls: "si-manager-density" });
     density.appendChild(
       segmentedControl(
         [
@@ -168,6 +196,7 @@ export class IconManagerView extends ItemView {
       const col = await store.createCollection(name);
       this.selectedCollection = col;
       this.filter = { ...this.filter, tag: null };
+      this.closeSideIfNarrow();
       this.render();
     });
     colSection.appendChild(colHead);
@@ -188,6 +217,7 @@ export class IconManagerView extends ItemView {
       item.addEventListener("click", () => {
         this.selectedCollection = col;
         this.selectedId = null;
+        this.closeSideIfNarrow();
         this.render();
       });
       item.addEventListener("dragover", (ev) => ev.preventDefault());
@@ -231,6 +261,7 @@ export class IconManagerView extends ItemView {
       item.addEventListener("click", () => {
         this.filter.tag = this.filter.tag === tag ? null : tag;
         this.selectedCollection = null;
+        this.closeSideIfNarrow();
         this.render();
       });
     }
@@ -419,6 +450,19 @@ export class IconManagerView extends ItemView {
       this.selectedId = null;
       return;
     }
+
+    const detailHead = detail.createDiv({ cls: "si-detail-head" });
+    detailHead.createSpan({ cls: "si-detail-head-title", text: "Icon details" });
+    const closeBtn = detailHead.createEl("button", {
+      cls: "si-icon-btn",
+      attr: { type: "button", "aria-label": "Close details" },
+    });
+    setIcon(closeBtn, "x");
+    closeBtn.addEventListener("click", () => {
+      this.selectedId = null;
+      this.renderDetail();
+      this.renderMain();
+    });
 
     const preview = detail.createDiv({ cls: "si-detail-preview" });
     renderIcon(preview, def.id, 56);
