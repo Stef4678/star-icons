@@ -4,3 +4,6 @@ main.js
 .DS_Store
 .obsidian/
 *.log
+
+.npm-cache/
+npm-verbose.log
