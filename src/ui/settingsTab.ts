@@ -143,6 +143,9 @@ export class StarIconsSettingTab extends PluginSettingTab {
       remix: "Remix Icon (line) — 1,539 icons across 20 categories.",
       phosphor: "Phosphor (regular weight) — 1,512 geometric icons.",
       bootstrap: "Bootstrap Icons — 2,078 crisp, rounded icons.",
+      animals: "Emoji animals — pets & wildlife, rendered with your system emoji font.",
+      nature: "Emoji flowers & plants — from your system emoji font.",
+      science: "Emoji science & space — from your system emoji font.",
     };
 
     for (const pack of ALL_PACKS) {

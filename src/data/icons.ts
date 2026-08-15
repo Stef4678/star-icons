@@ -16,6 +16,7 @@ import remixData from "./generated/remix.json";
 import phosphorData from "./generated/phosphor.json";
 import bootstrapData from "./generated/bootstrap.json";
 import { STAR_ICONS } from "./packs/star";
+import { EMOJI_PACKS, EmojiIconDef } from "./packs/emoji";
 import { IconDef, PackId } from "../types";
 
 interface RawIcon {
@@ -49,6 +50,11 @@ function fillShell(inner: string, viewBox: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="currentColor">${inner}</svg>`;
 }
 
+/** Emoji shell: renders the emoji as SVG <text> using the OS emoji font. */
+function emojiShell(emoji: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text x="12" y="12" font-size="19" text-anchor="middle" dominant-baseline="central">${emoji}</text></svg>`;
+}
+
 export function iconId(pack: PackId, name: string): string {
   return `si-${pack}-${name}`;
 }
@@ -73,6 +79,20 @@ function buildPack(
   });
 }
 
+/** Build an emoji pack: the "svg" is the emoji rendered via the OS font. */
+function buildEmojiPack(
+  pack: PackId,
+  entries: EmojiIconDef[],
+): IconDef[] {
+  return entries.map((e) => ({
+    id: iconId(pack, e.name),
+    pack,
+    name: e.name,
+    tags: Array.from(new Set([...e.tags, ...e.name.split(/[-_]/)])),
+    svg: emojiShell(e.emoji),
+  }));
+}
+
 const LUCIDE_ICONS = buildPack("lucide", LUCIDE.icons, strokeShell);
 const MATERIAL_ICONS = buildPack("material", MATERIAL.icons, fillShell);
 const STAR_ICONS_FULL = buildPack("star", STAR_ICONS, strokeShell);
@@ -81,6 +101,9 @@ const UNICONS_ICONS = buildPack("unicons", UNICONS.icons, fillShell);
 const REMIX_ICONS = buildPack("remix", REMIX.icons, fillShell);
 const PHOSPHOR_ICONS = buildPack("phosphor", PHOSPHOR.icons, fillShell);
 const BOOTSTRAP_ICONS = buildPack("bootstrap", BOOTSTRAP.icons, fillShell);
+const ANIMALS_ICONS = buildEmojiPack("animals", EMOJI_PACKS.animals);
+const NATURE_ICONS = buildEmojiPack("nature", EMOJI_PACKS.nature);
+const SCIENCE_ICONS = buildEmojiPack("science", EMOJI_PACKS.science);
 
 /** Every bundled icon. */
 export const ALL_ICONS: IconDef[] = [
@@ -92,6 +115,9 @@ export const ALL_ICONS: IconDef[] = [
   ...REMIX_ICONS,
   ...PHOSPHOR_ICONS,
   ...BOOTSTRAP_ICONS,
+  ...ANIMALS_ICONS,
+  ...NATURE_ICONS,
+  ...SCIENCE_ICONS,
 ];
 
 export const ICONS_BY_PACK: Record<PackId, IconDef[]> = {
@@ -103,6 +129,9 @@ export const ICONS_BY_PACK: Record<PackId, IconDef[]> = {
   remix: REMIX_ICONS,
   phosphor: PHOSPHOR_ICONS,
   bootstrap: BOOTSTRAP_ICONS,
+  animals: ANIMALS_ICONS,
+  nature: NATURE_ICONS,
+  science: SCIENCE_ICONS,
 };
 
 /** Fast lookup by icon id ("si-…"). */
@@ -124,6 +153,9 @@ export const PACK_VERSIONS: Record<PackId, string> = {
   remix: REMIX.version,
   phosphor: PHOSPHOR.version,
   bootstrap: BOOTSTRAP.version,
+  animals: "system emoji",
+  nature: "system emoji",
+  science: "system emoji",
 };
 
 export const TOTAL_ICON_COUNT = ALL_ICONS.length;

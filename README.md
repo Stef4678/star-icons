@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 13,700+ icons bundled offline, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 13,900+ icons bundled offline, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-13.7k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-13.9k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
@@ -17,13 +17,16 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **13,724 icons bundled offline** — no network requests, ever:
+- **13,896 icons bundled offline** — no network requests, ever:
   - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
   - **Tabler** (5,130) — modern outline icons with official categories & tags
   - **Bootstrap Icons** (2,078) — crisp, rounded web icons
   - **Remix Icon** (1,539) — 20 categories of line icons
   - **Phosphor** (1,512) — geometric, family-weight icons
   - **Unicons** (1,215) — Iconscout line-style icons
+  - **Animals** (94) — emoji pets & wildlife, colored by your system font
+  - **Science** (47) — emoji lab, anatomy & space icons
+  - **Nature & Flowers** (31) — emoji blooms, leaves & plants
   - **Material Symbols** (225) — curated subset, rounded weight
   - **Star Icons** (14) — original, hand-crafted star designs
 - Search with fuzzy matching across names and tags
@@ -129,6 +132,9 @@ preview to sanity-check before saving.
 | Phosphor | 1,512 | 2.1.1 | [phosphoricons.com](https://phosphoricons.com) (MIT) |
 | Unicons | 1,215 | 4.2.0 | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
 | Material Symbols | 225 | 0.46.0 | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
+| Animals | 94 | system emoji | rendered with your OS emoji font |
+| Science | 47 | system emoji | rendered with your OS emoji font |
+| Nature & Flowers | 31 | system emoji | rendered with your OS emoji font |
 | Star Icons | 14 | 1.0.0 | original (MIT) |
 
 ---

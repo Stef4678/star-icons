@@ -10,7 +10,10 @@ export type PackId =
   | "unicons"
   | "remix"
   | "phosphor"
-  | "bootstrap";
+  | "bootstrap"
+  | "animals"
+  | "nature"
+  | "science";
 
 /** Every bundled pack, in display order (used by all dynamic UIs). */
 export const ALL_PACKS: PackId[] = [
@@ -22,6 +25,9 @@ export const ALL_PACKS: PackId[] = [
   "remix",
   "phosphor",
   "bootstrap",
+  "animals",
+  "nature",
+  "science",
 ];
 
 export interface IconDef {
@@ -164,6 +170,9 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
     remix: true,
     phosphor: true,
     bootstrap: true,
+    animals: true,
+    nature: true,
+    science: true,
   },
 
   overrides: {},
@@ -189,6 +198,9 @@ export const PACK_LABELS: Record<PackId, string> = {
   remix: "Remix Icon",
   phosphor: "Phosphor",
   bootstrap: "Bootstrap Icons",
+  animals: "Animals",
+  nature: "Nature & Flowers",
+  science: "Science",
 };
 
 export const CONDITION_LABELS: Record<ConditionType, string> = {

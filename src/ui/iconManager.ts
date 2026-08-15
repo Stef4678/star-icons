@@ -102,7 +102,7 @@ export class IconManagerView extends ItemView {
     renderIcon(searchIcon, "search");
     this.searchEl = searchWrap.createEl("input", {
       cls: "si-search-input",
-      attr: { placeholder: "Search 8,500+ icons…", spellcheck: "false" },
+      attr: { placeholder: `Search ${TOTAL_ICON_COUNT.toLocaleString()}+ icons…`, spellcheck: "false" },
     }) as HTMLInputElement;
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
@@ -276,6 +276,9 @@ export class IconManagerView extends ItemView {
       remix: "home-line",
       phosphor: "house",
       bootstrap: "house",
+      animals: "dog",
+      nature: "rose",
+      science: "microscope",
     };
     for (const pack of ALL_PACKS) {
       const row = packSection.createDiv({ cls: "si-side-item si-side-static" });
