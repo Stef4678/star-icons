@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 2,200+ icons bundled offline, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 8,500+ icons bundled offline, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-2.2k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-8.6k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
@@ -17,8 +17,10 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **2,264 icons bundled offline** — no network requests, ever:
+- **8,595 icons bundled offline** — no network requests, ever:
   - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
+  - **Tabler** (5,130) — modern outline icons with official categories & tags
+  - **Unicons** (1,215) — Iconscout line-style icons
   - **Material Symbols** (225) — curated subset, rounded weight
   - **Star Icons** (14) — original, hand-crafted star designs
 - Search with fuzzy matching across names and tags
@@ -118,6 +120,8 @@ preview to sanity-check before saving.
 | Pack | Count | Version | Source |
 | --- | --- | --- | --- |
 | Lucide | 2,025 | 1.31.0 | [lucide.dev](https://lucide.dev) (ISC) |
+| Tabler | 5,130 | 3.46.0 | [tabler.io/icons](https://tabler.io/icons) (MIT) |
+| Unicons | 1,215 | 4.2.0 | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
 | Material Symbols | 225 | 0.46.0 | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
 | Star Icons | 14 | 1.0.0 | original (MIT) |
 

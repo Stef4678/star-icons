@@ -166,11 +166,80 @@ function buildMaterial() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Tabler Icons (outline, full pack + official tags/categories)        */
+/* ------------------------------------------------------------------ */
+
+function buildTabler() {
+  const dir = probe("@tabler/icons", "icons/outline");
+  if (!dir) {
+    console.warn("[tabler] icons directory not found — skipping");
+    return null;
+  }
+  let meta = {};
+  try {
+    meta = JSON.parse(
+      readFileSync(join(root, "node_modules", "@tabler", "icons", "icons.json"), "utf8"),
+    );
+  } catch {
+    /* metadata is optional */
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const name = f.slice(0, -4);
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    const m = meta[name] ?? {};
+    const tags = [
+      ...(Array.isArray(m.tags) ? m.tags.map(String) : []),
+      typeof m.category === "string" ? m.category : "",
+    ].filter(Boolean);
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "tabler",
+    version: pkgVersion("@tabler/icons"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Unicons (line variant, full pack)                                   */
+/* ------------------------------------------------------------------ */
+
+function buildUnicons() {
+  const dir = probe("@iconscout/unicons", "svg/line", "svg/outline");
+  if (!dir) {
+    console.warn("[unicons] line directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const name = f.slice(0, -4);
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "unicons",
+    version: pkgVersion("@iconscout/unicons"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 
 const lucide = buildLucide();
 const material = buildMaterial();
+const tabler = buildTabler();
+const unicons = buildUnicons();
 
-for (const data of [lucide, material]) {
+for (const data of [lucide, material, tabler, unicons]) {
   if (!data) continue;
   const file = join(outDir, `${data.pack}.json`);
   writeFileSync(file, JSON.stringify(data));
@@ -180,3 +249,5 @@ for (const data of [lucide, material]) {
 console.log("Star Icons — icon data generation complete");
 console.log(`  lucide  : ${lucide ? lucide.count + " icons (v" + lucide.version + ")" : "SKIPPED"}`);
 console.log(`  material: ${material ? material.count + " icons (v" + material.version + ")" : "SKIPPED"}`);
+console.log(`  tabler  : ${tabler ? tabler.count + " icons (v" + tabler.version + ")" : "SKIPPED"}`);
+console.log(`  unicons : ${unicons ? unicons.count + " icons (v" + unicons.version + ")" : "SKIPPED"}`);

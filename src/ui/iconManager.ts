@@ -9,7 +9,7 @@
 import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon, ICONS_BY_PACK, PACK_VERSIONS, TOTAL_ICON_COUNT } from "../data/icons";
-import { Collection, IconDef, PackId } from "../types";
+import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS } from "../types";
 import { emptyState, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { IconPickerModal } from "./iconPicker";
 
@@ -102,7 +102,7 @@ export class IconManagerView extends ItemView {
     renderIcon(searchIcon, "search");
     this.searchEl = searchWrap.createEl("input", {
       cls: "si-search-input",
-      attr: { placeholder: "Search 2200+ icons…", spellcheck: "false" },
+      attr: { placeholder: "Search 8,500+ icons…", spellcheck: "false" },
     }) as HTMLInputElement;
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
@@ -153,15 +153,13 @@ export class IconManagerView extends ItemView {
 
   private renderHeader(): void {
     const counts = this.plugin.store.countPerPack();
-    const total = counts.lucide + counts.material + counts.star;
-    this.headerTitleEl.setText(`${total} icons · lucide ${PACK_VERSIONS.lucide} · offline`);
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    this.headerTitleEl.setText(`${total} icons · ${ALL_PACKS.length} packs · offline`);
 
     this.packChipsEl.empty();
-    const chips: { value: string; label: string; icon?: string }[] = [
+    const chips: { value: string; label: string }[] = [
       { value: "all", label: `All (${total})` },
-      { value: "lucide", label: `Lucide (${counts.lucide})` },
-      { value: "material", label: `Material (${counts.material})` },
-      { value: "star", label: `Star (${counts.star})` },
+      ...ALL_PACKS.map((p) => ({ value: p, label: `${PACK_LABELS[p]} (${counts[p]})` })),
     ];
     for (const chip of chips) {
       const btn = this.packChipsEl.createEl("button", {
@@ -269,11 +267,18 @@ export class IconManagerView extends ItemView {
     /* --- packs info --- */
     const packSection = side.createDiv({ cls: "si-side-section" });
     packSection.createDiv({ cls: "si-side-title", text: "Packs" });
-    for (const pack of ["lucide", "material", "star"] as PackId[]) {
+    const packSampleIcon: Record<PackId, string> = {
+      star: "star-sparkle",
+      lucide: "sparkles",
+      material: "apps",
+      tabler: "layout-grid",
+      unicons: "apps",
+    };
+    for (const pack of ALL_PACKS) {
       const row = packSection.createDiv({ cls: "si-side-item si-side-static" });
       const ic = row.createSpan({ cls: "si-side-item-icon" });
-      renderIcon(ic, `si-${pack}-${pack === "star" ? "star-sparkle" : pack === "lucide" ? "sparkles" : "apps"}`);
-      row.createSpan({ cls: "si-side-item-label", text: `${pack} v${PACK_VERSIONS[pack]}` });
+      renderIcon(ic, `si-${pack}-${packSampleIcon[pack]}`);
+      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack]} v${PACK_VERSIONS[pack]}` });
       row.createSpan({ cls: "si-side-item-count", text: String(ICONS_BY_PACK[pack].length) });
     }
   }

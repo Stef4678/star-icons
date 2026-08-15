@@ -8,7 +8,7 @@
 
 import { addIcon } from "obsidian";
 import { ALL_ICONS, getIcon } from "../data/icons";
-import { Collection, IconDef, PackId, StarIconsSettings } from "../types";
+import { ALL_PACKS, Collection, IconDef, PackId, StarIconsSettings } from "../types";
 import { searchIcons, uid } from "../utils";
 
 export class IconStore {
@@ -71,7 +71,7 @@ export class IconStore {
 
   countPerPack(): Record<PackId, number> {
     const s = this.getSettingsFn();
-    const out: Record<PackId, number> = { lucide: 0, material: 0, star: 0 };
+    const out = Object.fromEntries(ALL_PACKS.map((p) => [p, 0])) as Record<PackId, number>;
     for (const i of ALL_ICONS) if (s.enabledPacks[i.pack] !== false) out[i.pack]++;
     return out;
   }

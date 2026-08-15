@@ -8,7 +8,7 @@
 import { App, Menu, Modal, Notice, setIcon } from "obsidian";
 import { getIcon } from "../data/icons";
 import { IconStore } from "../core/iconStore";
-import { IconDef, PackId } from "../types";
+import { ALL_PACKS, IconDef, PackId, PACK_LABELS } from "../types";
 import { clamp, debounce } from "../utils";
 import { emptyState, iconTile, renderIcon, shortName } from "./components";
 
@@ -21,12 +21,12 @@ export interface IconPickerOptions {
   onPick: (icon: IconDef | null) => void;
 }
 
-const PACK_CHIPS: { value: string; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "lucide", label: "Lucide" },
-  { value: "material", label: "Material" },
-  { value: "star", label: "Star" },
-];
+function packChips(): { value: string; label: string }[] {
+  return [
+    { value: "all", label: "All" },
+    ...ALL_PACKS.map((p) => ({ value: p, label: PACK_LABELS[p] })),
+  ];
+}
 
 export class IconPickerModal extends Modal {
   private store: IconStore;
@@ -67,7 +67,7 @@ export class IconPickerModal extends Modal {
     searchRow.appendChild(searchWrap);
 
     const chips = contentEl.createDiv({ cls: "si-chips si-picker-chips" });
-    for (const chip of PACK_CHIPS) {
+    for (const chip of packChips()) {
       const btn = chips.createEl("button", {
         cls: "si-chip" + (chip.value === this.packFilter ? " is-active" : ""),
         attr: { type: "button" },

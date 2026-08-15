@@ -8,7 +8,7 @@
 import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon, PACK_VERSIONS, TOTAL_ICON_COUNT } from "../data/icons";
-import { PACK_LABELS, PackId, Rule } from "../types";
+import { ALL_PACKS, PACK_LABELS, PackId, Rule } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
 import { iconTile, makeSortable, renderIcon } from "./components";
@@ -135,12 +135,14 @@ export class StarIconsSettingTab extends PluginSettingTab {
     });
 
     const descriptions: Record<PackId, string> = {
-      lucide: "The de-facto Obsidian icon set. 2025 icons, official tags.",
+      lucide: "The de-facto Obsidian icon set. 2,025 icons, official tags.",
       material: "Google Material Symbols (curated subset, rounded weight).",
       star: "Original hand-crafted star icons — the Star Icons identity.",
+      tabler: "Tabler outline — 5,130 clean, modern icons with categories.",
+      unicons: "Iconscout Unicons (line style) — 1,215 playful icons.",
     };
 
-    for (const pack of ["lucide", "material", "star"] as PackId[]) {
+    for (const pack of ALL_PACKS) {
       const setting = new Setting(containerEl)
         .setName(PACK_LABELS[pack])
         .setDesc(`${descriptions[pack]} v${PACK_VERSIONS[pack]}`)

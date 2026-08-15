@@ -2,7 +2,10 @@
  * Star Icons — shared type definitions.
  */
 
-export type PackId = "lucide" | "material" | "star";
+export type PackId = "lucide" | "material" | "star" | "tabler" | "unicons";
+
+/** Every bundled pack, in display order (used by all dynamic UIs). */
+export const ALL_PACKS: PackId[] = ["lucide", "material", "star", "tabler", "unicons"];
 
 export interface IconDef {
   /** Unique icon id used with setIcon/addIcon, e.g. "si-lucide-home". */
@@ -135,7 +138,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
   showSourceTooltips: true,
   statusBarIndicator: true,
 
-  enabledPacks: { lucide: true, material: true, star: true },
+  enabledPacks: { lucide: true, material: true, star: true, tabler: true, unicons: true },
 
   overrides: {},
   rules: [],
@@ -155,6 +158,8 @@ export const PACK_LABELS: Record<PackId, string> = {
   lucide: "Lucide",
   material: "Material Symbols",
   star: "Star Icons",
+  tabler: "Tabler",
+  unicons: "Unicons",
 };
 
 export const CONDITION_LABELS: Record<ConditionType, string> = {
