@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 15,600+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 26,900+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-15.6k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-26.9k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
@@ -17,22 +17,22 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **15,648 icons, fully offline** — no network requests, ever. Packs ship as
+- **26,932 icons, fully offline** — no network requests, ever. Packs ship as
   data files next to the plugin and load **on demand**: only the packs you
   enable are read, so startup stays fast no matter how many packs we ship:
-  - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
+  - **Material Symbols** (7,798) — the full rounded set (base + fill)
   - **Tabler** (5,130) — modern outline icons with official categories & tags
+  - **Remix Icon** (3,078) — line + fill across 20 categories
   - **Bootstrap Icons** (2,078) — crisp, rounded web icons
-  - **Remix Icon** (1,539) — 20 categories of line icons
+  - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
+  - **OpenMoji Color** (1,718) — full-color emoji SVGs 🎨 (CC BY-SA 4.0)
   - **Phosphor** (1,512) — geometric, family-weight icons
   - **Unicons** (1,215) — Iconscout line-style icons
+  - **Tabler Filled** (1,054) — solid versions of the Tabler set
   - **Boxicons** (814) — filled, rounded web icons
-  - **OpenMoji Color** (600) — **full-color** emoji SVGs 🎨
   - **Heroicons** (324) — outline icons by the Tailwind team
-  - **Material Symbols** (225) — curated subset, rounded weight
-  - **Animals** (94) — emoji pets & wildlife, colored by your system font
-  - **Science** (47) — emoji lab, anatomy & space icons
-  - **Nature & Flowers** (31) — emoji blooms, leaves & plants
+  - **Animals** (94) · **Science** (47) · **Nature & Flowers** (31) — emoji
+    packs colored by your system font
   - **Star Icons** (14) — original, hand-crafted star designs
 - Search with fuzzy matching across names and tags
 - Filter by pack, or by **your own tags**
@@ -130,16 +130,17 @@ preview to sanity-check before saving.
 
 | Pack | Count | Version | Source |
 | --- | --- | --- | --- |
-| Lucide | 2,025 | 1.31.0 | [lucide.dev](https://lucide.dev) (ISC) |
+| Material Symbols | 7,798 | 0.46.0 | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
 | Tabler | 5,130 | 3.46.0 | [tabler.io/icons](https://tabler.io/icons) (MIT) |
+| Remix Icon | 3,078 | 4.9.1 | [remixicon.com](https://remixicon.com) (Apache 2.0) |
 | Bootstrap Icons | 2,078 | 1.13.1 | [icons.getbootstrap.com](https://icons.getbootstrap.com) (MIT) |
-| Remix Icon | 1,539 | 4.9.1 | [remixicon.com](https://remixicon.com) (Apache 2.0) |
+| Lucide | 2,025 | 1.31.0 | [lucide.dev](https://lucide.dev) (ISC) |
+| OpenMoji Color | 1,718 | 17.0.0 | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
 | Phosphor | 1,512 | 2.1.1 | [phosphoricons.com](https://phosphoricons.com) (MIT) |
 | Unicons | 1,215 | 4.2.0 | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
+| Tabler Filled | 1,054 | 3.46.0 | [tabler.io/icons](https://tabler.io/icons) (MIT) |
 | Boxicons | 814 | 2.1.4 | [boxicons.com](https://boxicons.com) (MIT) |
-| OpenMoji Color | 600 | 17.0.0 | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
 | Heroicons | 324 | 2.2.0 | [heroicons.com](https://heroicons.com) (MIT) |
-| Material Symbols | 225 | 0.46.0 | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
 | Animals | 94 | system emoji | rendered with your OS emoji font |
 | Science | 47 | system emoji | rendered with your OS emoji font |
 | Nature & Flowers | 31 | system emoji | rendered with your OS emoji font |

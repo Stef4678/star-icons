@@ -6,11 +6,15 @@
     },
     "material": {
       "version": "0.46.0",
-      "count": 225
+      "count": 7798
     },
     "tabler": {
       "version": "3.46.0",
       "count": 5130
+    },
+    "tabler-filled": {
+      "version": "3.46.0",
+      "count": 1054
     },
     "unicons": {
       "version": "4.2.0",
@@ -18,7 +22,7 @@
     },
     "remix": {
       "version": "4.9.1",
-      "count": 1539
+      "count": 3078
     },
     "phosphor": {
       "version": "2.1.1",
@@ -38,7 +42,7 @@
     },
     "openmoji": {
       "version": "17.0.0",
-      "count": 600
+      "count": 1718
     }
   }
 }

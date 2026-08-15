@@ -270,8 +270,9 @@ export class IconManagerView extends ItemView {
     const packSampleIcon: Record<PackId, string> = {
       star: "star-sparkle",
       lucide: "sparkles",
-      material: "apps",
+      material: "home",
       tabler: "layout-grid",
+      "tabler-filled": "home",
       unicons: "apps",
       remix: "home-line",
       phosphor: "house",

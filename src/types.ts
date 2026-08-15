@@ -7,6 +7,7 @@ export type PackId =
   | "material"
   | "star"
   | "tabler"
+  | "tabler-filled"
   | "unicons"
   | "remix"
   | "phosphor"
@@ -24,6 +25,7 @@ export const ALL_PACKS: PackId[] = [
   "material",
   "star",
   "tabler",
+  "tabler-filled",
   "unicons",
   "remix",
   "phosphor",
@@ -172,6 +174,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
     material: true,
     star: true,
     tabler: true,
+    "tabler-filled": true,
     unicons: true,
     remix: true,
     phosphor: true,
@@ -203,6 +206,7 @@ export const PACK_LABELS: Record<PackId, string> = {
   material: "Material Symbols",
   star: "Star Icons",
   tabler: "Tabler",
+  "tabler-filled": "Tabler Filled",
   unicons: "Unicons",
   remix: "Remix Icon",
   phosphor: "Phosphor",
