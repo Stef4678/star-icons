@@ -140,6 +140,9 @@ export class StarIconsSettingTab extends PluginSettingTab {
       star: "Original hand-crafted star icons — the Star Icons identity.",
       tabler: "Tabler outline — 5,130 clean, modern icons with categories.",
       unicons: "Iconscout Unicons (line style) — 1,215 playful icons.",
+      remix: "Remix Icon (line) — 1,539 icons across 20 categories.",
+      phosphor: "Phosphor (regular weight) — 1,512 geometric icons.",
+      bootstrap: "Bootstrap Icons — 2,078 crisp, rounded icons.",
     };
 
     for (const pack of ALL_PACKS) {

@@ -12,6 +12,9 @@ import lucideData from "./generated/lucide.json";
 import materialData from "./generated/material.json";
 import tablerData from "./generated/tabler.json";
 import uniconsData from "./generated/unicons.json";
+import remixData from "./generated/remix.json";
+import phosphorData from "./generated/phosphor.json";
+import bootstrapData from "./generated/bootstrap.json";
 import { STAR_ICONS } from "./packs/star";
 import { IconDef, PackId } from "../types";
 
@@ -32,6 +35,9 @@ const LUCIDE = lucideData as RawPack;
 const MATERIAL = materialData as RawPack;
 const TABLER = tablerData as RawPack;
 const UNICONS = uniconsData as RawPack;
+const REMIX = remixData as RawPack;
+const PHOSPHOR = phosphorData as RawPack;
+const BOOTSTRAP = bootstrapData as RawPack;
 
 /** Stroke-based shell (Lucide guidelines: 24×24, 2px stroke, round caps). */
 function strokeShell(inner: string, viewBox = "0 0 24 24"): string {
@@ -72,6 +78,9 @@ const MATERIAL_ICONS = buildPack("material", MATERIAL.icons, fillShell);
 const STAR_ICONS_FULL = buildPack("star", STAR_ICONS, strokeShell);
 const TABLER_ICONS = buildPack("tabler", TABLER.icons, strokeShell);
 const UNICONS_ICONS = buildPack("unicons", UNICONS.icons, fillShell);
+const REMIX_ICONS = buildPack("remix", REMIX.icons, fillShell);
+const PHOSPHOR_ICONS = buildPack("phosphor", PHOSPHOR.icons, fillShell);
+const BOOTSTRAP_ICONS = buildPack("bootstrap", BOOTSTRAP.icons, fillShell);
 
 /** Every bundled icon. */
 export const ALL_ICONS: IconDef[] = [
@@ -80,6 +89,9 @@ export const ALL_ICONS: IconDef[] = [
   ...STAR_ICONS_FULL,
   ...TABLER_ICONS,
   ...UNICONS_ICONS,
+  ...REMIX_ICONS,
+  ...PHOSPHOR_ICONS,
+  ...BOOTSTRAP_ICONS,
 ];
 
 export const ICONS_BY_PACK: Record<PackId, IconDef[]> = {
@@ -88,6 +100,9 @@ export const ICONS_BY_PACK: Record<PackId, IconDef[]> = {
   star: STAR_ICONS_FULL,
   tabler: TABLER_ICONS,
   unicons: UNICONS_ICONS,
+  remix: REMIX_ICONS,
+  phosphor: PHOSPHOR_ICONS,
+  bootstrap: BOOTSTRAP_ICONS,
 };
 
 /** Fast lookup by icon id ("si-…"). */
@@ -106,6 +121,9 @@ export const PACK_VERSIONS: Record<PackId, string> = {
   star: "1.0.0",
   tabler: TABLER.version,
   unicons: UNICONS.version,
+  remix: REMIX.version,
+  phosphor: PHOSPHOR.version,
+  bootstrap: BOOTSTRAP.version,
 };
 
 export const TOTAL_ICON_COUNT = ALL_ICONS.length;

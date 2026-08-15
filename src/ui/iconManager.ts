@@ -273,6 +273,9 @@ export class IconManagerView extends ItemView {
       material: "apps",
       tabler: "layout-grid",
       unicons: "apps",
+      remix: "home-line",
+      phosphor: "house",
+      bootstrap: "house",
     };
     for (const pack of ALL_PACKS) {
       const row = packSection.createDiv({ cls: "si-side-item si-side-static" });

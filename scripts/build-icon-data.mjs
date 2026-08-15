@@ -233,13 +233,104 @@ function buildUnicons() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Remix Icon (line variant; category folders become search tags)      */
+/* ------------------------------------------------------------------ */
+
+function buildRemix() {
+  const rootDir = join(root, "node_modules", "remixicon", "icons");
+  if (!existsSync(rootDir)) {
+    console.warn("[remix] icons directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const entry of readdirSync(rootDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const category = entry.name;
+    const dir = join(rootDir, category);
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith("-line.svg")) continue;
+      const parsed = parseSvg(join(dir, f));
+      if (!parsed) continue;
+      icons.push({
+        name: f.slice(0, -4),
+        svg: parsed.inner,
+        viewBox: parsed.viewBox,
+        tags: [category],
+      });
+    }
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "remix",
+    version: pkgVersion("remixicon"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Phosphor Icons (regular weight)                                     */
+/* ------------------------------------------------------------------ */
+
+function buildPhosphor() {
+  const dir = probe("@phosphor-icons/core", "assets/regular", "assets");
+  if (!dir) {
+    console.warn("[phosphor] regular directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "phosphor",
+    version: pkgVersion("@phosphor-icons/core"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Bootstrap Icons (full pack)                                         */
+/* ------------------------------------------------------------------ */
+
+function buildBootstrap() {
+  const dir = probe("bootstrap-icons", "icons");
+  if (!dir) {
+    console.warn("[bootstrap] icons directory not found — skipping");
+    return null;
+  }
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack: "bootstrap",
+    version: pkgVersion("bootstrap-icons"),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 
 const lucide = buildLucide();
 const material = buildMaterial();
 const tabler = buildTabler();
 const unicons = buildUnicons();
+const remix = buildRemix();
+const phosphor = buildPhosphor();
+const bootstrap = buildBootstrap();
 
-for (const data of [lucide, material, tabler, unicons]) {
+for (const data of [lucide, material, tabler, unicons, remix, phosphor, bootstrap]) {
   if (!data) continue;
   const file = join(outDir, `${data.pack}.json`);
   writeFileSync(file, JSON.stringify(data));
@@ -247,7 +338,10 @@ for (const data of [lucide, material, tabler, unicons]) {
 }
 
 console.log("Star Icons — icon data generation complete");
-console.log(`  lucide  : ${lucide ? lucide.count + " icons (v" + lucide.version + ")" : "SKIPPED"}`);
-console.log(`  material: ${material ? material.count + " icons (v" + material.version + ")" : "SKIPPED"}`);
-console.log(`  tabler  : ${tabler ? tabler.count + " icons (v" + tabler.version + ")" : "SKIPPED"}`);
-console.log(`  unicons : ${unicons ? unicons.count + " icons (v" + unicons.version + ")" : "SKIPPED"}`);
+console.log(`  lucide   : ${lucide ? lucide.count + " icons (v" + lucide.version + ")" : "SKIPPED"}`);
+console.log(`  material : ${material ? material.count + " icons (v" + material.version + ")" : "SKIPPED"}`);
+console.log(`  tabler   : ${tabler ? tabler.count + " icons (v" + tabler.version + ")" : "SKIPPED"}`);
+console.log(`  unicons  : ${unicons ? unicons.count + " icons (v" + unicons.version + ")" : "SKIPPED"}`);
+console.log(`  remix    : ${remix ? remix.count + " icons (v" + remix.version + ")" : "SKIPPED"}`);
+console.log(`  phosphor : ${phosphor ? phosphor.count + " icons (v" + phosphor.version + ")" : "SKIPPED"}`);
+console.log(`  bootstrap: ${bootstrap ? bootstrap.count + " icons (v" + bootstrap.version + ")" : "SKIPPED"}`);
