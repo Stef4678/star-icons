@@ -90,10 +90,27 @@
   transform: scale(1.2);
 }
 
-/* density */
-.si-grid.compact .si-tile {
-  padding: 6px 2px 4px;
+/* density — compact is clearly tighter than comfortable */
+.si-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 4px;
 }
+
+.si-grid.compact .si-tile {
+  padding: 4px 2px 2px;
+  gap: 3px;
+}
+
+.si-grid.compact .si-tile-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.si-grid.compact .si-tile-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .si-grid.compact .si-tile-name {
   font-size: 9px;
 }

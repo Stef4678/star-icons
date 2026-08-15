@@ -108,13 +108,21 @@ export function segmentedControl(
 ): HTMLElement {
   const wrap = document.createElement("div");
   wrap.className = "si-segmented";
+  const buttons: HTMLButtonElement[] = [];
   for (const opt of options) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "si-seg" + (opt.value === current ? " is-active" : "");
     btn.textContent = opt.label;
-    btn.addEventListener("click", () => onChange(opt.value));
+    btn.addEventListener("click", () => {
+      // Move the active state onto the clicked segment so the UI always
+      // reflects the current value (fixes "button doesn't respond").
+      for (const b of buttons) b.classList.remove("is-active");
+      btn.classList.add("is-active");
+      onChange(opt.value);
+    });
     wrap.appendChild(btn);
+    buttons.push(btn);
   }
   return wrap;
 }
