@@ -764,14 +764,31 @@ export class IconManagerView extends ItemView {
     new Notice(`Added ${added} icon${added === 1 ? "" : "s"} to My Icons`);
   }
 
-  /** Insert the icon as inline SVG at the cursor of the active note. */
+  /** Insert the icon as inline SVG at the cursor of the user's note. */
   private insertIconAtCursor(icon: IconDef): void {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    const view =
+      this.app.workspace.getActiveViewOfType(MarkdownView) ?? this.lastMarkdownView();
     if (!view) {
       new Notice("Open a note first.");
       return;
     }
     view.editor.replaceSelection(svgForClipboard(icon.svg, 24));
+  }
+
+  /**
+   * The markdown view the user is most likely editing. The Icon Manager is
+   * the active leaf while you click "Insert in note", so getActiveViewOfType
+   * returns null — fall back to the most recently opened markdown file.
+   */
+  private lastMarkdownView(): MarkdownView | null {
+    const leaves = this.app.workspace.getLeavesOfType("markdown");
+    if (!leaves.length) return null;
+    const last = this.app.workspace.getLastOpenFiles();
+    for (const path of last) {
+      const leaf = leaves.find((l) => (l.view as MarkdownView).file?.path === path);
+      if (leaf) return leaf.view as MarkdownView;
+    }
+    return leaves[leaves.length - 1].view as MarkdownView;
   }
 
   private async deleteUserIcon(def: IconDef): Promise<void> {
