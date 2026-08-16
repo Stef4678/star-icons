@@ -46,6 +46,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Star Icons ${{ github.ref_name }}
           # Obsidian downloads only these files; extra artifacts (e.g. a zip)
           # are ignored, so keep the release to exactly what the store needs.
           files: |
