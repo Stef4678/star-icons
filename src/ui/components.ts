@@ -33,6 +33,46 @@ export function renderIcon(el: HTMLElement, iconId: string, size?: number): void
   }
 }
 
+/**
+ * Position a dropdown popover so it stays fully inside the manager pane.
+ * Opens rightward from the button when there's room, otherwise leftward
+ * (right-anchored), shrinking to the larger side if neither fits.
+ * Call right after creating the popover, before it is measured.
+ */
+export function fitPopoverToPane(
+  popover: HTMLElement,
+  btn: HTMLElement,
+  manager: HTMLElement,
+  maxWidth = 300,
+  minWidth = 180,
+): void {
+  const mr = manager.getBoundingClientRect();
+  const br = btn.getBoundingClientRect();
+  const spaceRight = mr.right - br.left;
+  const spaceLeft = br.right - mr.left;
+  let width = Math.min(maxWidth, Math.max(minWidth, manager.clientWidth - 24));
+
+  if (spaceRight >= width) {
+    popover.style.maxWidth = `${width}px`;
+    popover.style.left = "0";
+    popover.style.right = "auto";
+  } else if (spaceLeft >= width) {
+    popover.style.maxWidth = `${width}px`;
+    popover.style.left = "auto";
+    popover.style.right = "0";
+  } else {
+    width = Math.max(120, Math.max(spaceLeft, spaceRight) - 8);
+    popover.style.maxWidth = `${width}px`;
+    if (spaceLeft >= spaceRight) {
+      popover.style.left = "auto";
+      popover.style.right = "0";
+    } else {
+      popover.style.left = "0";
+      popover.style.right = "auto";
+    }
+  }
+}
+
 /** "si-lucide-home" -> "home" */
 export function shortName(id: string): string {
   const m = /^si-[a-z]+-(.+)$/.exec(id);
