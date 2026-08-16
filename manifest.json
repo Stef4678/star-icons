@@ -1,7 +1,7 @@
 {
   "id": "star-icons",
   "name": "Star Icons",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.5.11",
   "description": "The icon collection manager. Browse and manage 1600+ bundled icons from Lucide, Material Symbols and custom star packs, build collections and tags, and apply icons to files, folders and tabs with an intuitive rules engine and live preview.",
   "author": "Stef4678",
