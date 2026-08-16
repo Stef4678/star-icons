@@ -13,7 +13,7 @@ import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON }
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
-import { promptText } from "./promptModal";
+import { promptText, confirmDialog } from "./promptModal";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -234,9 +234,14 @@ export class IconManagerView extends ItemView {
         this.closeSideIfNarrow();
         this.render();
       });
-      item.addEventListener("dragover", (ev) => ev.preventDefault());
+      item.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        item.addClass("is-drag-target");
+      });
+      item.addEventListener("dragleave", () => item.removeClass("is-drag-target"));
       item.addEventListener("drop", (ev) => {
         ev.preventDefault();
+        item.removeClass("is-drag-target");
         const id = ev.dataTransfer?.getData("text/plain");
         if (id && getIcon(id)) void store.addToCollection(col.id, id);
       });
@@ -277,6 +282,44 @@ export class IconManagerView extends ItemView {
         this.selectedCollection = null;
         this.closeSideIfNarrow();
         this.render();
+      });
+      item.addEventListener("contextmenu", (ev) => {
+        ev.preventDefault();
+        new Menu()
+          .addItem((i) =>
+            i
+              .setTitle("Filter by this tag")
+              .setIcon("tag")
+              .onClick(() => {
+                this.filter.tag = this.filter.tag === tag ? null : tag;
+                this.selectedCollection = null;
+                this.render();
+              }),
+          )
+          .addItem((i) =>
+            i
+              .setTitle("Rename tag")
+              .setIcon("pencil")
+              .onClick(async () => {
+                const name = await this.promptText("Rename tag", tag);
+                if (name && name !== tag) await store.renameUserTag(tag, name);
+              }),
+          )
+          .addItem((i) =>
+            i
+              .setTitle("Delete tag")
+              .setIcon("trash")
+              .onClick(async () => {
+                const ok = await confirmDialog(this.app, {
+                  title: `Delete tag “${tag}”?`,
+                  message: "It will be removed from every icon that uses it.",
+                  confirmLabel: "Delete",
+                  danger: true,
+                });
+                if (ok) await store.deleteUserTag(tag);
+              }),
+          )
+          .showAtMouseEvent(ev);
       });
     }
 
@@ -355,15 +398,14 @@ export class IconManagerView extends ItemView {
       });
       main.appendChild(more);
     }
-    makeSortable(grid, {
-      handleSelector: null,
-      onReorder: () => {
-        /* browse mode has no ordering */
-      },
-    });
-    // prevent default drag inside browse grid (no reorder target)
+    // Drag tiles out of the grid onto sidebar collections (or the header
+    // collections dropdown). Tiles are <button>s, so they must be marked
+    // draggable explicitly.
     grid.addEventListener("dragstart", (ev) => {
-      ev.dataTransfer?.setData("text/plain", (ev.target as HTMLElement).closest?.(".si-tile")?.getAttribute("data-icon-id") ?? "");
+      const tile = (ev.target as HTMLElement).closest?.(".si-tile") as HTMLElement | null;
+      if (!tile) return;
+      ev.dataTransfer?.setData("text/plain", tile.getAttribute("data-icon-id") ?? "");
+      if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "copy";
     });
   }
 
@@ -471,6 +513,8 @@ export class IconManagerView extends ItemView {
           .showAtMouseEvent(ev);
       },
     });
+    // Buttons aren't draggable by default — enable dragging onto collections.
+    tile.setAttribute("draggable", "true");
     return tile;
   }
 

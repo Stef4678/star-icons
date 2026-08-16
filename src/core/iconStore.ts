@@ -337,4 +337,13 @@ export class IconStore {
       }
     });
   }
+
+  /** Delete a user tag from every icon that has it. */
+  async deleteUserTag(tag: string): Promise<void> {
+    await this.mutate((s) => {
+      for (const key of Object.keys(s.iconTags)) {
+        s.iconTags[key] = s.iconTags[key].filter((t) => t !== tag);
+      }
+    });
+  }
 }
