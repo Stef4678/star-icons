@@ -6,7 +6,7 @@
  * curate favorites and user tags, and apply icons to the active note.
  */
 
-import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
+import { ItemView, MarkdownView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
 import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
@@ -572,6 +572,9 @@ export class IconManagerView extends ItemView {
             item.setTitle("Copy SVG").onClick(() => void navigator.clipboard.writeText(svgForClipboard(i.svg)));
           })
           .addItem((item) => {
+            item.setTitle("Insert in note").onClick(() => this.insertIconAtCursor(i));
+          })
+          .addItem((item) => {
             if (i.pack === "user") {
               item.setTitle("Delete icon").setIcon("trash").onClick(() => void this.deleteUserIcon(i));
             }
@@ -660,6 +663,9 @@ export class IconManagerView extends ItemView {
     applyBtn.addEventListener("click", () => {
       void this.plugin.setOverrideForActiveFile(id);
     });
+    const insertBtn = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+    insertBtn.createSpan({ text: "Insert in note" });
+    insertBtn.addEventListener("click", () => this.insertIconAtCursor(def));
     if (def.pack === "user") {
       const deleteBtn = actions.createEl("button", { cls: "si-btn is-danger", attr: { type: "button" } });
       setIcon(deleteBtn, "trash");
@@ -756,6 +762,16 @@ export class IconManagerView extends ItemView {
     if (!svg) return;
     const added = await this.plugin.store.addUserIcons([{ name: "pasted-icon", svg }]);
     new Notice(`Added ${added} icon${added === 1 ? "" : "s"} to My Icons`);
+  }
+
+  /** Insert the icon as inline SVG at the cursor of the active note. */
+  private insertIconAtCursor(icon: IconDef): void {
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) {
+      new Notice("Open a note first.");
+      return;
+    }
+    view.editor.replaceSelection(svgForClipboard(icon.svg, 24));
   }
 
   private async deleteUserIcon(def: IconDef): Promise<void> {

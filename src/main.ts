@@ -15,7 +15,7 @@ import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
 import { mergeSettings } from "./settings";
 import { StarIconsSettings } from "./types";
-import { debounce } from "./utils";
+import { debounce, svgForClipboard } from "./utils";
 
 export class StarIconsPlugin extends Plugin {
   settings!: StarIconsSettings;
@@ -268,6 +268,20 @@ export class StarIconsPlugin extends Plugin {
       callback: () => {
         this.refreshIcons();
         new Notice("Icons refreshed");
+      },
+    });
+
+    this.addCommand({
+      id: "insert-icon-at-cursor",
+      name: "Insert an icon at the cursor",
+      editorCallback: (editor) => {
+        new IconPickerModal(this.app, () => this.store, {
+          title: "Insert an icon",
+          onPick: (icon) => {
+            if (!icon) return;
+            editor.replaceSelection(svgForClipboard(icon.svg, 24));
+          },
+        }).open();
       },
     });
 
