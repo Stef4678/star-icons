@@ -102,7 +102,7 @@ export class StarIconsPlugin extends Plugin {
     // Retry once the workspace is fully laid out (and once shortly after),
     // in case the ribbon wasn't ready during onload.
     this.app.workspace.onLayoutReady(() => attempt());
-    window.setTimeout(() => attempt(), 1500);
+    setTimeout(() => attempt(), 1500);
   }
 
   /* --- persistence ------------------------------------------------------- */
