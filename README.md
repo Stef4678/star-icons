@@ -16,15 +16,15 @@ Star Icons takes a third path in the icon-plugin landscape:
 
 | | |
 |---|---|
-| <img src="https://github.com/Stef4678/star-icons/releases/download/1.0.0/icon-manager.png" alt="Icon Manager" width="520"/> | <img src="https://github.com/Stef4678/star-icons/releases/download/1.0.0/icon-picker.png" alt="Icon picker" width="520"/> |
+| <img src="assets/icon-manager.png" alt="Icon Manager" width="520"/> | <img src="assets/icon-picker.png" alt="Icon picker" width="520"/> |
 | **Icon Manager** — the collection hub | **Icon picker** — search & apply |
 
 | | |
 |---|---|
-| <img src="https://github.com/Stef4678/star-icons/releases/download/1.0.0/icon-details.png" alt="Icon details" width="520"/> | <img src="https://github.com/Stef4678/star-icons/releases/download/1.0.0/settings-1.png" alt="Settings" width="520"/> |
+| <img src="assets/icon-details.png" alt="Icon details" width="520"/> | <img src="assets/settings-1.png" alt="Settings" width="520"/> |
 | **Icon details** — preview, tags, collections | **Settings** — packs, file types, data |
 
-<img src="https://github.com/Stef4678/star-icons/releases/download/1.0.0/settings-2.png" alt="Settings — data & packs" width="520"/>
+<img src="assets/settings-2.png" alt="Settings — data & packs" width="520"/>
 
 ---
 

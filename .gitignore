@@ -1,7 +1,6 @@
 node_modules/
 main.js
 packs/
-assets/
 *.map
 .DS_Store
 .obsidian/
