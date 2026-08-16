@@ -2,37 +2,50 @@
  * Star Icons — shared type definitions.
  */
 
-export type PackId =
-  | "lucide"
-  | "material"
-  | "star"
-  | "tabler"
-  | "tabler-filled"
-  | "unicons"
-  | "remix"
-  | "phosphor"
-  | "bootstrap"
-  | "boxicons"
-  | "heroicons"
-  | "openmoji"
-  | "animals"
-  | "nature"
-  | "science";
+/**
+ * Pack ids are plain strings (40+ packs; a union would be unmaintainable).
+ * ALL_PACKS is the canonical, display-ordered list.
+ */
+export type PackId = string;
 
 /** Every bundled pack, in display order (used by all dynamic UIs). */
 export const ALL_PACKS: PackId[] = [
   "lucide",
   "material",
+  "material-outlined",
+  "material-sharp",
   "star",
   "tabler",
   "tabler-filled",
   "unicons",
+  "unicons-solid",
+  "unicons-monochrome",
+  "unicons-thinline",
   "remix",
   "phosphor",
+  "phosphor-bold",
+  "phosphor-fill",
+  "phosphor-light",
+  "phosphor-thin",
+  "phosphor-duotone",
   "bootstrap",
   "boxicons",
+  "boxicons-solid",
+  "boxicons-logos",
   "heroicons",
+  "heroicons-solid",
+  "fontawesome",
+  "simple-icons",
+  "ionicons",
+  "antd",
+  "line-awesome",
+  "eva",
+  "octicons",
+  "cssgg",
   "openmoji",
+  "openmoji-black",
+  "twemoji",
+  "fluent",
   "animals",
   "nature",
   "science",
@@ -170,6 +183,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
   statusBarIndicator: true,
 
   enabledPacks: {
+    // Core library — on by default.
     lucide: true,
     material: true,
     star: true,
@@ -185,6 +199,31 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
     animals: true,
     nature: true,
     science: true,
+    // Extended packs — opt-in so startup stays fast.
+    "material-outlined": false,
+    "material-sharp": false,
+    "phosphor-bold": false,
+    "phosphor-fill": false,
+    "phosphor-light": false,
+    "phosphor-thin": false,
+    "phosphor-duotone": false,
+    "unicons-solid": false,
+    "unicons-monochrome": false,
+    "unicons-thinline": false,
+    "boxicons-solid": false,
+    "boxicons-logos": false,
+    "heroicons-solid": false,
+    "openmoji-black": false,
+    fontawesome: false,
+    "simple-icons": false,
+    ionicons: false,
+    antd: false,
+    "line-awesome": false,
+    eva: false,
+    octicons: false,
+    cssgg: false,
+    twemoji: false,
+    fluent: false,
   },
 
   overrides: {},
@@ -204,16 +243,40 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
 export const PACK_LABELS: Record<PackId, string> = {
   lucide: "Lucide",
   material: "Material Symbols",
+  "material-outlined": "Material Outlined",
+  "material-sharp": "Material Sharp",
   star: "Star Icons",
   tabler: "Tabler",
   "tabler-filled": "Tabler Filled",
   unicons: "Unicons",
+  "unicons-solid": "Unicons Solid",
+  "unicons-monochrome": "Unicons Mono",
+  "unicons-thinline": "Unicons Thinline",
   remix: "Remix Icon",
   phosphor: "Phosphor",
+  "phosphor-bold": "Phosphor Bold",
+  "phosphor-fill": "Phosphor Fill",
+  "phosphor-light": "Phosphor Light",
+  "phosphor-thin": "Phosphor Thin",
+  "phosphor-duotone": "Phosphor Duotone",
   bootstrap: "Bootstrap Icons",
   boxicons: "Boxicons",
+  "boxicons-solid": "Boxicons Solid",
+  "boxicons-logos": "Boxicons Logos",
   heroicons: "Heroicons",
+  "heroicons-solid": "Heroicons Solid",
+  fontawesome: "Font Awesome",
+  "simple-icons": "Simple Icons",
+  ionicons: "Ionicons",
+  antd: "Ant Design",
+  "line-awesome": "Line Awesome",
+  eva: "Eva Icons",
+  octicons: "Octicons",
+  cssgg: "CSS.gg",
   openmoji: "OpenMoji Color",
+  "openmoji-black": "OpenMoji Mono",
+  twemoji: "Twemoji",
+  fluent: "Fluent Emoji",
   animals: "Animals",
   nature: "Nature & Flowers",
   science: "Science",

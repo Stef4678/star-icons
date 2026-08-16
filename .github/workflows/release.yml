@@ -42,15 +42,5 @@ jobs:
             main.js
             manifest.json
             styles.css
-            packs/manifest.json
-            packs/lucide.json
-            packs/tabler.json
-            packs/bootstrap.json
-            packs/remix.json
-            packs/phosphor.json
-            packs/unicons.json
-            packs/boxicons.json
-            packs/openmoji.json
-            packs/heroicons.json
-            packs/material.json
+            packs/*.json
             star-icons.zip

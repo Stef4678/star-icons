@@ -134,19 +134,43 @@ export class StarIconsSettingTab extends PluginSettingTab {
       text: `${this.plugin.store.totalCount().toLocaleString()} icons available — packs load on demand when enabled, no network needed.`,
     });
 
-    const descriptions: Record<PackId, string> = {
+    const descriptions: Partial<Record<PackId, string>> = {
       lucide: "The de-facto Obsidian icon set. 2,025 icons, official tags.",
-      material: "Google Material Symbols — FULL rounded set (base + fill variants).",
+      material: "Google Material Symbols — full rounded set (base + fill variants).",
+      "material-outlined": "The same Material set in the outlined weight.",
+      "material-sharp": "The same Material set in the sharp weight.",
       star: "Original hand-crafted star icons — the Star Icons identity.",
       tabler: "Tabler outline — 5,130 clean, modern icons with categories.",
       "tabler-filled": "Tabler filled — 1,054 solid versions of the outline set.",
       unicons: "Iconscout Unicons (line style) — 1,215 playful icons.",
+      "unicons-solid": "Unicons in the solid style.",
+      "unicons-monochrome": "Unicons in the monochrome style.",
+      "unicons-thinline": "Unicons in the thinline style.",
       remix: "Remix Icon — 3,078 icons (line + fill) across 20 categories.",
       phosphor: "Phosphor (regular weight) — 1,512 geometric icons.",
+      "phosphor-bold": "Phosphor in the bold weight.",
+      "phosphor-fill": "Phosphor in the fill weight.",
+      "phosphor-light": "Phosphor in the light weight.",
+      "phosphor-thin": "Phosphor in the thin weight.",
+      "phosphor-duotone": "Phosphor in the duotone weight (two-tone).",
       bootstrap: "Bootstrap Icons — 2,078 crisp, rounded icons.",
       boxicons: "Boxicons — 814 filled, rounded web icons.",
+      "boxicons-solid": "Boxicons in the solid style.",
+      "boxicons-logos": "Boxicons brand logos.",
       heroicons: "Heroicons — 324 outline icons by the Tailwind team.",
+      "heroicons-solid": "Heroicons in the solid style.",
+      fontawesome: "Font Awesome Free — 2,274 solid + regular icons (CC BY 4.0).",
+      "simple-icons": "Simple Icons — 3,453 brand logos (CC0).",
+      ionicons: "Ionicons — 1,357 icons (base + outline + sharp).",
+      antd: "Ant Design Icons — outlined/filled/twotone variants.",
+      "line-awesome": "Line Awesome — 1,544 line-style icons (includes brands).",
+      eva: "Eva Icons — 490 outline + fill icons.",
+      octicons: "Octicons — 743 GitHub-style icons (all sizes).",
+      cssgg: "CSS.gg — 704 hand-crafted stroke icons.",
       openmoji: "OpenMoji Color — 1,718 full-color emoji SVGs (CC BY-SA 4.0).",
+      "openmoji-black": "OpenMoji monochrome — 1,860 line-drawn emoji.",
+      twemoji: "Twemoji — 4,009 full-color emoji SVGs (CC BY 4.0).",
+      fluent: "Fluent Emoji — 3,145 full-color flat emoji (MIT).",
       animals: "Emoji animals — pets & wildlife, rendered with your system emoji font.",
       nature: "Emoji flowers & plants — from your system emoji font.",
       science: "Emoji science & space — from your system emoji font.",
@@ -154,8 +178,8 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
     for (const pack of ALL_PACKS) {
       const setting = new Setting(containerEl)
-        .setName(PACK_LABELS[pack])
-        .setDesc(`${descriptions[pack]} v${this.plugin.store.getPackVersion(pack)}`)
+        .setName(PACK_LABELS[pack] ?? pack)
+        .setDesc(`${descriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`)
         .addToggle((t) =>
           t.setValue(s.enabledPacks[pack] !== false).onChange(async (v) => {
             s.enabledPacks[pack] = v;

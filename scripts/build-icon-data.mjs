@@ -400,20 +400,417 @@ function buildOpenMoji() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Tier 2: Font Awesome Free (solid + regular, no brands)              */
+/* ------------------------------------------------------------------ */
 
-const lucide = buildLucide();
-const material = buildMaterial();
-const tabler = buildTabler();
-const tablerFilled = buildTablerFilled();
-const unicons = buildUnicons();
-const remix = buildRemix();
-const phosphor = buildPhosphor();
-const bootstrap = buildBootstrap();
-const boxicons = buildBoxicons();
-const heroicons = buildHeroicons();
-const openmoji = buildOpenMoji();
+function buildFontAwesome() {
+  const icons = [];
+  for (const [variant, rel] of [["solid", "svgs/solid"], ["regular", "svgs/regular"]]) {
+    const dir = probe("@fortawesome/fontawesome-free", rel);
+    if (!dir) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith(".svg")) continue;
+      const parsed = parseSvg(join(dir, f));
+      if (!parsed) continue;
+      icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [variant] });
+    }
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "fontawesome", version: pkgVersion("@fortawesome/fontawesome-free"), count: icons.length, icons };
+}
 
-const ALL_BUILT = [lucide, material, tabler, tablerFilled, unicons, remix, phosphor, bootstrap, boxicons, heroicons, openmoji];
+/* ------------------------------------------------------------------ */
+/* Simple Icons (brand logos, CC0)                                     */
+/* ------------------------------------------------------------------ */
+
+function buildSimpleIcons() {
+  const dir = probe("simple-icons", "icons");
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: ["brand", "logo"] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "simple-icons", version: pkgVersion("simple-icons"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Ionicons (v8: base + outline + sharp variants)                      */
+/* ------------------------------------------------------------------ */
+
+function buildIonicons() {
+  const dir = probe("ionicons", "dist/svg", "svg");
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "ionicons", version: pkgVersion("ionicons"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Ant Design Icons (outlined/filled/twotone folders share basenames)  */
+/* ------------------------------------------------------------------ */
+
+function buildAntd() {
+  const icons = [];
+  for (const variant of ["outlined", "filled", "twotone"]) {
+    const dir = probe("@ant-design/icons-svg", `inline-svg/${variant}`, variant);
+    if (!dir) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith(".svg")) continue;
+      const parsed = parseSvg(join(dir, f));
+      if (!parsed) continue;
+      icons.push({ name: `${f.slice(0, -4)}-${variant}`, svg: parsed.inner, viewBox: parsed.viewBox, tags: [variant] });
+    }
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "antd", version: pkgVersion("@ant-design/icons-svg"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Line Awesome (full pack)                                            */
+/* ------------------------------------------------------------------ */
+
+function buildLineAwesome() {
+  const dir = probe("line-awesome", "svg", "dist/svg");
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "line-awesome", version: pkgVersion("line-awesome"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Eva Icons (outline + fill, names already carry the suffix)          */
+/* ------------------------------------------------------------------ */
+
+function buildEva() {
+  const icons = [];
+  for (const variant of ["outline", "fill"]) {
+    const dir = probe("eva-icons", `${variant}/svg`);
+    if (!dir) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith(".svg")) continue;
+      const parsed = parseSvg(join(dir, f));
+      if (!parsed) continue;
+      icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [variant] });
+    }
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "eva", version: pkgVersion("eva-icons"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Octicons (all size variants)                                        */
+/* ------------------------------------------------------------------ */
+
+function buildOcticons() {
+  const dir = probe("@primer/octicons", "build/svg", "svg");
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "octicons", version: pkgVersion("@primer/octicons"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* CSS.gg                                                              */
+/* ------------------------------------------------------------------ */
+
+function buildCssgg() {
+  const dir = probe("css.gg", "icons/svg", "icons");
+  if (!dir) return null;
+  const icons = [];
+  const scan = (scanDir) => {
+    let entries;
+    try {
+      entries = readdirSync(scanDir);
+    } catch {
+      return;
+    }
+    for (const f of entries) {
+      const p = join(scanDir, f);
+      if (!f.endsWith(".svg")) {
+        try {
+          if (readdirSync(p)) scan(p);
+        } catch {
+          /* not a directory */
+        }
+        continue;
+      }
+      const parsed = parseSvg(p);
+      if (!parsed) continue;
+      icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+    }
+  };
+  scan(dir);
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "cssgg", version: pkgVersion("css.gg"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Generic flat-pack builder (one directory of SVGs)                   */
+/* ------------------------------------------------------------------ */
+
+function buildFlatPack(pack, pkg, rels, styleTags = []) {
+  const dir = probe(pkg, ...rels);
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    const name = f.slice(0, -4);
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags: [...styleTags] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack, version: pkgVersion(pkg), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Tier 1: extra weights/variants of already-installed packs           */
+/* ------------------------------------------------------------------ */
+
+function buildMaterialWeight(pack, rel) {
+  return buildFlatPack(pack, "@material-symbols/svg-400", [rel]);
+}
+
+function buildPhosphorWeight(pack, rel) {
+  return buildFlatPack(pack, "@phosphor-icons/core", [`assets/${rel}`]);
+}
+
+function buildUniconsVariant(pack, rel) {
+  return buildFlatPack(pack, "@iconscout/unicons", [`svg/${rel}`]);
+}
+
+function buildBoxiconsVariant(pack, rel) {
+  const dir = probe("boxicons", `svg/${rel}`);
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    // strip bx- (3), bxs- (4) or bxl- (4) prefix
+    const name = f.replace(/^bxs?-|^bxl-/, "").slice(0, -4);
+    if (!name) continue;
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack, version: pkgVersion("boxicons"), count: icons.length, icons };
+}
+
+function buildOpenMojiVariant(pack, rel, styleTags) {
+  const svgDir = join(root, "node_modules", "openmoji", rel);
+  const dataFile = join(root, "node_modules", "openmoji", "data", "openmoji.json");
+  if (!existsSync(svgDir) || !existsSync(dataFile)) return null;
+  const data = JSON.parse(readFileSync(dataFile, "utf8"));
+  const byHex = new Map();
+  for (const entry of data) byHex.set(entry.hexcode, entry);
+  const usedNames = new Set();
+  const icons = [];
+  for (const f of readdirSync(svgDir)) {
+    if (!f.endsWith(".svg")) continue;
+    const hex = f.slice(0, -4);
+    if (!/^[0-9A-F]+$/.test(hex)) continue;
+    const parsed = parseSvg(join(svgDir, f));
+    if (!parsed) continue;
+    const meta = byHex.get(hex);
+    let name = meta ? slugify(meta.annotation) : hex.toLowerCase();
+    if (usedNames.has(name)) name = `${name}-${hex.toLowerCase()}`;
+    usedNames.add(name);
+    const tags = [...styleTags];
+    if (meta) {
+      tags.push(...(meta.tags || "").split(",").map((t) => t.trim()).filter(Boolean));
+    }
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack, version: pkgVersion("openmoji"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Tier 3: full-color emoji SVGs (twemoji + fluent)                    */
+/* ------------------------------------------------------------------ */
+
+function buildTwemoji() {
+  const dir = probe("twemoji-svg", "dist", "svg");
+  if (!dir) return null;
+  const dataFile = join(root, "node_modules", "openmoji", "data", "openmoji.json");
+  const byHex = new Map();
+  try {
+    for (const entry of JSON.parse(readFileSync(dataFile, "utf8"))) byHex.set(entry.hexcode, entry);
+  } catch {
+    /* names fall back to hex */
+  }
+  const usedNames = new Set();
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const hex = f.slice(0, -4).toUpperCase();
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    const meta = byHex.get(hex);
+    let name = meta ? slugify(meta.annotation) : hex.toLowerCase();
+    if (usedNames.has(name)) name = `${name}-${hex.toLowerCase()}`;
+    usedNames.add(name);
+    const tags = ["color", "emoji"];
+    if (meta) {
+      tags.push(...(meta.tags || "").split(",").map((t) => t.trim()).filter(Boolean));
+    }
+    icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "twemoji", version: pkgVersion("twemoji-svg"), count: icons.length, icons };
+}
+
+function buildFluent() {
+  const dir = probe("fluentui-emoji", "icons/flat", "icons");
+  if (!dir) return null;
+  const icons = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".svg")) continue;
+    const parsed = parseSvg(join(dir, f));
+    if (!parsed) continue;
+    icons.push({
+      name: f.slice(0, -4).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+      svg: parsed.inner,
+      viewBox: parsed.viewBox,
+      tags: ["color", "emoji"],
+    });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return { pack: "fluent", version: pkgVersion("fluentui-emoji"), count: icons.length, icons };
+}
+
+/* ------------------------------------------------------------------ */
+/* Style tags: make 50k+ searchable without feeling like duplicates    */
+/* ------------------------------------------------------------------ */
+
+const STYLE_TAGS = {
+  lucide: ["outline", "stroke"],
+  material: null, // name-based (fill vs outline)
+  tabler: ["outline"],
+  "tabler-filled": ["filled"],
+  unicons: ["line", "outline"],
+  remix: null, // name-based
+  phosphor: ["regular", "outline"],
+  bootstrap: ["filled"],
+  boxicons: ["filled"],
+  heroicons: ["outline"],
+  openmoji: ["color", "emoji"],
+  "material-outlined": ["outline"],
+  "material-sharp": ["sharp"],
+  "phosphor-bold": ["bold"],
+  "phosphor-fill": ["fill", "filled"],
+  "phosphor-light": ["light"],
+  "phosphor-thin": ["thin"],
+  "phosphor-duotone": ["duotone", "color"],
+  "unicons-solid": ["solid", "filled"],
+  "unicons-monochrome": ["monochrome"],
+  "unicons-thinline": ["thinline"],
+  "boxicons-solid": ["solid", "filled"],
+  "boxicons-logos": ["brand", "logo"],
+  "heroicons-solid": ["solid", "filled"],
+  "openmoji-black": ["monochrome", "emoji"],
+  fontawesome: null, // name-based via solid/regular tags already applied
+  "simple-icons": ["brand", "logo", "monochrome"],
+  ionicons: null, // name-based
+  antd: null, // name-based
+  "line-awesome": ["line", "outline"],
+  eva: null, // name-based
+  octicons: ["filled"],
+  cssgg: ["outline", "stroke"],
+  twemoji: ["color", "emoji"],
+  fluent: ["color", "emoji"],
+};
+
+function applyStyles(data) {
+  if (!data) return data;
+  const styles = STYLE_TAGS[data.pack];
+  if (styles) {
+    for (const icon of data.icons) {
+      icon.tags = Array.from(new Set([...icon.tags, ...styles]));
+    }
+  }
+  // name-suffix style tagging for mixed-style packs
+  for (const icon of data.icons) {
+    if (/material/.test(data.pack)) icon.tags.push(icon.name.endsWith("-fill") ? "filled" : "outline");
+    if (data.pack === "remix") icon.tags.push(icon.name.endsWith("-fill") ? "filled" : "line");
+    if (data.pack === "antd") {
+      icon.tags.push(
+        icon.name.endsWith("-outlined") ? "outline" : icon.name.endsWith("-twotone") ? "twotone" : "filled",
+      );
+    }
+    if (data.pack === "eva") icon.tags.push(icon.name.endsWith("-outline") ? "outline" : "filled");
+    if (data.pack === "ionicons") {
+      icon.tags.push(icon.name.endsWith("-outline") ? "outline" : icon.name.endsWith("-sharp") ? "sharp" : "filled");
+    }
+    icon.tags = Array.from(new Set(icon.tags));
+  }
+  return data;
+}
+
+/* ------------------------------------------------------------------ */
+
+const ALL_BUILT = [
+  buildLucide(),
+  buildMaterial(),
+  buildTabler(),
+  buildTablerFilled(),
+  buildUnicons(),
+  buildRemix(),
+  buildPhosphor(),
+  buildBootstrap(),
+  buildBoxicons(),
+  buildHeroicons(),
+  buildOpenMoji(),
+  // Tier 1 — weight/style variants of installed packs
+  buildMaterialWeight("material-outlined", "outlined"),
+  buildMaterialWeight("material-sharp", "sharp"),
+  buildPhosphorWeight("phosphor-bold", "bold"),
+  buildPhosphorWeight("phosphor-fill", "fill"),
+  buildPhosphorWeight("phosphor-light", "light"),
+  buildPhosphorWeight("phosphor-thin", "thin"),
+  buildPhosphorWeight("phosphor-duotone", "duotone"),
+  buildUniconsVariant("unicons-solid", "solid"),
+  buildUniconsVariant("unicons-monochrome", "monochrome"),
+  buildUniconsVariant("unicons-thinline", "thinline"),
+  buildBoxiconsVariant("boxicons-solid", "solid"),
+  buildBoxiconsVariant("boxicons-logos", "logos"),
+  buildFlatPack("heroicons-solid", "heroicons", ["24/solid", "solid"], ["solid", "filled"]),
+  buildOpenMojiVariant("openmoji-black", "black/svg", ["monochrome", "emoji"]),
+  // Tier 2 — new installable packs
+  buildFontAwesome(),
+  buildFlatPack("simple-icons", "simple-icons", ["icons"], ["brand", "logo"]),
+  buildIonicons(),
+  buildAntd(),
+  buildFlatPack("line-awesome", "line-awesome", ["svg", "dist/svg"], ["line", "outline"]),
+  buildEva(),
+  buildFlatPack("octicons", "@primer/octicons", ["build/svg", "svg"], ["filled"]),
+  buildCssgg(),
+  // Tier 3 — full-color emoji SVGs
+  buildTwemoji(),
+  buildFluent(),
+].map(applyStyles);
 
 for (const data of ALL_BUILT) {
   if (!data) continue;
@@ -422,10 +819,11 @@ for (const data of ALL_BUILT) {
   console.log(`wrote ${file} (${Math.round(JSON.stringify(data).length / 1024)} KB, ${data.count} icons)`);
 }
 
-console.log("Star Icons — icon data generation complete");
+const grandTotal = ALL_BUILT.reduce((sum, d) => sum + (d ? d.count : 0), 0);
+console.log(`\nStar Icons — icon data generation complete (${grandTotal.toLocaleString()} icons across ${ALL_BUILT.filter(Boolean).length} packs)`);
 for (const data of ALL_BUILT) {
   if (!data) continue;
-  console.log(`  ${data.pack.padEnd(12)}: ${data.count} icons (v${data.version})`);
+  console.log(`  ${data.pack.padEnd(20)}: ${data.count} icons (v${data.version})`);
 }
 
 /* --- manifest: version + count per external pack (no icon data) ------ */

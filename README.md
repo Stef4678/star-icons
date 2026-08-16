@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 26,900+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 72,000+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-26.9k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-72.4k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
@@ -17,24 +17,24 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **26,932 icons, fully offline** — no network requests, ever. Packs ship as
-  data files next to the plugin and load **on demand**: only the packs you
-  enable are read, so startup stays fast no matter how many packs we ship:
-  - **Material Symbols** (7,798) — the full rounded set (base + fill)
-  - **Tabler** (5,130) — modern outline icons with official categories & tags
-  - **Remix Icon** (3,078) — line + fill across 20 categories
-  - **Bootstrap Icons** (2,078) — crisp, rounded web icons
-  - **Lucide** (2,025) — the de-facto Obsidian icon set, with official tags
-  - **OpenMoji Color** (1,718) — full-color emoji SVGs 🎨 (CC BY-SA 4.0)
-  - **Phosphor** (1,512) — geometric, family-weight icons
-  - **Unicons** (1,215) — Iconscout line-style icons
-  - **Tabler Filled** (1,054) — solid versions of the Tabler set
-  - **Boxicons** (814) — filled, rounded web icons
-  - **Heroicons** (324) — outline icons by the Tailwind team
-  - **Animals** (94) · **Science** (47) · **Nature & Flowers** (31) — emoji
-    packs colored by your system font
-  - **Star Icons** (14) — original, hand-crafted star designs
-- Search with fuzzy matching across names and tags
+- **72,361 icons, fully offline** — no network requests, ever. Packs ship as
+  data files next to the plugin and load **on demand**: `main.js` stays ~120 KB,
+  only the packs you enable are read, and every icon carries **style tags**
+  (`outline`, `filled`, `bold`, `color`, `brand`…) so searching 72k icons never
+  feels like 72k near-duplicates.
+  - **Core — on by default (26,932 icons):** Material Symbols (7,798) ·
+    Tabler (5,130) · Remix Icon (3,078) · Bootstrap (2,078) · Lucide (2,025) ·
+    OpenMoji Color (1,718) · Phosphor (1,512) · Unicons (1,215) ·
+    Tabler Filled (1,054) · Boxicons (814) · Heroicons (324) · Animals (94) ·
+    Science (47) · Nature & Flowers (31) · Star Icons (14)
+  - **Extended — opt-in in Settings (45,429 more):** Material Outlined (7,798) ·
+    Material Sharp (7,798) · Twemoji 🎨 (4,009) · Simple Icons (3,453) ·
+    Fluent Emoji 🎨 (3,145) · Phosphor Bold/Fill/Light/Thin/Duotone (7,560) ·
+    Font Awesome (2,274) · OpenMoji Mono (1,860) · Ionicons (1,357) ·
+    Line Awesome (1,544) · Ant Design (846) · Octicons (743) · CSS.gg (704) ·
+    Boxicons Solid/Logos (820) · Eva (490) · Heroicons Solid (324) ·
+    Unicons Solid/Mono/Thinline (704)
+- Search with fuzzy matching across names, tags and styles
 - Filter by pack, or by **your own tags**
 - **Collections**: drag icons in, reorder with drag & drop, rename, delete
 - **Favorites** and **recently used** strips in the picker
@@ -128,23 +128,36 @@ preview to sanity-check before saving.
 
 ## 📦 Icon packs
 
-| Pack | Count | Version | Source |
+| Pack | Count | Style | Source |
 | --- | --- | --- | --- |
-| Material Symbols | 7,798 | 0.46.0 | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
-| Tabler | 5,130 | 3.46.0 | [tabler.io/icons](https://tabler.io/icons) (MIT) |
-| Remix Icon | 3,078 | 4.9.1 | [remixicon.com](https://remixicon.com) (Apache 2.0) |
-| Bootstrap Icons | 2,078 | 1.13.1 | [icons.getbootstrap.com](https://icons.getbootstrap.com) (MIT) |
-| Lucide | 2,025 | 1.31.0 | [lucide.dev](https://lucide.dev) (ISC) |
-| OpenMoji Color | 1,718 | 17.0.0 | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
-| Phosphor | 1,512 | 2.1.1 | [phosphoricons.com](https://phosphoricons.com) (MIT) |
-| Unicons | 1,215 | 4.2.0 | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
-| Tabler Filled | 1,054 | 3.46.0 | [tabler.io/icons](https://tabler.io/icons) (MIT) |
-| Boxicons | 814 | 2.1.4 | [boxicons.com](https://boxicons.com) (MIT) |
-| Heroicons | 324 | 2.2.0 | [heroicons.com](https://heroicons.com) (MIT) |
-| Animals | 94 | system emoji | rendered with your OS emoji font |
-| Science | 47 | system emoji | rendered with your OS emoji font |
-| Nature & Flowers | 31 | system emoji | rendered with your OS emoji font |
-| Star Icons | 14 | 1.0.0 | original (MIT) |
+| Material Symbols | 7,798 | rounded (base+fill) | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
+| Material Outlined / Sharp | 15,596 | outlined / sharp | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
+| Tabler / Tabler Filled | 6,184 | outline / filled | [tabler.io/icons](https://tabler.io/icons) (MIT) |
+| Remix Icon | 3,078 | line + fill | [remixicon.com](https://remixicon.com) (Apache 2.0) |
+| Twemoji | 4,009 | full-color emoji | [twemoji](https://twemoji.twitter.com) (CC BY 4.0) |
+| Simple Icons | 3,453 | brand logos | [simpleicons.org](https://simpleicons.org) (CC0) |
+| Fluent Emoji | 3,145 | full-color flat | [fluentui-emoji](https://github.com/microsoft/fluentui-emoji) (MIT) |
+| Phosphor (×6 weights) | 9,072 | regular/bold/fill/light/thin/duotone | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Bootstrap Icons | 2,078 | filled | [icons.getbootstrap.com](https://icons.getbootstrap.com) (MIT) |
+| Lucide | 2,025 | stroke | [lucide.dev](https://lucide.dev) (ISC) |
+| OpenMoji Color / Mono | 3,578 | color / monochrome emoji | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
+| Font Awesome Free | 2,274 | solid + regular | [fontawesome.com](https://fontawesome.com) (CC BY 4.0) |
+| Unicons (×4 styles) | 1,919 | line/solid/mono/thinline | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
+| Ionicons | 1,357 | base + outline + sharp | [ionicons.com](https://ionic.io/ionicons) (MIT) |
+| Line Awesome | 1,544 | line (incl. brands) | [icons8.com/line-awesome](https://icons8.com/line-awesome) (MIT) |
+| Ant Design | 846 | outlined/filled/twotone | [ant.design](https://ant.design/components/icon) (MIT) |
+| Boxicons (×3 styles) | 1,634 | regular/solid/logos | [boxicons.com](https://boxicons.com) (MIT) |
+| Octicons | 743 | filled | [primer.style/octicons](https://primer.style/octicons) (MIT) |
+| CSS.gg | 704 | stroke | [css.gg](https://css.gg) (MIT) |
+| Eva Icons | 490 | outline + fill | [akveo.github.io/eva-icons](https://akveo.github.io/eva-icons) (MIT) |
+| Heroicons / Solid | 648 | outline / filled | [heroicons.com](https://heroicons.com) (MIT) |
+| Animals / Science / Nature | 172 | system emoji | rendered with your OS emoji font |
+| Star Icons | 14 | custom | original (MIT) |
+
+### Licenses & trademarks
+- **Attribution (CC BY):** Font Awesome Free and Twemoji require a credit line — provided above and in the plugin's About/README.
+- **Share-alike (CC BY-SA):** OpenMoji SVGs are bundled unmodified.
+- **Brands:** Simple Icons (CC0), Boxicons Logos, Line Awesome brands and Octicons contain third-party logos. Free to use; do not imply endorsement.
 
 ---
 

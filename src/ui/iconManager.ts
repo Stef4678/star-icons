@@ -267,19 +267,43 @@ export class IconManagerView extends ItemView {
     /* --- packs info --- */
     const packSection = side.createDiv({ cls: "si-side-section" });
     packSection.createDiv({ cls: "si-side-title", text: "Packs" });
-    const packSampleIcon: Record<PackId, string> = {
+    const packSampleIcon: Record<string, string> = {
       star: "star-sparkle",
       lucide: "sparkles",
       material: "home",
+      "material-outlined": "home",
+      "material-sharp": "home",
       tabler: "layout-grid",
       "tabler-filled": "home",
       unicons: "apps",
+      "unicons-solid": "home",
+      "unicons-monochrome": "home",
+      "unicons-thinline": "home",
       remix: "home-line",
       phosphor: "house",
+      "phosphor-bold": "house-bold",
+      "phosphor-fill": "house-fill",
+      "phosphor-light": "house-light",
+      "phosphor-thin": "house-thin",
+      "phosphor-duotone": "house-duotone",
       bootstrap: "house",
       boxicons: "home",
+      "boxicons-solid": "home",
+      "boxicons-logos": "github",
       heroicons: "home",
+      "heroicons-solid": "home",
+      fontawesome: "house",
+      "simple-icons": "github",
+      ionicons: "home",
+      antd: "home-outlined",
+      "line-awesome": "home",
+      eva: "home-outline",
+      octicons: "home-16",
+      cssgg: "home",
       openmoji: "grinning-face",
+      "openmoji-black": "grinning-face",
+      twemoji: "grinning-face",
+      fluent: "smiling-face",
       animals: "dog",
       nature: "rose",
       science: "microscope",
@@ -287,8 +311,8 @@ export class IconManagerView extends ItemView {
     for (const pack of ALL_PACKS) {
       const row = packSection.createDiv({ cls: "si-side-item si-side-static" });
       const ic = row.createSpan({ cls: "si-side-item-icon" });
-      renderIcon(ic, `si-${pack}-${packSampleIcon[pack]}`);
-      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack]} v${this.plugin.store.getPackVersion(pack)}` });
+      renderIcon(ic, `si-${pack}-${packSampleIcon[pack] ?? "home"}`);
+      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack] ?? pack} v${this.plugin.store.getPackVersion(pack)}` });
       row.createSpan({ cls: "si-side-item-count", text: String(this.plugin.store.getPackCount(pack)) });
     }
   }

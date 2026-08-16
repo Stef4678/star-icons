@@ -43,6 +43,102 @@
     "openmoji": {
       "version": "17.0.0",
       "count": 1718
+    },
+    "material-outlined": {
+      "version": "0.46.0",
+      "count": 7798
+    },
+    "material-sharp": {
+      "version": "0.46.0",
+      "count": 7798
+    },
+    "phosphor-bold": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "phosphor-fill": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "phosphor-light": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "phosphor-thin": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "phosphor-duotone": {
+      "version": "2.1.1",
+      "count": 1512
+    },
+    "unicons-solid": {
+      "version": "4.2.0",
+      "count": 190
+    },
+    "unicons-monochrome": {
+      "version": "4.2.0",
+      "count": 298
+    },
+    "unicons-thinline": {
+      "version": "4.2.0",
+      "count": 216
+    },
+    "boxicons-solid": {
+      "version": "2.1.4",
+      "count": 665
+    },
+    "boxicons-logos": {
+      "version": "2.1.4",
+      "count": 155
+    },
+    "heroicons-solid": {
+      "version": "2.2.0",
+      "count": 324
+    },
+    "openmoji-black": {
+      "version": "17.0.0",
+      "count": 1860
+    },
+    "fontawesome": {
+      "version": "7.3.1",
+      "count": 2274
+    },
+    "simple-icons": {
+      "version": "16.28.0",
+      "count": 3453
+    },
+    "ionicons": {
+      "version": "8.1.0",
+      "count": 1357
+    },
+    "antd": {
+      "version": "4.5.0",
+      "count": 846
+    },
+    "line-awesome": {
+      "version": "1.3.0",
+      "count": 1544
+    },
+    "eva": {
+      "version": "1.1.3",
+      "count": 490
+    },
+    "octicons": {
+      "version": "19.33.0",
+      "count": 743
+    },
+    "cssgg": {
+      "version": "2.1.4",
+      "count": 704
+    },
+    "twemoji": {
+      "version": "17.0.2",
+      "count": 4009
+    },
+    "fluent": {
+      "version": "1.3.0",
+      "count": 3145
     }
   }
 }

@@ -12,7 +12,7 @@
 
 import { STAR_ICONS } from "./packs/star";
 import { EMOJI_PACKS, EmojiIconDef } from "./packs/emoji";
-import { IconDef, PackId } from "../types";
+import { ALL_PACKS, IconDef, PackId } from "../types";
 
 export interface RawIcon {
   name: string;
@@ -89,19 +89,7 @@ const SCIENCE_ICONS = buildEmojiPack("science", EMOJI_PACKS.science);
 export const CORE_PACKS: PackId[] = ["star", "animals", "nature", "science"];
 
 /** Packs shipped as separate JSON files under packs/ (loaded on demand). */
-export const EXTERNAL_PACKS: PackId[] = [
-  "lucide",
-  "material",
-  "tabler",
-  "tabler-filled",
-  "unicons",
-  "remix",
-  "phosphor",
-  "bootstrap",
-  "boxicons",
-  "heroicons",
-  "openmoji",
-];
+export const EXTERNAL_PACKS: PackId[] = ALL_PACKS.filter((p) => !CORE_PACKS.includes(p));
 
 /** Currently mounted icons (core + loaded external packs). */
 export let ALL_ICONS: IconDef[] = [
@@ -137,17 +125,44 @@ export const PACK_VERSIONS: Partial<Record<PackId, string>> = {
 
 /** Which shell renders each external pack (applied at mount time). */
 const SHELL_BY_PACK: Record<string, (inner: string, viewBox: string) => string> = {
+  // stroke-based
   lucide: strokeShell,
   tabler: strokeShell,
   heroicons: strokeShell,
+  cssgg: strokeShell,
+  // fill-based
   "tabler-filled": fillShell,
   material: fillShell,
+  "material-outlined": fillShell,
+  "material-sharp": fillShell,
   unicons: fillShell,
+  "unicons-solid": fillShell,
+  "unicons-monochrome": fillShell,
+  "unicons-thinline": fillShell,
   remix: fillShell,
   phosphor: fillShell,
+  "phosphor-bold": fillShell,
+  "phosphor-fill": fillShell,
+  "phosphor-light": fillShell,
+  "phosphor-thin": fillShell,
+  "phosphor-duotone": fillShell,
   bootstrap: fillShell,
   boxicons: fillShell,
+  "boxicons-solid": fillShell,
+  "boxicons-logos": fillShell,
+  "heroicons-solid": fillShell,
+  fontawesome: fillShell,
+  "simple-icons": fillShell,
+  antd: fillShell,
+  "line-awesome": fillShell,
+  eva: fillShell,
+  octicons: fillShell,
+  // self-contained (own colors / mixed fill+stroke)
+  ionicons: plainShell,
   openmoji: plainShell,
+  "openmoji-black": plainShell,
+  twemoji: plainShell,
+  fluent: plainShell,
 };
 
 /** Build IconDefs for an external pack's raw JSON data (pure). */

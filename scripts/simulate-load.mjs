@@ -227,6 +227,15 @@ try {
     `OK: packs loaded on demand (${plugin.store.totalCount().toLocaleString()} icons available)`,
   );
 
+  // Opt-in path: enabling a new pack in settings loads it on the spot.
+  plugin.settings.enabledPacks["twemoji"] = true;
+  await plugin.store.loadPack("twemoji");
+  if (!plugin.store.isPackLoaded("twemoji")) {
+    console.error("FAIL: opt-in pack (twemoji) did not load on demand");
+    process.exit(1);
+  }
+  console.log(`OK: opt-in pack loads on demand (now ${plugin.store.totalCount().toLocaleString()} icons)`);
+
   // Exercise the icon application paths with realistic fixtures.
   plugin.settings.overrides["note.md"] = "si-lucide-home";
   plugin.refreshIcons();
