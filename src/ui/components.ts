@@ -53,22 +53,16 @@ export function fitPopoverToPane(
   let width = Math.min(maxWidth, Math.max(minWidth, manager.clientWidth - 24));
 
   if (spaceRight >= width) {
-    popover.style.maxWidth = `${width}px`;
-    popover.style.left = "0";
-    popover.style.right = "auto";
+    popover.setCssStyles({ maxWidth: `${width}px`, left: "0", right: "auto" });
   } else if (spaceLeft >= width) {
-    popover.style.maxWidth = `${width}px`;
-    popover.style.left = "auto";
-    popover.style.right = "0";
+    popover.setCssStyles({ maxWidth: `${width}px`, left: "auto", right: "0" });
   } else {
     width = Math.max(120, Math.max(spaceLeft, spaceRight) - 8);
-    popover.style.maxWidth = `${width}px`;
+    popover.setCssStyles({ maxWidth: `${width}px` });
     if (spaceLeft >= spaceRight) {
-      popover.style.left = "auto";
-      popover.style.right = "0";
+      popover.setCssStyles({ left: "auto", right: "0" });
     } else {
-      popover.style.left = "0";
-      popover.style.right = "auto";
+      popover.setCssStyles({ left: "0", right: "auto" });
     }
   }
 }
@@ -85,8 +79,7 @@ export function packOf(id: string): string {
 }
 
 export function emptyState(text: string, hint = ""): HTMLElement {
-  const el = document.createElement("div");
-  el.className = "si-empty";
+  const el = createEl("div", { cls: "si-empty" });
   el.createEl("div", { cls: "si-empty-icon" }).textContent = "✦";
   el.createEl("div", { cls: "si-empty-text", text });
   if (hint) el.createEl("div", { cls: "si-empty-hint", text: hint });
@@ -103,10 +96,10 @@ export function iconTile(
     onContext?: (icon: IconDef, ev: MouseEvent) => void;
   } = {},
 ): HTMLButtonElement {
-  const btn = document.createElement("button");
-  btn.className = "si-tile" + (opts.selected ? " is-selected" : "");
-  btn.setAttribute("data-icon-id", icon.id);
-  btn.type = "button";
+  const btn = createEl("button", {
+    cls: "si-tile" + (opts.selected ? " is-selected" : ""),
+    attr: { "data-icon-id": icon.id, type: "button" },
+  });
 
   const iconWrap = btn.createDiv({ cls: "si-tile-icon" });
   renderIcon(iconWrap, icon.id);
@@ -137,12 +130,12 @@ export function chipRow(
   onChange: (value: string) => void,
   cls = "si-chips",
 ): HTMLElement {
-  const row = document.createElement("div");
-  row.className = cls;
+  const row = createEl("div", { cls });
   for (const opt of options) {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "si-chip" + (opt.value === current ? " is-active" : "");
+    const chip = createEl("button", {
+      cls: "si-chip" + (opt.value === current ? " is-active" : ""),
+      attr: { type: "button" },
+    });
     if (opt.icon) {
       const ic = chip.createSpan({ cls: "si-chip-icon" });
       renderIcon(ic, opt.icon);
@@ -159,13 +152,13 @@ export function segmentedControl(
   current: string,
   onChange: (value: string) => void,
 ): HTMLElement {
-  const wrap = document.createElement("div");
-  wrap.className = "si-segmented";
+  const wrap = createEl("div", { cls: "si-segmented" });
   const buttons: HTMLButtonElement[] = [];
   for (const opt of options) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "si-seg" + (opt.value === current ? " is-active" : "");
+    const btn = createEl("button", {
+      cls: "si-seg" + (opt.value === current ? " is-active" : ""),
+      attr: { type: "button" },
+    });
     btn.textContent = opt.label;
     btn.addEventListener("click", () => {
       // Move the active state onto the clicked segment so the UI always
@@ -196,10 +189,11 @@ export function makeSortable(listEl: HTMLElement, opts: SortableOptions): void {
   const dragClass = opts.dragClass ?? "is-dragging";
 
   listEl.addEventListener("dragstart", (ev) => {
-    const target = (ev.target as HTMLElement).closest?.("[data-index]") as HTMLElement | null;
+    const source = ev.target instanceof HTMLElement ? ev.target : null;
+    const target = source ? source.closest<HTMLElement>("[data-index]") : null;
     if (!target) return;
     if (handleSel) {
-      const handle = (ev.target as HTMLElement).closest?.(handleSel);
+      const handle = source ? source.closest<HTMLElement>(handleSel) : null;
       if (!handle) {
         ev.preventDefault();
         return;
@@ -213,7 +207,7 @@ export function makeSortable(listEl: HTMLElement, opts: SortableOptions): void {
 
   listEl.addEventListener("dragover", (ev) => {
     ev.preventDefault();
-    const target = (ev.target as HTMLElement).closest?.("[data-index]") as HTMLElement | null;
+    const target = ev.target instanceof HTMLElement ? ev.target.closest<HTMLElement>("[data-index]") : null;
     if (!target) return;
     const overIndex = parseInt(target.dataset.index ?? "-1", 10);
     if (overIndex === dragIndex) return;
@@ -221,13 +215,13 @@ export function makeSortable(listEl: HTMLElement, opts: SortableOptions): void {
   });
 
   listEl.addEventListener("dragleave", (ev) => {
-    const target = (ev.target as HTMLElement).closest?.("[data-index]") as HTMLElement | null;
+    const target = ev.target instanceof HTMLElement ? ev.target.closest<HTMLElement>("[data-index]") : null;
     target?.classList.remove("is-drag-over");
   });
 
   listEl.addEventListener("drop", (ev) => {
     ev.preventDefault();
-    const target = (ev.target as HTMLElement).closest?.("[data-index]") as HTMLElement | null;
+    const target = ev.target instanceof HTMLElement ? ev.target.closest<HTMLElement>("[data-index]") : null;
     target?.classList.remove("is-drag-over");
     if (dragIndex < 0 || !target) return;
     const to = parseInt(target.dataset.index ?? "-1", 10);

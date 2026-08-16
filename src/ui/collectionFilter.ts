@@ -82,7 +82,7 @@ export class CollectionFilterControl {
     this.popover = this.root.createDiv({ cls: "si-pack-filter-pop" });
     // Keep the popover inside the pane: open rightward when possible, else
     // leftward (right-anchored) so it's never clipped in a narrow sidebar.
-    const manager = this.root.closest(".si-manager") as HTMLElement | null;
+    const manager = this.root.closest<HTMLElement>(".si-manager");
     if (manager) fitPopoverToPane(this.popover, this.btn, manager);
 
     const head = this.popover.createDiv({ cls: "si-pf-head" });
@@ -91,7 +91,7 @@ export class CollectionFilterControl {
     setIcon(closeBtn, "x");
     closeBtn.addEventListener("click", () => this.close());
 
-    const list = this.popover.createDiv({ cls: "si-pf-list" });
+    this.popover.createDiv({ cls: "si-pf-list" });
     this.renderPopover();
 
     document.addEventListener("mousedown", this.onDocMouseDown);
@@ -100,7 +100,7 @@ export class CollectionFilterControl {
 
   private renderPopover(): void {
     if (!this.popover) return;
-    const list = this.popover.querySelector(".si-pf-list") as HTMLElement | null;
+    const list = this.popover.querySelector<HTMLElement>(".si-pf-list");
     if (!list) return;
     list.empty();
     const store = this.opts.store;

@@ -110,7 +110,7 @@ export class IconManagerView extends ItemView {
     this.searchEl = searchWrap.createEl("input", {
       cls: "si-search-input",
       attr: { placeholder: "Search icons…", spellcheck: "false" },
-    }) as HTMLInputElement;
+    });
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
       this.renderMain();
@@ -200,7 +200,7 @@ export class IconManagerView extends ItemView {
   private renderHeader(): void {
     const store = this.plugin.store;
     const total = store.totalCount();
-    this.headerTitleEl.setText(`${total.toLocaleString()} icons · ${ALL_PACKS.length} packs · offline`);
+    this.headerTitleEl.setText(`${total.toLocaleString()} icons · ${ALL_PACKS.length} packs · on demand`);
   }
 
   private renderSidebar(): void {
@@ -217,14 +217,16 @@ export class IconManagerView extends ItemView {
       attr: { type: "button", "aria-label": "New collection" },
     });
     setIcon(addCol, "plus");
-    addCol.addEventListener("click", async () => {
-      const name = await this.promptText("Collection name", "My icons");
-      if (!name) return;
-      const col = await store.createCollection(name);
-      this.selectedCollection = col;
-      this.filter = { ...this.filter, tag: null };
-      this.closeSideIfNarrow();
-      this.render();
+    addCol.addEventListener("click", () => {
+      void (async () => {
+        const name = await this.promptText("Collection name", "My icons");
+        if (!name) return;
+        const col = await store.createCollection(name);
+        this.selectedCollection = col;
+        this.filter = { ...this.filter, tag: null };
+        this.closeSideIfNarrow();
+        this.render();
+      })();
     });
     colSection.appendChild(colHead);
 
@@ -283,16 +285,18 @@ export class IconManagerView extends ItemView {
       attr: { type: "button", "aria-label": "Delete all tags" },
     });
     setIcon(clearTags, "trash");
-    clearTags.addEventListener("click", async () => {
-      const ok = await confirmDialog(this.app, {
-        title: "Delete all user tags?",
-        message: "Every custom tag will be removed from all icons.",
-        confirmLabel: "Delete all",
-        danger: true,
-      });
-      if (!ok) return;
-      this.filter.tag = null;
-      await store.clearAllUserTags();
+    clearTags.addEventListener("click", () => {
+      void (async () => {
+        const ok = await confirmDialog(this.app, {
+          title: "Delete all user tags?",
+          message: "Every custom tag will be removed from all icons.",
+          confirmLabel: "Delete all",
+          danger: true,
+        });
+        if (!ok) return;
+        this.filter.tag = null;
+        await store.clearAllUserTags();
+      })();
     });
     const tagList = tagSection.createDiv({ cls: "si-side-list" });
     const allTags = store.allUserTags();
@@ -418,9 +422,8 @@ export class IconManagerView extends ItemView {
           });
           const btn = box.createEl("button", { cls: "si-btn si-btn-primary", attr: { type: "button" } });
           btn.createSpan({ text: "Enable pack" });
-          btn.addEventListener("click", async () => {
-            await store.enablePack(pack);
-            this.render();
+          btn.addEventListener("click", () => {
+            void store.enablePack(pack).then(() => this.render());
           });
           main.appendChild(box);
           return;
@@ -458,7 +461,7 @@ export class IconManagerView extends ItemView {
     // collections dropdown). Tiles are <button>s, so they must be marked
     // draggable explicitly.
     grid.addEventListener("dragstart", (ev) => {
-      const tile = (ev.target as HTMLElement).closest?.(".si-tile") as HTMLElement | null;
+      const tile = ev.target instanceof HTMLElement ? ev.target.closest<HTMLElement>(".si-tile") : null;
       if (!tile) return;
       ev.dataTransfer?.setData("text/plain", tile.getAttribute("data-icon-id") ?? "");
       if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "copy";
@@ -490,16 +493,18 @@ export class IconManagerView extends ItemView {
     const deleteCol = head.createEl("button", { cls: "si-btn si-btn-small is-danger", attr: { type: "button" } });
     setIcon(deleteCol, "trash");
     deleteCol.createSpan({ text: "Delete" });
-    deleteCol.addEventListener("click", async () => {
-      const ok = await confirmDialog(this.app, {
-        title: `Delete collection “${col.name}”?`,
-        message: "The collection will be removed. Its icons stay in your library.",
-        confirmLabel: "Delete",
-        danger: true,
-      });
-      if (!ok) return;
-      this.selectedCollection = null;
-      await store.deleteCollection(col.id);
+    deleteCol.addEventListener("click", () => {
+      void (async () => {
+        const ok = await confirmDialog(this.app, {
+          title: `Delete collection “${col.name}”?`,
+          message: "The collection will be removed. Its icons stay in your library.",
+          confirmLabel: "Delete",
+          danger: true,
+        });
+        if (!ok) return;
+        this.selectedCollection = null;
+        await store.deleteCollection(col.id);
+      })();
     });
     head.appendChild(addIcon);
     head.appendChild(deleteCol);
@@ -675,7 +680,7 @@ export class IconManagerView extends ItemView {
     });
     const insertBtn = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
     insertBtn.createSpan({ text: "Insert in note" });
-    insertBtn.addEventListener("click", () => this.insertIconAtCursor(def));
+    insertBtn.addEventListener("click", () => void this.insertIconAtCursor(def));
     if (def.pack === "user") {
       const deleteBtn = actions.createEl("button", { cls: "si-btn is-danger", attr: { type: "button" } });
       setIcon(deleteBtn, "trash");
@@ -709,7 +714,7 @@ export class IconManagerView extends ItemView {
     const addInput = tagsSection.createEl("input", {
       cls: "si-text-input",
       attr: { placeholder: "add tag…", spellcheck: "false" },
-    }) as HTMLInputElement;
+    });
     addInput.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" && addInput.value.trim()) {
         void store.addUserTag(id, addInput.value);
@@ -742,10 +747,9 @@ export class IconManagerView extends ItemView {
   /* --- user icons ("My Icons") --------------------------------------------- */
 
   private importSvgFiles(): void {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".svg,image/svg+xml";
-    input.multiple = true;
+    const input = createEl("input", {
+      attr: { type: "file", accept: ".svg,image/svg+xml", multiple: true },
+    });
     input.addEventListener("change", () => {
       const files = Array.from(input.files ?? []);
       if (!files.length) return;

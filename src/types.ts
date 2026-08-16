@@ -3,13 +3,15 @@
  */
 
 /**
- * Pack ids are plain strings (40+ packs; a union would be unmaintainable).
- * ALL_PACKS is the canonical, display-ordered list.
+ * Every bundled pack id (including the special "user" pack for imported
+ * icons). ALL_PACKS is the canonical, display-ordered list; PackId is derived
+ * from it so "PackId | 'all'" stays a meaningful union instead of collapsing
+ * to plain `string`.
  */
-export type PackId = string;
+export type PackId = (typeof ALL_PACKS)[number] | "user";
 
 /** Every bundled pack, in display order (used by all dynamic UIs). */
-export const ALL_PACKS: PackId[] = [
+export const ALL_PACKS = [
   "lucide",
   "material",
   "material-outlined",
@@ -49,7 +51,7 @@ export const ALL_PACKS: PackId[] = [
   "animals",
   "nature",
   "science",
-];
+] as const;
 
 export interface IconDef {
   /** Unique icon id used with setIcon/addIcon, e.g. "si-lucide-home". */
@@ -160,7 +162,8 @@ export interface StarIconsSettings {
   statusBarIndicator: boolean;
 
   /* --- Packs --- */
-  enabledPacks: Record<PackId, boolean>;
+  /** Missing key = enabled (see DEFAULT_SETTINGS for the on-by-default set). */
+  enabledPacks: Partial<Record<PackId, boolean>>;
 
   /* --- Icon application --- */
   /** Vault-relative path -> icon id (manual overrides). */

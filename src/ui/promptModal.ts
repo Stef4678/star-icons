@@ -105,7 +105,7 @@ export function promptTextArea(app: App, opts: TextAreaOptions): Promise<string 
     const textarea = modal.contentEl.createEl("textarea", {
       cls: "si-textarea",
       attr: { placeholder: opts.placeholder ?? "", spellcheck: "false", rows: "8" },
-    }) as HTMLTextAreaElement;
+    });
     textarea.addEventListener("input", () => (value = textarea.value));
     textarea.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) {
@@ -170,7 +170,7 @@ export function promptSize(app: App, opts: SizeOptions = {}): Promise<number | n
     const input = customRow.createEl("input", {
       cls: "si-text-input",
       attr: { type: "number", min: "1", max: "512", placeholder: "24" },
-    }) as HTMLInputElement;
+    });
     input.value = String(size);
     input.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") {

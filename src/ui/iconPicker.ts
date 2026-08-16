@@ -6,11 +6,10 @@
  */
 
 import { App, Menu, Modal, Notice, setIcon } from "obsidian";
-import { getIcon } from "../data/icons";
 import { IconStore } from "../core/iconStore";
 import { IconDef, PackId, PACK_LABELS } from "../types";
 import { clamp, debounce, svgForClipboard } from "../utils";
-import { emptyState, iconTile, renderIcon, shortName } from "./components";
+import { emptyState, iconTile, renderIcon } from "./components";
 import { PackFilterControl } from "./packFilter";
 
 export interface IconPickerOptions {
@@ -170,7 +169,7 @@ export class IconPickerModal extends Modal {
   private copySelected(kind: "name" | "svg"): void {
     const icon = this.results[this.selectedIndex];
     if (!icon) return;
-    navigator.clipboard.writeText(kind === "name" ? icon.id : svgForClipboard(icon.svg)).then(() => {
+    void navigator.clipboard.writeText(kind === "name" ? icon.id : svgForClipboard(icon.svg)).then(() => {
       new Notice("Copied " + (kind === "name" ? icon.id : "SVG") + " to clipboard");
     });
   }
@@ -225,9 +224,8 @@ export class IconPickerModal extends Modal {
         box.createDiv({ cls: "si-empty-hint", text: "Enable the pack to pick from it." });
         const btn = box.createEl("button", { cls: "si-btn si-btn-primary", attr: { type: "button" } });
         btn.createSpan({ text: "Enable pack" });
-        btn.addEventListener("click", async () => {
-          await this.store.enablePack(pack);
-          this.renderGrid();
+        btn.addEventListener("click", () => {
+          void this.store.enablePack(pack).then(() => this.renderGrid());
         });
         return;
       }
@@ -259,11 +257,11 @@ export class IconPickerModal extends Modal {
               });
             }).addItem((item) => {
               item.setTitle("Copy icon name").onClick(() => {
-                navigator.clipboard.writeText(i.id);
+                void navigator.clipboard.writeText(i.id);
               });
             }).addItem((item) => {
               item.setTitle("Copy SVG").onClick(() => {
-                navigator.clipboard.writeText(i.svg);
+                void navigator.clipboard.writeText(i.svg);
               });
             }).showAtMouseEvent(ev);
           },

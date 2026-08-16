@@ -35,7 +35,7 @@ export function buildBugReport(ctx: BugReportContext): string {
       ? "Windows"
       : Platform.isLinux
         ? "Linux"
-        : (typeof navigator !== "undefined" ? navigator.platform : "Unknown");
+        : "Unknown";
 
   const lines = [
     "Star Icons — bug report",
@@ -82,7 +82,7 @@ export class ReportBugModal extends Modal {
     const textarea = contentEl.createEl("textarea", {
       cls: "si-textarea",
       attr: { rows: "16", readonly: "", spellcheck: "false" },
-    }) as HTMLTextAreaElement;
+    });
     textarea.value = report;
 
     new Setting(contentEl)

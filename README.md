@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-72.4k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-72.4k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-after-first-load-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
@@ -33,9 +33,12 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **72,361 icons, fully offline** — no network requests, ever. Packs ship as
-  data files next to the plugin and load **on demand**: `main.js` stays ~120 KB,
-  only the packs you enable are read, and every icon carries **style tags**
+- **72,361 icons, offline after first load** — pack data ships with the repo
+  and manual installs; when a pack file is missing (Obsidian's community
+  installer only downloads `main.js`, `styles.css` and `manifest.json`) it is
+  fetched once from a CDN and **cached locally**, so everything works offline
+  afterwards. Packs load **on demand**: `main.js` stays small, only the packs
+  you enable are read, and every icon carries **style tags**
   (`outline`, `filled`, `bold`, `color`, `brand`…) so searching 72k icons never
   feels like 72k near-duplicates.
   - **Core — on by default (26,932 icons):** Material Symbols (7,798) ·
@@ -85,7 +88,8 @@ Manual override  >  Rules (in order)  >  File-type default  >  Global default
 - Pack on/off toggles (instantly shrinks search space)
 - Export / import your whole configuration as JSON
 - Settings reset, keyboard-navigable icon picker, dark/light theme aware
-- Zero dependencies beyond the Obsidian API — bundled icons, bundled everything
+- Zero runtime dependencies beyond the Obsidian API — pack data is bundled or
+  fetched on demand and cached locally
 
 ---
 
@@ -95,9 +99,11 @@ Manual override  >  Rules (in order)  >  File-type default  >  Global default
 1. Settings → Community plugins → Browse → search **"Star Icons"** → Install → Enable.
 
 ### Manual install (from source)
-1. Download `main.js`, `manifest.json`, `styles.css` and the **`packs/` folder** from the latest release.
-2. Copy them into `<vault>/.obsidian/plugins/star-icons/` (keep `packs/` as a subfolder).
-3. Reload Obsidian and enable **Star Icons**.
+1. Download `main.js`, `manifest.json` and `styles.css` from the latest release.
+2. Copy them into `<vault>/.obsidian/plugins/star-icons/`.
+3. Reload Obsidian and enable **Star Icons** — any missing pack is downloaded
+   on demand and cached into `packs/`. For a fully offline install, also copy
+   the `packs/` folder from the repo into the plugin folder.
 
 ### Development
 ```bash
@@ -136,7 +142,8 @@ preview to sanity-check before saving.
 
 1. **Library first.** Icons are content. Tag them, collect them, curate them.
 2. **Transparency.** Every icon on screen can explain its own provenance.
-3. **Offline & fast.** No fetch, no CDN, no waiting.
+3. **Offline after first sync.** Missing pack data is fetched once and cached
+   in the plugin folder; after that there's no waiting and no network needed.
 4. **Native feel.** Icons follow Lucide's design guidelines (24×24, 2px stroke,
    round caps) so they sit naturally inside Obsidian.
 

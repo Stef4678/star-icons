@@ -31,7 +31,7 @@ export interface FileContext {
 export function buildFileContext(file: TAbstractFile, app: App, now = new Date()): FileContext {
   const isFolder = file instanceof TFolder;
   const name = file.name;
-  const extension = isFolder ? "" : (file as TFile).extension.toLowerCase();
+  const extension = file instanceof TFile ? file.extension.toLowerCase() : "";
   const basename = isFolder
     ? name
     : extension
@@ -43,12 +43,18 @@ export function buildFileContext(file: TAbstractFile, app: App, now = new Date()
   let properties: Record<string, unknown> = {};
   let headings: string[] = [];
 
-  if (!isFolder && app.metadataCache) {
-    const cache = app.metadataCache.getFileCache(file as TFile);
+  if (file instanceof TFile && app.metadataCache) {
+    const cache = app.metadataCache.getFileCache(file);
     if (cache) {
       if (cache.tags) tags = cache.tags.map((t) => t.tag.replace(/^#/, ""));
       if (cache.frontmatter) {
-        properties = { ...cache.frontmatter };
+        // FrontMatterCache is typed with an `any` index signature; copy the
+        // values into an unknown-typed record so no `any` leaks into the context.
+        const fm: Record<string, unknown> = {};
+        for (const key of Object.keys(cache.frontmatter)) {
+          fm[key] = cache.frontmatter[key] as unknown;
+        }
+        properties = fm;
         const ft = cache.frontmatter.tags;
         if (Array.isArray(ft)) tags = tags.concat(ft.map(String));
         else if (typeof ft === "string") tags.push(ft);

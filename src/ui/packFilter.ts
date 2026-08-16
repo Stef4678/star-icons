@@ -85,7 +85,7 @@ export class PackFilterControl {
     this.popover = this.root.createDiv({ cls: "si-pack-filter-pop" });
     // Keep the popover inside the pane: open rightward when possible, else
     // leftward (right-anchored) so it's never clipped in a narrow sidebar.
-    const manager = this.root.closest(".si-manager") as HTMLElement | null;
+    const manager = this.root.closest<HTMLElement>(".si-manager");
     if (manager) fitPopoverToPane(this.popover, this.btn, manager);
 
     const head = this.popover.createDiv({ cls: "si-pf-head" });
@@ -100,14 +100,13 @@ export class PackFilterControl {
     this.searchInput = searchWrap.createEl("input", {
       cls: "si-search-input",
       attr: { placeholder: "Search packs…", spellcheck: "false" },
-    }) as HTMLInputElement;
+    });
     this.searchInput.addEventListener("input", () => {
       this.search = this.searchInput?.value ?? "";
       if (this.popover) this.renderPopover();
     });
 
-    const list = this.popover.createDiv({ cls: "si-pf-list" });
-    void list;
+    this.popover.createDiv({ cls: "si-pf-list" });
     this.renderPopover();
 
     document.addEventListener("mousedown", this.onDocMouseDown);
@@ -117,7 +116,7 @@ export class PackFilterControl {
 
   private renderPopover(): void {
     if (!this.popover) return;
-    const list = this.popover.querySelector(".si-pf-list") as HTMLElement | null;
+    const list = this.popover.querySelector<HTMLElement>(".si-pf-list");
     if (!list) return;
     list.empty();
     const q = this.search.trim().toLowerCase();
@@ -129,7 +128,7 @@ export class PackFilterControl {
       const row = list.createDiv({
         cls: "si-pf-row" + (this.opts.getCurrent() === pack ? " is-current" : "") + (enabled ? "" : " is-off"),
       });
-      const cb = row.createEl("input", { attr: { type: "checkbox" } }) as HTMLInputElement;
+      const cb = row.createEl("input", { attr: { type: "checkbox" } });
       cb.checked = enabled;
       cb.addEventListener("change", (ev) => {
         ev.stopPropagation();

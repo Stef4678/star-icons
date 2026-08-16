@@ -7,7 +7,7 @@
  * flat no matter how many packs are shipped).
  */
 
-import { addIcon, App, PluginManifest, normalizePath } from "obsidian";
+import { addIcon, App, normalizePath, PluginManifest, requestUrl } from "obsidian";
 import {
   ALL_ICONS,
   buildPackFromRaw,
@@ -83,9 +83,66 @@ export class IconStore {
     );
   }
 
+  /**
+   * Read a pack data file. The `packs/` folder ships with the repo and with
+   * manual installs, but Obsidian's community installer only downloads
+   * main.js, styles.css and manifest.json — so when the local file is missing
+   * the pack is fetched from the CDN (which serves the committed
+   * src/data/generated/*.json at the plugin's release tag) and cached into
+   * `packs/` for offline reuse on later loads.
+   */
   private async readPackFile(file: string): Promise<unknown> {
-    const text = await this.app.vault.adapter.read(this.packDataPath(file));
-    return JSON.parse(text);
+    try {
+      const text = await this.app.vault.adapter.read(this.packDataPath(file));
+      return JSON.parse(text);
+    } catch (localErr) {
+      try {
+        const text = await this.fetchPackFromCdn(file);
+        await this.cachePackFile(file, text);
+        return JSON.parse(text);
+      } catch (cdnErr) {
+        console.warn(`[Star Icons] pack data unavailable for "${file}"`, localErr, cdnErr);
+        throw new Error(`pack data unavailable: ${file}`);
+      }
+    }
+  }
+
+  /** jsDelivr URL for a pack data file at the plugin's release tag. */
+  private packCdnUrl(file: string): string {
+    const version = encodeURIComponent(this.getPluginManifest().version);
+    return `https://cdn.jsdelivr.net/gh/Stef4678/star-icons@${version}/src/data/generated/${encodeURIComponent(file)}`;
+  }
+
+  private async fetchPackFromCdn(file: string): Promise<string> {
+    const url = this.packCdnUrl(file);
+    const res = await requestUrl({ url, method: "GET" });
+    if (res.status === 200) return res.text;
+    // Release tags should match manifest.json's version, but a "v"-prefixed
+    // tag or an untagged dev build would 404 — fall back to the default
+    // branch so packs still load.
+    if (res.status === 404) {
+      const fallback = await requestUrl({
+        url: `https://cdn.jsdelivr.net/gh/Stef4678/star-icons@main/src/data/generated/${encodeURIComponent(file)}`,
+        method: "GET",
+      });
+      if (fallback.status === 200) return fallback.text;
+      throw new Error(`CDN returned HTTP ${fallback.status} for ${file}`);
+    }
+    throw new Error(`CDN returned HTTP ${res.status} for ${file}`);
+  }
+
+  /** Persist a downloaded pack into the plugin's packs/ folder. */
+  private async cachePackFile(file: string, content: string): Promise<void> {
+    const adapter = this.app.vault.adapter;
+    const dir = normalizePath(
+      `${this.app.vault.configDir}/plugins/${this.getPluginManifest().id}/packs`,
+    );
+    try {
+      await adapter.mkdir(dir);
+    } catch {
+      // packs/ already exists
+    }
+    await adapter.write(normalizePath(`${dir}/${file}`), content);
   }
 
   /** Load packs/manifest.json (versions + counts, no icon data). */

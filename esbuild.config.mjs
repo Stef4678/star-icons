@@ -1,12 +1,14 @@
 import esbuild from "esbuild";
 import process from "process";
 import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { builtinModules } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import builtins from "builtin-modules";
 
+// Static banner (no timestamp) so builds are reproducible — the released
+// main.js must be bit-identical to a fresh build from source.
 const banner = `/*
-Star Icons for Obsidian — built ${new Date().toISOString()}
+Star Icons for Obsidian — built from source
 MIT License
 */`;
 
@@ -46,7 +48,7 @@ const context = await esbuild.context({
     "@codemirror/state",
     "@codemirror/view",
     "@lezer/common",
-    ...builtins,
+    ...builtinModules,
   ],
   format: "cjs",
   target: "es2020",

@@ -60,8 +60,9 @@ export class StarIconsPlugin extends Plugin {
   }
 
   onunload(): void {
+    // Don't detach the manager's leaves: that would reset them to their
+    // default location on the next load even if the user moved them.
     this.applier.dispose();
-    this.app.workspace.detachLeavesOfType(ICON_MANAGER_VIEW_TYPE);
   }
 
   /* --- ribbon ------------------------------------------------------------- */
@@ -104,7 +105,7 @@ export class StarIconsPlugin extends Plugin {
     // Retry once the workspace is fully laid out (and once shortly after),
     // in case the ribbon wasn't ready during onload.
     this.app.workspace.onLayoutReady(() => attempt());
-    setTimeout(() => attempt(), 1500);
+    window.setTimeout(() => attempt(), 1500);
   }
 
   /* --- persistence ------------------------------------------------------- */
@@ -124,7 +125,7 @@ export class StarIconsPlugin extends Plugin {
   async openManager(): Promise<void> {
     const existing = this.app.workspace.getLeavesOfType(ICON_MANAGER_VIEW_TYPE);
     if (existing.length > 0) {
-      this.app.workspace.revealLeaf(existing[0]);
+      this.app.workspace.setActiveLeaf(existing[0]);
       return;
     }
     const leaf = this.app.workspace.getRightLeaf(false);
@@ -133,7 +134,7 @@ export class StarIconsPlugin extends Plugin {
       return;
     }
     await leaf.setViewState({ type: ICON_MANAGER_VIEW_TYPE, active: true });
-    this.app.workspace.revealLeaf(leaf);
+    this.app.workspace.setActiveLeaf(leaf);
   }
 
   async setOverrideForActiveFile(iconId: string): Promise<void> {
@@ -168,10 +169,10 @@ export class StarIconsPlugin extends Plugin {
     new IconPickerModal(this.app, () => this.store, {
       title: `Icon for “${file.name}”`,
       allowNone: hasOverride,
-      onPick: async (icon) => {
+      onPick: (icon) => {
         if (icon) this.settings.overrides[file.path] = icon.id;
         else delete this.settings.overrides[file.path];
-        await this.saveSettings();
+        void this.saveSettings();
         this.refreshIcons();
       },
     }).open();
@@ -270,10 +271,11 @@ export class StarIconsPlugin extends Plugin {
       callback: () => {
         new IconPickerModal(this.app, () => this.store, {
           title: "Copy an icon name",
-          onPick: async (icon) => {
+          onPick: (icon) => {
             if (!icon) return;
-            await navigator.clipboard.writeText(icon.id);
-            new Notice(`Copied ${icon.id}`);
+            void navigator.clipboard.writeText(icon.id).then(() => {
+              new Notice(`Copied ${icon.id}`);
+            });
           },
         }).open();
       },
@@ -294,11 +296,11 @@ export class StarIconsPlugin extends Plugin {
       editorCallback: (editor) => {
         new IconPickerModal(this.app, () => this.store, {
           title: "Insert an icon",
-          onPick: async (icon) => {
+          onPick: (icon) => {
             if (!icon) return;
-            const size = await promptSize(this.app, { title: `Insert “${icon.name}”` });
-            if (!size) return;
-            editor.replaceSelection(svgForClipboard(icon.svg, size));
+            void promptSize(this.app, { title: `Insert “${icon.name}”` }).then((size) => {
+              if (size) editor.replaceSelection(svgForClipboard(icon.svg, size));
+            });
           },
         }).open();
       },

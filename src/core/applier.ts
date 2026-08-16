@@ -168,11 +168,11 @@ export class IconApplier {
     this.leafProtoPatched = true;
     this.originalUpdateHeaderIcon = updateHeaderIcon;
 
-    const self = this;
+    const plugin = this.plugin;
     proto.updateHeaderIcon = function (this: WorkspaceLeaf) {
       const result = updateHeaderIcon.call(this);
       try {
-        self.applyToLeaf(this);
+        IconApplier.applyToLeaf(plugin, this);
       } catch {
         /* never let icon injection break Obsidian */
       }
@@ -180,22 +180,27 @@ export class IconApplier {
     };
   }
 
-  private applyToLeaf(leaf: WorkspaceLeaf): void {
-    if (!this.plugin.settings.tabIcons) return;
+  /**
+   * Apply the resolved icon to a single tab header. Static so the patched
+   * prototype method can call it without aliasing `this` (which would rebind
+   * to the leaf inside the patched function).
+   */
+  private static applyToLeaf(plugin: StarIconsPlugin, leaf: WorkspaceLeaf): void {
+    if (!plugin.settings.tabIcons) return;
     const view = leaf.view as { file?: TAbstractFile } | null;
     if (!view) return;
     const file = view.file;
     if (!(file instanceof TFile) && !(file instanceof TFolder)) return;
     const iconEl = (leaf as unknown as { tabHeaderInnerIconEl?: HTMLElement }).tabHeaderInnerIconEl;
     if (!iconEl) return;
-    const res = this.resolve(file);
+    const res = plugin.applier.resolve(file);
     if (res.iconId) {
       try {
         setIcon(iconEl, res.iconId);
       } catch {
         /* ignore */
       }
-      if (this.plugin.settings.showSourceTooltips) {
+      if (plugin.settings.showSourceTooltips) {
         iconEl.title = `${prettyIconName(res.iconId)} — ${res.detail}`;
       }
     }
@@ -214,7 +219,7 @@ export class IconApplier {
         // leave default icons alone
         continue;
       }
-      this.applyToLeaf(leaf);
+      IconApplier.applyToLeaf(this.plugin, leaf);
     }
   }
 
@@ -232,14 +237,14 @@ export class IconApplier {
       }
     }
 
-    const titleEl = view.contentEl.querySelector(".inline-title") as HTMLElement | null;
+    const titleEl = view.contentEl.querySelector<HTMLElement>(".inline-title");
     if (!titleEl) return;
 
     const inSource = view.getMode() === "source";
     const enabled = this.plugin.settings.inlineTitleIcons &&
       (!inSource || this.plugin.settings.inlineTitleEditMode);
 
-    let iconEl = titleEl.querySelector(":scope > .si-inline-icon") as HTMLElement | null;
+    let iconEl = titleEl.querySelector<HTMLElement>(":scope > .si-inline-icon");
     if (!enabled) {
       iconEl?.remove();
       return;

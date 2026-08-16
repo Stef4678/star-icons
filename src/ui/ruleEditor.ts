@@ -16,7 +16,6 @@ import {
   CONDITION_LABELS,
   OP_LABELS,
   Rule,
-  RuleAction,
   RuleCondition,
   StarIconsSettings,
 } from "../types";
@@ -51,7 +50,7 @@ export class RuleEditModal extends Modal {
   ) {
     super(app);
     this.rule = existing
-      ? JSON.parse(JSON.stringify(existing))
+      ? (JSON.parse(JSON.stringify(existing)) as Rule)
       : {
           id: uid("rule"),
           name: "New rule",
@@ -72,7 +71,7 @@ export class RuleEditModal extends Modal {
       cls: "si-rule-name",
       attr: { placeholder: "Rule name", spellcheck: "false" },
       text: this.rule.name,
-    }) as HTMLInputElement;
+    });
     nameInput.value = this.rule.name;
     nameInput.addEventListener("input", () => (this.rule.name = nameInput.value || "Untitled rule"));
 
@@ -216,14 +215,16 @@ export class RuleEditModal extends Modal {
       attr: { type: "button" },
     });
     save.createSpan({ text: "Save rule" });
-    save.addEventListener("click", async () => {
-      if (!this.rule.name.trim()) {
-        new Notice("Give the rule a name first.");
-        return;
-      }
-      await this.saveRule(this.rule);
-      new Notice(`Rule “${this.rule.name}” saved`);
-      this.close();
+    save.addEventListener("click", () => {
+      void (async () => {
+        if (!this.rule.name.trim()) {
+          new Notice("Give the rule a name first.");
+          return;
+        }
+        await this.saveRule(this.rule);
+        new Notice(`Rule “${this.rule.name}” saved`);
+        this.close();
+      })();
     });
   }
 
@@ -232,9 +233,10 @@ export class RuleEditModal extends Modal {
   }
 
   private buildCondRow(cond: RuleCondition, index: number, onRemove: () => void): HTMLElement {
-    const row = document.createElement("div");
-    row.className = "si-cond-row";
-    row.dataset.index = String(index);
+    const row = createEl("div", {
+      cls: "si-cond-row",
+      attr: { "data-index": String(index) },
+    });
 
     const typeSel = row.createEl("select", { cls: "dropdown si-cond-type" });
     for (const t of Object.keys(TYPE_OPS) as ConditionType[]) {
@@ -314,14 +316,14 @@ export class RuleEditModal extends Modal {
         const from = valueWrap.createEl("input", {
           cls: "si-text-input si-time-input",
           attr: { type: "time" },
-        }) as HTMLInputElement;
+        });
         from.value = cond.from ?? "";
         from.addEventListener("input", () => (cond.from = from.value));
         valueWrap.appendChild(from);
         const to = valueWrap.createEl("input", {
           cls: "si-text-input si-time-input",
           attr: { type: "time" },
-        }) as HTMLInputElement;
+        });
         to.value = cond.to ?? "";
         to.addEventListener("input", () => (cond.to = to.value));
         valueWrap.appendChild(to);
@@ -332,7 +334,7 @@ export class RuleEditModal extends Modal {
         const key = valueWrap.createEl("input", {
           cls: "si-text-input si-cond-key",
           attr: { placeholder: "property key (e.g. type)", spellcheck: "false" },
-        }) as HTMLInputElement;
+        });
         key.value = cond.key ?? "";
         key.addEventListener("input", () => (cond.key = key.value));
         valueWrap.appendChild(key);
@@ -340,7 +342,7 @@ export class RuleEditModal extends Modal {
           const val = valueWrap.createEl("input", {
             cls: "si-text-input",
             attr: { placeholder: "value", spellcheck: "false" },
-          }) as HTMLInputElement;
+          });
           val.value = cond.value ?? "";
           val.addEventListener("input", () => {
             cond.value = val.value;
@@ -357,7 +359,7 @@ export class RuleEditModal extends Modal {
           placeholder: cond.type === "extension" ? "md, pdf, png (comma separated)" : "value",
           spellcheck: "false",
         },
-      }) as HTMLInputElement;
+      });
       valueInput.value = cond.value ?? "";
       valueInput.addEventListener("input", () => {
         cond.value = valueInput.value;

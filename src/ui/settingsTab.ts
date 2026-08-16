@@ -10,8 +10,8 @@ import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
 import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS, DEFAULT_REPORT_URL } from "../types";
 import { mergeSettings } from "../settings";
-import { downloadJson, normalizeExt, uid } from "../utils";
-import { iconTile, makeSortable, renderIcon } from "./components";
+import { downloadJson, normalizeExt } from "../utils";
+import { makeSortable, renderIcon } from "./components";
 import { IconPickerModal } from "./iconPicker";
 import { RuleEditModal } from "./ruleEditor";
 import { confirmDialog } from "./promptModal";
@@ -21,9 +21,10 @@ export function summarizeRule(rule: Rule): string {
   if (rule.conditions.length === 0) return "matches everything";
   const parts = rule.conditions.map((c) => {
     switch (c.type) {
-      case "time":
+      case "time": {
         const days = c.days?.length ? c.days.map((d) => "SMTWTFS"[d]).join("") + " " : "";
         return `time ${days}${c.from ?? "…"}–${c.to ?? "…"}`;
+      }
       case "property":
         return `property ${c.key} ${c.op} ${c.value ?? ""}`.trim();
       default:
@@ -133,7 +134,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName("Icon packs").setHeading();
     containerEl.createDiv({
       cls: "setting-item-description",
-      text: `${this.plugin.store.totalCount().toLocaleString()} icons available — packs load on demand when enabled, no network needed.`,
+      text: `${this.plugin.store.totalCount().toLocaleString()} icons available — packs load on demand when enabled (downloaded once if missing, then cached locally).`,
     });
 
     const descriptions: Partial<Record<PackId, string>> = {
@@ -236,7 +237,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
       const input = addRow.createEl("input", {
         cls: "si-text-input",
         attr: { placeholder: "ext (e.g. md)", spellcheck: "false" },
-      }) as HTMLInputElement;
+      });
       const pick = addRow.createEl("button", { cls: "si-btn", attr: { type: "button" } });
       pick.createSpan({ text: "Add" });
       pick.addEventListener("click", () => {
@@ -296,11 +297,13 @@ export class StarIconsSettingTab extends PluginSettingTab {
     if (ext !== "*") {
       const remove = row.createEl("button", { cls: "si-icon-btn", attr: { type: "button" } });
       setIcon(remove, "x");
-      remove.addEventListener("click", async () => {
-        delete s.fileTypeDefaults[ext];
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-        this.display();
+      remove.addEventListener("click", () => {
+        void (async () => {
+          delete s.fileTypeDefaults[ext];
+          await this.plugin.saveSettings();
+          this.plugin.refreshIcons();
+          this.display();
+        })();
       });
     }
   }
@@ -335,11 +338,13 @@ export class StarIconsSettingTab extends PluginSettingTab {
           cls: "si-toggle" + (rule.enabled ? " is-on" : ""),
           attr: { type: "button", "aria-label": "Enable rule" },
         });
-        toggle.addEventListener("click", async () => {
-          rule.enabled = !rule.enabled;
-          await this.plugin.saveSettings();
-          this.plugin.refreshIcons();
-          render();
+        toggle.addEventListener("click", () => {
+          void (async () => {
+            rule.enabled = !rule.enabled;
+            await this.plugin.saveSettings();
+            this.plugin.refreshIcons();
+            render();
+          })();
         });
 
         const body = row.createDiv({ cls: "si-rule-body" });
@@ -371,11 +376,13 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
         const remove = row.createEl("button", { cls: "si-icon-btn", attr: { type: "button" } });
         setIcon(remove, "trash");
-        remove.addEventListener("click", async () => {
-          s.rules = s.rules.filter((x) => x.id !== rule.id);
-          await this.plugin.saveSettings();
-          this.plugin.refreshIcons();
-          render();
+        remove.addEventListener("click", () => {
+          void (async () => {
+            s.rules = s.rules.filter((x) => x.id !== rule.id);
+            await this.plugin.saveSettings();
+            this.plugin.refreshIcons();
+            render();
+          })();
         });
 
         row.appendChild(handle);
@@ -387,12 +394,14 @@ export class StarIconsSettingTab extends PluginSettingTab {
       });
 
       makeSortable(listEl, {
-        onReorder: async (from, to) => {
-          const [moved] = s.rules.splice(from, 1);
-          s.rules.splice(to, 0, moved);
-          await this.plugin.saveSettings();
-          this.plugin.refreshIcons();
-          render();
+        onReorder: (from, to) => {
+          void (async () => {
+            const [moved] = s.rules.splice(from, 1);
+            s.rules.splice(to, 0, moved);
+            await this.plugin.saveSettings();
+            this.plugin.refreshIcons();
+            render();
+          })();
         },
       });
     };
@@ -459,22 +468,22 @@ export class StarIconsSettingTab extends PluginSettingTab {
       .setDesc("Restore from an exported JSON file.")
       .addButton((b) => {
         b.setButtonText("Import JSON").onClick(() => {
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "application/json";
-          input.addEventListener("change", async () => {
-            const file = input.files?.[0];
-            if (!file) return;
-            try {
-              const text = await file.text();
-              this.plugin.settings = mergeSettings(JSON.parse(text));
-              await this.plugin.saveSettings();
-              this.plugin.refreshIcons();
-              this.display();
-              new Notice("Settings imported");
-            } catch {
-              new Notice("Could not parse that JSON file");
-            }
+          const input = createEl("input", { attr: { type: "file", accept: "application/json" } });
+          input.addEventListener("change", () => {
+            void (async () => {
+              const file = input.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                this.plugin.settings = mergeSettings(JSON.parse(text));
+                await this.plugin.saveSettings();
+                this.plugin.refreshIcons();
+                this.display();
+                new Notice("Settings imported");
+              } catch {
+                new Notice("Could not parse that JSON file");
+              }
+            })();
           });
           input.click();
         });
