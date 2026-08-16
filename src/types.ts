@@ -125,6 +125,15 @@ export interface Collection {
   createdAt: number;
 }
 
+/** A user-imported icon (the "My Icons" pack). */
+export interface UserIcon {
+  /** Unique slug used in the icon id ("si-user-<name>"). */
+  name: string;
+  /** Full svg markup string. */
+  svg: string;
+  tags?: string[];
+}
+
 export type ResolutionSource =
   | "override"
   | "rule"
@@ -168,6 +177,8 @@ export interface StarIconsSettings {
   /** Icon id -> user-added tags. */
   iconTags: Record<string, string[]>;
   recentIconIds: string[];
+  /** User-imported icons (the "My Icons" pack). */
+  userIcons: UserIcon[];
 
   /* --- UI preferences --- */
   lastPackFilter: PackId | "all";
@@ -235,6 +246,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
   collections: [],
   iconTags: {},
   recentIconIds: [],
+  userIcons: [],
 
   lastPackFilter: "all",
   iconGridDensity: "comfortable",
@@ -280,6 +292,7 @@ export const PACK_LABELS: Record<PackId, string> = {
   animals: "Animals",
   nature: "Nature & Flowers",
   science: "Science",
+  user: "My Icons",
 };
 
 /** One sample icon name per pack (used for previews; missing ones are skipped). */

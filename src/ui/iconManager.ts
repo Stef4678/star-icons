@@ -13,7 +13,7 @@ import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON }
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
-import { promptText, confirmDialog } from "./promptModal";
+import { promptText, confirmDialog, promptTextArea } from "./promptModal";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -143,6 +143,18 @@ export class IconManagerView extends ItemView {
     });
     this.collectionFilterControl.mount(toolbar);
     const toolbarRight = toolbar.createDiv({ cls: "si-manager-toolbar-right" });
+    const addIconBtn = toolbarRight.createEl("button", {
+      cls: "si-btn si-btn-small",
+      attr: { type: "button", "aria-label": "Add your own icon" },
+    });
+    setIcon(addIconBtn, "upload");
+    addIconBtn.createSpan({ text: "Add icon" });
+    addIconBtn.addEventListener("click", (ev) => {
+      new Menu()
+        .addItem((i) => i.setTitle("Import SVG file(s)…").setIcon("upload").onClick(() => this.importSvgFiles()))
+        .addItem((i) => i.setTitle("Paste SVG code…").setIcon("clipboard").onClick(() => void this.pasteSvg()))
+        .showAtMouseEvent(ev);
+    });
     const sideToggle = toolbarRight.createEl("button", {
       cls: "si-btn si-btn-small si-side-toggle",
       attr: { type: "button", "aria-label": "Toggle collections panel" },
@@ -333,6 +345,23 @@ export class IconManagerView extends ItemView {
                   danger: true,
                 });
                 if (ok) await store.deleteUserTag(tag);
+              }),
+          )
+          .addSeparator()
+          .addItem((i) =>
+            i
+              .setTitle("Delete ALL tags")
+              .setIcon("trash")
+              .onClick(async () => {
+                const ok = await confirmDialog(this.app, {
+                  title: "Delete all user tags?",
+                  message: "Every custom tag will be removed from all icons.",
+                  confirmLabel: "Delete all",
+                  danger: true,
+                });
+                if (!ok) return;
+                this.filter.tag = null;
+                await store.clearAllUserTags();
               }),
           )
           .showAtMouseEvent(ev);
@@ -526,6 +555,11 @@ export class IconManagerView extends ItemView {
           .addItem((item) => {
             item.setTitle("Copy SVG").onClick(() => void navigator.clipboard.writeText(i.svg));
           })
+          .addItem((item) => {
+            if (i.pack === "user") {
+              item.setTitle("Delete icon").setIcon("trash").onClick(() => void this.deleteUserIcon(i));
+            }
+          })
           .showAtMouseEvent(ev);
       },
     });
@@ -610,6 +644,12 @@ export class IconManagerView extends ItemView {
     applyBtn.addEventListener("click", () => {
       void this.plugin.setOverrideForActiveFile(id);
     });
+    if (def.pack === "user") {
+      const deleteBtn = actions.createEl("button", { cls: "si-btn is-danger", attr: { type: "button" } });
+      setIcon(deleteBtn, "trash");
+      deleteBtn.createSpan({ text: "Delete icon" });
+      deleteBtn.addEventListener("click", () => void this.deleteUserIcon(def));
+    }
 
     const copyRow = detail.createDiv({ cls: "si-detail-copy" });
     const copyName = copyRow.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
@@ -665,5 +705,52 @@ export class IconManagerView extends ItemView {
   private async promptText(placeholder: string, fallback: string): Promise<string | null> {
     // Obsidian blocks window.prompt — use a proper modal instead.
     return promptText(this.app, { title: placeholder, initial: fallback });
+  }
+
+  /* --- user icons ("My Icons") --------------------------------------------- */
+
+  private importSvgFiles(): void {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".svg,image/svg+xml";
+    input.multiple = true;
+    input.addEventListener("change", () => {
+      const files = Array.from(input.files ?? []);
+      if (!files.length) return;
+      void (async () => {
+        const entries = await Promise.all(
+          files.map(async (f) => ({
+            name: f.name.replace(/\.svg$/i, ""),
+            svg: await f.text(),
+          })),
+        );
+        const added = await this.plugin.store.addUserIcons(entries);
+        new Notice(`Added ${added} icon${added === 1 ? "" : "s"} to My Icons`);
+      })();
+    });
+    input.click();
+  }
+
+  private async pasteSvg(): Promise<void> {
+    const svg = await promptTextArea(this.app, {
+      title: "Paste SVG code",
+      placeholder: "<svg …>…</svg>  (Ctrl/Cmd+Enter to add)",
+      okLabel: "Add icon",
+    });
+    if (!svg) return;
+    const added = await this.plugin.store.addUserIcons([{ name: "pasted-icon", svg }]);
+    new Notice(`Added ${added} icon${added === 1 ? "" : "s"} to My Icons`);
+  }
+
+  private async deleteUserIcon(def: IconDef): Promise<void> {
+    const ok = await confirmDialog(this.app, {
+      title: `Delete “${def.name}”?`,
+      message: "This removes your custom icon. This cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
+    await this.plugin.store.removeUserIcon(def.id);
+    if (this.selectedId === def.id) this.selectedId = null;
   }
 }

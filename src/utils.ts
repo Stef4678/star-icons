@@ -153,3 +153,19 @@ export function clamp(n: number, min: number, max: number): number {
 export function normalizeExt(ext: string): string {
   return ext.trim().toLowerCase().replace(/^\./, "");
 }
+
+/** Slugify a user-provided icon name ("My Icon!" -> "my-icon"). */
+export function slugifyName(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Ensure user-provided SVG text is a full <svg> element. */
+export function ensureSvg(text: string): string {
+  const t = text.trim();
+  if (/<svg[\s>]/i.test(t)) return t;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${t}</svg>`;
+}

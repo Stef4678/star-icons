@@ -469,6 +469,33 @@
   border-color: transparent;
 }
 
+.si-btn.is-danger {
+  border-color: color-mix(in srgb, var(--color-red, #e93147) 45%, transparent);
+  color: var(--color-red, #e93147);
+}
+
+.si-btn.is-danger:hover {
+  background: color-mix(in srgb, var(--color-red, #e93147) 12%, transparent);
+}
+
+.si-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 10px 12px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  resize: vertical;
+}
+
+.si-textarea:focus {
+  border-color: var(--si-gold);
+  outline: none;
+}
+
 .si-btn-small {
   padding: 3px 10px;
   font-size: 12px;

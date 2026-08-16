@@ -11,17 +11,19 @@ import { addIcon, App, PluginManifest, normalizePath } from "obsidian";
 import {
   ALL_ICONS,
   buildPackFromRaw,
+  buildUserIconDefs,
   EXTERNAL_PACKS,
   getIcon,
   ICONS_BY_PACK,
   isCorePack,
   isPackMounted,
   mountPack,
+  mountUserPack,
   PACK_VERSIONS,
   RawPack,
 } from "../data/icons";
-import { ALL_PACKS, Collection, IconDef, PackId, StarIconsSettings } from "../types";
-import { searchIcons, uid } from "../utils";
+import { ALL_PACKS, Collection, IconDef, PackId, StarIconsSettings, UserIcon } from "../types";
+import { ensureSvg, searchIcons, slugifyName, uid } from "../utils";
 
 interface PackManifestEntry {
   version: string;
@@ -171,10 +173,11 @@ export class IconStore {
   /** Total icons across enabled packs (from the manifest; no pack loading). */
   totalCount(): number {
     const s = this.getSettingsFn();
-    return ALL_PACKS.reduce(
-      (sum, p) => sum + (s.enabledPacks[p] !== false ? this.getPackCount(p) : 0),
+    const sum = ALL_PACKS.reduce(
+      (acc, p) => acc + (s.enabledPacks[p] !== false ? this.getPackCount(p) : 0),
       0,
     );
+    return sum + s.userIcons.length;
   }
 
   isPackLoaded(pack: PackId): boolean {
@@ -205,6 +208,55 @@ export class IconStore {
     let icons = this.availableIcons();
     if (packFilter !== "all") icons = icons.filter((i) => i.pack === packFilter);
     return searchIcons(icons, query, limit);
+  }
+
+  /* --- user icons ("My Icons" pack) --------------------------------------- */
+
+  userIcons(): UserIcon[] {
+    return this.getSettingsFn().userIcons;
+  }
+
+  /** Register + mount the user icons from settings (called at startup). */
+  mountUserIcons(): void {
+    const defs = buildUserIconDefs(this.userIcons());
+    for (const d of defs) {
+      try {
+        addIcon(d.id, d.svg);
+      } catch {
+        /* skip duplicates */
+      }
+    }
+    mountUserPack(defs);
+  }
+
+  /** Import one or more user SVGs; returns how many were added. */
+  async addUserIcons(entries: { name: string; svg: string }[]): Promise<number> {
+    if (!entries.length) return 0;
+    let added = 0;
+    await this.mutate((s) => {
+      const existing = new Set(s.userIcons.map((u) => u.name));
+      for (const e of entries) {
+        let name = slugifyName(e.name);
+        if (!name) name = "icon";
+        let candidate = name;
+        let n = 2;
+        while (existing.has(candidate)) candidate = `${name}-${n++}`;
+        existing.add(candidate);
+        s.userIcons.push({ name: candidate, svg: ensureSvg(e.svg) });
+        added++;
+      }
+    });
+    this.mountUserIcons();
+    return added;
+  }
+
+  /** Delete one user icon by its icon id ("si-user-<name>"). */
+  async removeUserIcon(id: string): Promise<void> {
+    const name = id.replace(/^si-user-/, "");
+    await this.mutate((s) => {
+      s.userIcons = s.userIcons.filter((u) => u.name !== name);
+    });
+    this.mountUserIcons();
   }
 
   /* --- favorites --- */

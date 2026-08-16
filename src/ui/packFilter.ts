@@ -162,6 +162,11 @@ export class PackFilterControl {
       for (const pack of ALL_PACKS) renderRow(pack);
     } else {
       renderAll();
+      const userCount = this.opts.store.userIcons().length;
+      if (userCount > 0) {
+        list.createDiv({ cls: "si-pf-group-title", text: `My icons (${userCount})` });
+        renderRow("user");
+      }
       for (const group of PACK_GROUPS) {
         const title = list.createDiv({ cls: "si-pf-group-title", text: group.title });
         void title;

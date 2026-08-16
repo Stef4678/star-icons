@@ -88,3 +88,48 @@ export function confirmDialog(app: App, opts: ConfirmOptions): Promise<boolean> 
     modal.open();
   });
 }
+
+export interface TextAreaOptions {
+  title: string;
+  placeholder?: string;
+  okLabel?: string;
+}
+
+/** Ask for a multi-line block of text (e.g. pasted SVG code). */
+export function promptTextArea(app: App, opts: TextAreaOptions): Promise<string | null> {
+  return new Promise((resolve) => {
+    const modal = new Modal(app);
+    modal.titleEl.setText(opts.title);
+    let value = "";
+
+    const textarea = modal.contentEl.createEl("textarea", {
+      cls: "si-textarea",
+      attr: { placeholder: opts.placeholder ?? "", spellcheck: "false", rows: "8" },
+    }) as HTMLTextAreaElement;
+    textarea.addEventListener("input", () => (value = textarea.value));
+    textarea.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) {
+        ev.preventDefault();
+        modal.close();
+        resolve(value.trim() || null);
+      }
+    });
+    window.setTimeout(() => textarea.focus(), 30);
+
+    new Setting(modal.contentEl)
+      .addButton((b) =>
+        b.setButtonText("Cancel").onClick(() => {
+          modal.close();
+          resolve(null);
+        }),
+      )
+      .addButton((b) =>
+        b.setButtonText(opts.okLabel ?? "OK").setCta().onClick(() => {
+          modal.close();
+          resolve(value.trim() || null);
+        }),
+      );
+
+    modal.open();
+  });
+}

@@ -9,6 +9,7 @@ import { Menu, Notice, Plugin, TAbstractFile, TFile, TFolder, setIcon } from "ob
 import { IconApplier, prettyIconName } from "./core/applier";
 import { IconStore } from "./core/iconStore";
 import { brandIconId } from "./ui/components";
+import { confirmDialog } from "./ui/promptModal";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
@@ -31,6 +32,7 @@ export class StarIconsPlugin extends Plugin {
       () => this.saveSettings(),
     );
     this.store.registerIcons();
+    this.store.mountUserIcons();
     this.applier = new IconApplier(this, this.app);
 
     this.registerView(ICON_MANAGER_VIEW_TYPE, (leaf) => new IconManagerView(leaf, this));
@@ -234,6 +236,20 @@ export class StarIconsPlugin extends Plugin {
       callback: () => {
         this.refreshIcons();
         new Notice("Icons refreshed");
+      },
+    });
+
+    this.addCommand({
+      id: "delete-all-user-tags",
+      name: "Delete all user tags",
+      callback: async () => {
+        const ok = await confirmDialog(this.app, {
+          title: "Delete all user tags?",
+          message: "Every custom tag will be removed from all icons.",
+          confirmLabel: "Delete all",
+          danger: true,
+        });
+        if (ok) await this.store.clearAllUserTags();
       },
     });
   }

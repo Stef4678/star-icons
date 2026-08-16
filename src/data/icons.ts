@@ -194,3 +194,22 @@ export function isCorePack(pack: PackId): boolean {
 export function isPackMounted(pack: PackId): boolean {
   return !!ICONS_BY_PACK[pack];
 }
+
+/** Build IconDefs for the user-imported "My Icons" pack. */
+export function buildUserIconDefs(
+  icons: { name: string; svg: string; tags?: string[] }[],
+): IconDef[] {
+  return icons.map((u) => ({
+    id: iconId("user", u.name),
+    pack: "user",
+    name: u.name,
+    tags: Array.from(new Set(["user", ...(u.tags ?? []), ...u.name.split(/[-_]/)])),
+    svg: u.svg,
+  }));
+}
+
+/** Replace the mounted "user" pack with the given defs (empty = unmount). */
+export function mountUserPack(defs: IconDef[]): void {
+  unmountPack("user");
+  if (defs.length) mountPack("user", defs);
+}

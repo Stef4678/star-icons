@@ -245,6 +245,19 @@ try {
   }
   console.log("OK: disabling a pack updates the total count");
 
+  // User icons: add -> mounted -> remove -> unmounted.
+  const added = await plugin.store.addUserIcons([{ name: "my-logo", svg: "<svg viewBox=\"0 0 24 24\"><path d=\"M0 0h24v24H0z\"/></svg>" }]);
+  if (added !== 1 || !plugin.store.isPackLoaded("user")) {
+    console.error("FAIL: user icon was not added/mounted");
+    process.exit(1);
+  }
+  await plugin.store.removeUserIcon("si-user-my-logo");
+  if (plugin.store.isPackLoaded("user")) {
+    console.error("FAIL: user icon was not removed");
+    process.exit(1);
+  }
+  console.log("OK: user icons add/remove cycle works");
+
   // Exercise the icon application paths with realistic fixtures.
   plugin.settings.overrides["note.md"] = "si-lucide-home";
   plugin.refreshIcons();
