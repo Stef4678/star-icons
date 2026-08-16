@@ -14,6 +14,7 @@ import { downloadJson, normalizeExt, uid } from "../utils";
 import { iconTile, makeSortable, renderIcon } from "./components";
 import { IconPickerModal } from "./iconPicker";
 import { RuleEditModal } from "./ruleEditor";
+import { confirmDialog } from "./promptModal";
 
 export function summarizeRule(rule: Rule): string {
   if (rule.conditions.length === 0) return "matches everything";
@@ -483,7 +484,12 @@ export class StarIconsSettingTab extends PluginSettingTab {
       .setDesc("Restore factory defaults (favorites, rules, collections…).")
       .addButton((b) =>
         b.setButtonText("Reset all").setWarning().onClick(async () => {
-          const confirmed = window.confirm("Reset all Star Icons settings? This cannot be undone.");
+          const confirmed = await confirmDialog(this.app, {
+            title: "Reset all Star Icons settings?",
+            message: "This cannot be undone.",
+            confirmLabel: "Reset all",
+            danger: true,
+          });
           if (!confirmed) return;
           this.plugin.settings = mergeSettings(undefined);
           await this.plugin.saveSettings();

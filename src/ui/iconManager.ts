@@ -13,6 +13,7 @@ import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON }
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
+import { promptText } from "./promptModal";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -602,7 +603,7 @@ export class IconManagerView extends ItemView {
   }
 
   private async promptText(placeholder: string, fallback: string): Promise<string | null> {
-    const value = window.prompt(placeholder, fallback);
-    return value?.trim() ? value.trim() : null;
+    // Obsidian blocks window.prompt — use a proper modal instead.
+    return promptText(this.app, { title: placeholder, initial: fallback });
   }
 }
