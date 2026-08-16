@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <rect width="1200" height="750" fill="#1e1e2e"/>
+  <rect x="140" y="110" width="920" height="560" rx="18" fill="#2a2a3c" stroke="#3a3a55" stroke-width="2"/>
+  <rect x="140" y="110" width="920" height="56" rx="18" fill="#33334d"/>
+  <rect x="176" y="134" width="320" height="16" rx="8" fill="#f5b301" opacity="0.9"/>
+  <rect x="176" y="196" width="848" height="44" rx="22" fill="#3a3a55"/>
+  <circle cx="212" cy="218" r="10" fill="#f5b301"/>
+  <rect x="232" y="212" width="340" height="12" rx="6" fill="#4a4a6a"/>
+  <g>
+    <rect x="176" y="270" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="212" y="306" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="312" y="270" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="348" y="306" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="448" y="270" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="484" y="306" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="584" y="270" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="620" y="306" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="720" y="270" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="756" y="306" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="176" y="390" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="212" y="426" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="312" y="390" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="348" y="426" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="448" y="390" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="484" y="426" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="584" y="390" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="620" y="426" width="48" height="28" rx="4" fill="#f5b301"/>
+    <rect x="720" y="390" width="120" height="100" rx="12" fill="#3a3a55"/>
+    <rect x="756" y="426" width="48" height="28" rx="4" fill="#f5b301"/>
+  </g>
+  <text x="640" y="580" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="34" fill="#c8c8dd" font-weight="600">Icon picker — screenshot placeholder</text>
+  <text x="640" y="622" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="20" fill="#8a8aa5">Replace assets/screenshots/picker.svg with your capture</text>
+</svg>

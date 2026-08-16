@@ -12,6 +12,25 @@ Star Icons takes a third path in the icon-plugin landscape:
 
 ---
 
+## 📸 Screenshots
+
+> The images below are placeholders — replace `assets/screenshots/*.svg` with
+> real captures (PNG preferred) and the README updates automatically. To add
+> one: take the screenshot in Obsidian, save it into `assets/screenshots/`,
+> and update the link below.
+
+| | |
+|---|---|
+| <img src="assets/screenshots/manager.svg" alt="Icon Manager" width="520"/> | <img src="assets/screenshots/picker.svg" alt="Icon picker" width="520"/> |
+| **Icon Manager** — the collection hub | **Icon picker** — search & apply |
+
+| | |
+|---|---|
+| <img src="assets/screenshots/rules.svg" alt="Rule editor" width="520"/> | <img src="assets/screenshots/settings.svg" alt="Settings" width="520"/> |
+| **Rule editor** — live preview | **Settings** — packs, file types, data |
+
+---
+
 ## ✨ Features
 
 ### 🗂️ Icon Collection Manager (the hub)

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <rect width="1200" height="750" fill="#1e1e2e"/>
+  <rect x="150" y="100" width="900" height="600" rx="18" fill="#2a2a3c" stroke="#3a3a55" stroke-width="2"/>
+  <rect x="150" y="100" width="900" height="56" rx="18" fill="#33334d"/>
+  <rect x="186" y="124" width="260" height="16" rx="8" fill="#f5b301" opacity="0.9"/>
+  <rect x="186" y="190" width="380" height="40" rx="10" fill="#3a3a55"/>
+  <rect x="210" y="204" width="180" height="12" rx="6" fill="#4a4a6a"/>
+  <g>
+    <rect x="186" y="260" width="828" height="70" rx="10" fill="#3a3a55"/>
+    <circle cx="232" cy="295" r="12" fill="#f5b301"/>
+    <rect x="264" y="288" width="300" height="14" rx="7" fill="#c8c8dd"/>
+    <rect x="600" y="288" width="220" height="12" rx="6" fill="#4a4a6a"/>
+    <circle cx="980" cy="295" r="10" fill="#4a4a6a"/>
+    <rect x="186" y="346" width="828" height="70" rx="10" fill="#3a3a55"/>
+    <circle cx="232" cy="381" r="12" fill="#f5b301"/>
+    <rect x="264" y="374" width="250" height="14" rx="7" fill="#c8c8dd"/>
+    <rect x="600" y="374" width="200" height="12" rx="6" fill="#4a4a6a"/>
+    <circle cx="980" cy="381" r="10" fill="#4a4a6a"/>
+    <rect x="186" y="432" width="828" height="70" rx="10" fill="#3a3a55"/>
+    <circle cx="232" cy="467" r="12" fill="#f5b301"/>
+    <rect x="264" y="460" width="280" height="14" rx="7" fill="#c8c8dd"/>
+    <rect x="600" y="460" width="230" height="12" rx="6" fill="#4a4a6a"/>
+    <circle cx="980" cy="467" r="10" fill="#4a4a6a"/>
+  </g>
+  <text x="640" y="560" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="34" fill="#c8c8dd" font-weight="600">Rule editor — screenshot placeholder</text>
+  <text x="640" y="602" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="20" fill="#8a8aa5">Replace assets/screenshots/rules.svg with your capture</text>
+</svg>
