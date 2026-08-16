@@ -55,7 +55,7 @@ export function buildFileContext(file: TAbstractFile, app: App, now = new Date()
           fm[key] = cache.frontmatter[key] as unknown;
         }
         properties = fm;
-        const ft = cache.frontmatter.tags;
+        const ft = cache.frontmatter.tags as unknown;
         if (Array.isArray(ft)) tags = tags.concat(ft.map(String));
         else if (typeof ft === "string") tags.push(ft);
       }

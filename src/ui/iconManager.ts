@@ -633,7 +633,7 @@ export class IconManagerView extends ItemView {
       detail.addClass("is-empty");
       const hint = detail.createDiv({ cls: "si-detail-hint" });
       renderIcon(hint, brandIconId(), 40);
-      hint.createEl("div", { cls: "si-detail-hint-text", text: "Select an icon" });
+      hint.createDiv({ cls: "si-detail-hint-text", text: "Select an icon" });
       return;
     }
     detail.removeClass("is-empty");

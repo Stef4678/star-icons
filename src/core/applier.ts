@@ -255,7 +255,7 @@ export class IconApplier {
       return;
     }
     if (!iconEl) {
-      iconEl = titleEl.createEl("span", { cls: "si-inline-icon" });
+      iconEl = titleEl.createSpan({ cls: "si-inline-icon" });
       iconEl.setAttribute("contenteditable", "false");
       titleEl.prepend(iconEl);
     }

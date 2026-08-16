@@ -233,7 +233,7 @@ export class RuleEditModal extends Modal {
   }
 
   private buildCondRow(cond: RuleCondition, index: number, onRemove: () => void): HTMLElement {
-    const row = createEl("div", {
+    const row = createDiv({
       cls: "si-cond-row",
       attr: { "data-index": String(index) },
     });

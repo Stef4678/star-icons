@@ -79,10 +79,10 @@ export function packOf(id: string): string {
 }
 
 export function emptyState(text: string, hint = ""): HTMLElement {
-  const el = createEl("div", { cls: "si-empty" });
-  el.createEl("div", { cls: "si-empty-icon" }).textContent = "✦";
-  el.createEl("div", { cls: "si-empty-text", text });
-  if (hint) el.createEl("div", { cls: "si-empty-hint", text: hint });
+  const el = createDiv({ cls: "si-empty" });
+  el.createDiv({ cls: "si-empty-icon" }).textContent = "✦";
+  el.createDiv({ cls: "si-empty-text", text });
+  if (hint) el.createDiv({ cls: "si-empty-hint", text: hint });
   return el;
 }
 
@@ -130,7 +130,7 @@ export function chipRow(
   onChange: (value: string) => void,
   cls = "si-chips",
 ): HTMLElement {
-  const row = createEl("div", { cls });
+  const row = createDiv({ cls });
   for (const opt of options) {
     const chip = createEl("button", {
       cls: "si-chip" + (opt.value === current ? " is-active" : ""),
@@ -152,7 +152,7 @@ export function segmentedControl(
   current: string,
   onChange: (value: string) => void,
 ): HTMLElement {
-  const wrap = createEl("div", { cls: "si-segmented" });
+  const wrap = createDiv({ cls: "si-segmented" });
   const buttons: HTMLButtonElement[] = [];
   for (const opt of options) {
     const btn = createEl("button", {

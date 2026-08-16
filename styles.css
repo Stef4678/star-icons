@@ -1631,3 +1631,13 @@
     transition: none;
   }
 }
+
+/* --- declarative settings: full-width rows hosting custom sections -------- */
+
+.setting-item.si-section {
+  flex-wrap: wrap;
+}
+
+.si-settings-box {
+  flex-basis: 100%;
+}

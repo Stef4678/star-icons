@@ -1,11 +1,20 @@
 /**
  * Star Icons — settings tab.
  *
- * General toggles, pack management, file-type defaults, the draggable rules
- * list, collections overview and data export/import/reset.
+ * Uses Obsidian's declarative settings API (1.13.0+): getSettingDefinitions()
+ * returns searchable definitions, with `render` callbacks hosting the complex
+ * sections (pack list, file-type rows, draggable rules, collections, data).
  */
 
-import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
+import {
+  App,
+  Notice,
+  PluginSettingTab,
+  Setting,
+  SettingDefinition,
+  SettingDefinitionItem,
+  setIcon,
+} from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
 import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS, DEFAULT_REPORT_URL } from "../types";
@@ -35,6 +44,48 @@ export function summarizeRule(rule: Rule): string {
 }
 
 export class StarIconsSettingTab extends PluginSettingTab {
+  private packDescriptions: Partial<Record<PackId, string>> = {
+    lucide: "The de-facto Obsidian icon set. 2,025 icons, official tags.",
+    material: "Google Material Symbols — full rounded set (base + fill variants).",
+    "material-outlined": "The same Material set in the outlined weight.",
+    "material-sharp": "The same Material set in the sharp weight.",
+    star: "Original hand-crafted star icons — the Star Icons identity.",
+    tabler: "Tabler outline — 5,130 clean, modern icons with categories.",
+    "tabler-filled": "Tabler filled — 1,054 solid versions of the outline set.",
+    unicons: "Iconscout Unicons (line style) — 1,215 playful icons.",
+    "unicons-solid": "Unicons in the solid style.",
+    "unicons-monochrome": "Unicons in the monochrome style.",
+    "unicons-thinline": "Unicons in the thinline style.",
+    remix: "Remix Icon — 3,078 icons (line + fill) across 20 categories.",
+    phosphor: "Phosphor (regular weight) — 1,512 geometric icons.",
+    "phosphor-bold": "Phosphor in the bold weight.",
+    "phosphor-fill": "Phosphor in the fill weight.",
+    "phosphor-light": "Phosphor in the light weight.",
+    "phosphor-thin": "Phosphor in the thin weight.",
+    "phosphor-duotone": "Phosphor in the duotone weight (two-tone).",
+    bootstrap: "Bootstrap Icons — 2,078 crisp, rounded icons.",
+    boxicons: "Boxicons — 814 filled, rounded web icons.",
+    "boxicons-solid": "Boxicons in the solid style.",
+    "boxicons-logos": "Boxicons brand logos.",
+    heroicons: "Heroicons — 324 outline icons by the Tailwind team.",
+    "heroicons-solid": "Heroicons in the solid style.",
+    fontawesome: "Font Awesome Free — 2,274 solid + regular icons (CC BY 4.0).",
+    "simple-icons": "Simple Icons — 3,453 brand logos (CC0).",
+    ionicons: "Ionicons — 1,357 icons (base + outline + sharp).",
+    antd: "Ant Design Icons — outlined/filled/twotone variants.",
+    "line-awesome": "Line Awesome — 1,544 line-style icons (includes brands).",
+    eva: "Eva Icons — 490 outline + fill icons.",
+    octicons: "Octicons — 743 GitHub-style icons (all sizes).",
+    cssgg: "CSS.gg — 704 hand-crafted stroke icons.",
+    openmoji: "OpenMoji Color — 1,718 full-color emoji SVGs (CC BY-SA 4.0).",
+    "openmoji-black": "OpenMoji monochrome — 1,860 line-drawn emoji.",
+    twemoji: "Twemoji — 4,009 full-color emoji SVGs (CC BY 4.0).",
+    fluent: "Fluent Emoji — 3,145 full-color flat emoji (MIT).",
+    animals: "Emoji animals — pets & wildlife, rendered with your system emoji font.",
+    nature: "Emoji flowers & plants — from your system emoji font.",
+    science: "Emoji science & space — from your system emoji font.",
+  };
+
   constructor(
     app: App,
     private plugin: StarIconsPlugin,
@@ -42,162 +93,149 @@ export class StarIconsSettingTab extends PluginSettingTab {
     super(app, plugin);
   }
 
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
-    containerEl.addClass("si-settings");
-
-    this.renderGeneral();
-    this.renderPacks();
-    this.renderFileTypes();
-    this.renderRules();
-    this.renderCollections();
-    this.renderData();
-  }
-
-  /* --- general ------------------------------------------------------------ */
-
-  private renderGeneral(): void {
-    const { containerEl } = this;
+  /**
+   * Declarative settings — rendered by Obsidian 1.13+ and indexed in the
+   * settings search. Simple toggles are real control definitions; complex
+   * sections mount their imperative UI through `render` callbacks.
+   */
+  getSettingDefinitions(): SettingDefinitionItem[] {
     const s = this.plugin.settings;
-    new Setting(containerEl).setName("Where icons appear").setHeading();
 
-    new Setting(containerEl)
-      .setName("File explorer icons")
-      .setDesc("Show resolved icons on files and folders in the sidebar.")
-      .addToggle((t) => t.setValue(s.fileExplorerIcons).onChange(async (v) => {
-        s.fileExplorerIcons = v;
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-      }));
-
-    new Setting(containerEl)
-      .setName("Tab icons")
-      .setDesc("Show icons in the tab headers of open notes.")
-      .addToggle((t) => t.setValue(s.tabIcons).onChange(async (v) => {
-        s.tabIcons = v;
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-      }));
-
-    new Setting(containerEl)
-      .setName("Icon above note title")
-      .setDesc("Show the resolved icon above the note title (reading view).")
-      .addToggle((t) => t.setValue(s.inlineTitleIcons).onChange(async (v) => {
-        s.inlineTitleIcons = v;
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-      }));
-
-    new Setting(containerEl)
-      .setName("…also in edit mode")
-      .setDesc("Show the title icon in the editor too (inserted as non-editable content).")
-      .setDisabled(!s.inlineTitleIcons)
-      .addToggle((t) => t.setValue(s.inlineTitleEditMode).onChange(async (v) => {
-        s.inlineTitleEditMode = v;
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-      }));
-
-    new Setting(containerEl)
-      .setName("Icon source tooltips")
-      .setDesc("Hover a file to see which icon applies and which rule decided it.")
-      .addToggle((t) => t.setValue(s.showSourceTooltips).onChange(async (v) => {
-        s.showSourceTooltips = v;
-        await this.plugin.saveSettings();
-        this.plugin.refreshIcons();
-      }));
-
-    new Setting(containerEl)
-      .setName("Status bar indicator")
-      .setDesc("Show the active note's icon + source in the status bar.")
-      .addToggle((t) => t.setValue(s.statusBarIndicator).onChange(async (v) => {
-        s.statusBarIndicator = v;
-        await this.plugin.saveSettings();
-        this.plugin.updateStatusBar();
-      }));
-
-    new Setting(containerEl)
-      .setName("Refresh icons")
-      .setDesc("Re-apply icons everywhere (after Obsidian updates or UI glitches).")
-      .addButton((b) => b.setButtonText("Refresh now").onClick(() => {
-        this.plugin.refreshIcons();
-        new Notice("Icons refreshed");
-      }));
-  }
-
-  /* --- packs ---------------------------------------------------------------- */
-
-  private renderPacks(): void {
-    const { containerEl } = this;
-    const s = this.plugin.settings;
-    new Setting(containerEl).setName("Icon packs").setHeading();
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: `${this.plugin.store.totalCount().toLocaleString()} icons available — packs load on demand when enabled (downloaded once if missing, then cached locally).`,
+    const toggle = (
+      name: string,
+      desc: string,
+      get: () => boolean,
+      apply: (v: boolean) => void,
+    ): SettingDefinition => ({
+      name,
+      desc,
+      render: (setting) => {
+        setting.addToggle((t) =>
+          t.setValue(get()).onChange((v) => apply(v)),
+        );
+      },
     });
 
-    const descriptions: Partial<Record<PackId, string>> = {
-      lucide: "The de-facto Obsidian icon set. 2,025 icons, official tags.",
-      material: "Google Material Symbols — full rounded set (base + fill variants).",
-      "material-outlined": "The same Material set in the outlined weight.",
-      "material-sharp": "The same Material set in the sharp weight.",
-      star: "Original hand-crafted star icons — the Star Icons identity.",
-      tabler: "Tabler outline — 5,130 clean, modern icons with categories.",
-      "tabler-filled": "Tabler filled — 1,054 solid versions of the outline set.",
-      unicons: "Iconscout Unicons (line style) — 1,215 playful icons.",
-      "unicons-solid": "Unicons in the solid style.",
-      "unicons-monochrome": "Unicons in the monochrome style.",
-      "unicons-thinline": "Unicons in the thinline style.",
-      remix: "Remix Icon — 3,078 icons (line + fill) across 20 categories.",
-      phosphor: "Phosphor (regular weight) — 1,512 geometric icons.",
-      "phosphor-bold": "Phosphor in the bold weight.",
-      "phosphor-fill": "Phosphor in the fill weight.",
-      "phosphor-light": "Phosphor in the light weight.",
-      "phosphor-thin": "Phosphor in the thin weight.",
-      "phosphor-duotone": "Phosphor in the duotone weight (two-tone).",
-      bootstrap: "Bootstrap Icons — 2,078 crisp, rounded icons.",
-      boxicons: "Boxicons — 814 filled, rounded web icons.",
-      "boxicons-solid": "Boxicons in the solid style.",
-      "boxicons-logos": "Boxicons brand logos.",
-      heroicons: "Heroicons — 324 outline icons by the Tailwind team.",
-      "heroicons-solid": "Heroicons in the solid style.",
-      fontawesome: "Font Awesome Free — 2,274 solid + regular icons (CC BY 4.0).",
-      "simple-icons": "Simple Icons — 3,453 brand logos (CC0).",
-      ionicons: "Ionicons — 1,357 icons (base + outline + sharp).",
-      antd: "Ant Design Icons — outlined/filled/twotone variants.",
-      "line-awesome": "Line Awesome — 1,544 line-style icons (includes brands).",
-      eva: "Eva Icons — 490 outline + fill icons.",
-      octicons: "Octicons — 743 GitHub-style icons (all sizes).",
-      cssgg: "CSS.gg — 704 hand-crafted stroke icons.",
-      openmoji: "OpenMoji Color — 1,718 full-color emoji SVGs (CC BY-SA 4.0).",
-      "openmoji-black": "OpenMoji monochrome — 1,860 line-drawn emoji.",
-      twemoji: "Twemoji — 4,009 full-color emoji SVGs (CC BY 4.0).",
-      fluent: "Fluent Emoji — 3,145 full-color flat emoji (MIT).",
-      animals: "Emoji animals — pets & wildlife, rendered with your system emoji font.",
-      nature: "Emoji flowers & plants — from your system emoji font.",
-      science: "Emoji science & space — from your system emoji font.",
-    };
+    return [
+      /* --- General --- */
+      {
+        type: "group",
+        heading: "General",
+        items: [
+          toggle("File explorer icons", "Show resolved icons on files and folders in the sidebar.",
+            () => s.fileExplorerIcons, (v) => {
+              s.fileExplorerIcons = v;
+              void this.plugin.saveSettings();
+              this.plugin.refreshIcons();
+            }),
+          toggle("Tab icons", "Show icons in the tab headers of open notes.",
+            () => s.tabIcons, (v) => {
+              s.tabIcons = v;
+              void this.plugin.saveSettings();
+              this.plugin.refreshIcons();
+            }),
+          toggle("Icon above note title", "Show the resolved icon above the note title (reading view).",
+            () => s.inlineTitleIcons, (v) => {
+              s.inlineTitleIcons = v;
+              void this.plugin.saveSettings();
+              this.plugin.refreshIcons();
+            }),
+          {
+            name: "…also in edit mode",
+            desc: "Show the title icon in the editor too (inserted as non-editable content).",
+            render: (setting) => {
+              setting.addToggle((t) =>
+                t
+                  .setValue(s.inlineTitleEditMode)
+                  .setDisabled(!s.inlineTitleIcons)
+                  .onChange((v) => {
+                    s.inlineTitleEditMode = v;
+                    void this.plugin.saveSettings();
+                    this.plugin.refreshIcons();
+                  }),
+              );
+            },
+          },
+          toggle("Icon source tooltips", "Hover a file to see which icon applies and which rule decided it.",
+            () => s.showSourceTooltips, (v) => {
+              s.showSourceTooltips = v;
+              void this.plugin.saveSettings();
+              this.plugin.refreshIcons();
+            }),
+          toggle("Status bar indicator", "Show the active note's icon + source in the status bar.",
+            () => s.statusBarIndicator, (v) => {
+              s.statusBarIndicator = v;
+              void this.plugin.saveSettings();
+              this.plugin.updateStatusBar();
+            }),
+          {
+            name: "Refresh icons",
+            desc: "Re-apply icons everywhere (after Obsidian updates or UI glitches).",
+            render: (setting) => {
+              setting.addButton((b) =>
+                b.setButtonText("Refresh now").onClick(() => {
+                  this.plugin.refreshIcons();
+                  new Notice("Icons refreshed");
+                }),
+              );
+            },
+          },
+        ],
+      },
 
-    for (const group of PACK_GROUPS) {
-      const details = containerEl.createEl("details", { cls: "si-pack-group" });
-      if (group.open) details.setAttr("open", "");
-      const summary = details.createEl("summary", { cls: "si-pack-group-head" });
-      summary.createSpan({ text: group.title });
-      summary.createSpan({ cls: "si-pack-group-meta", text: `${group.packs.length} packs` });
-      for (const pack of group.packs) {
-        const setting = new Setting(details)
-          .setName(PACK_LABELS[pack] ?? pack)
-          .setDesc(`${descriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`)
-          .addToggle((t) =>
-            t.setValue(s.enabledPacks[pack] !== false).onChange(async (v) => {
-              s.enabledPacks[pack] = v;
+      /* --- Packs --- */
+      {
+        name: `${this.plugin.store.totalCount().toLocaleString()} icons available`,
+        desc: "Packs load on demand when enabled (downloaded once if missing, then cached locally).",
+      },
+      ...PACK_GROUPS.map((group) => ({
+        type: "group" as const,
+        heading: group.title,
+        items: group.packs.map((pack) => this.packSetting(pack)),
+      })),
+
+      /* --- Complex sections (mounted imperatively) --- */
+      {
+        name: "File type icons",
+        desc: "Fallback icons for file extensions (used when no rule matches). Priority: override > rules > this > default.",
+        render: (setting) => this.mountSection(setting, (el) => this.renderFileTypes(el)),
+      },
+      {
+        name: "Rules",
+        desc: "Rules run top-to-bottom; the first enabled match wins. Drag to reorder.",
+        render: (setting) => this.mountSection(setting, (el) => this.renderRules(el)),
+      },
+      {
+        name: "Collections",
+        desc: "Curate icon sets here; drag & drop in the Icon Manager. Used by “random” rule actions.",
+        render: (setting) => this.mountSection(setting, (el) => this.renderCollections(el)),
+      },
+      {
+        name: "Data",
+        desc: "Export, import, reset and diagnostics.",
+        render: (setting) => this.mountSection(setting, (el) => this.renderData(el)),
+      },
+    ];
+  }
+
+  /** A searchable pack row: toggle + live icon previews. */
+  private packSetting(pack: PackId): SettingDefinition {
+    const s = this.plugin.settings;
+    return {
+      name: PACK_LABELS[pack] ?? pack,
+      desc: `${this.packDescriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`,
+      render: (setting) => {
+        setting.addToggle((t) =>
+          t.setValue(s.enabledPacks[pack] !== false).onChange((v) => {
+            s.enabledPacks[pack] = v;
+            void (async () => {
               await this.plugin.saveSettings();
               if (v) await this.plugin.store.loadPack(pack);
               this.plugin.store.notify(); // keep open views (manager totals) in sync on BOTH enable and disable
               this.plugin.refreshIcons();
-            }),
-          );
+            })();
+          }),
+        );
         const preview = setting.settingEl.createDiv({ cls: "si-pack-preview" });
         const samples = ["home", "folder", "star", "heart", "settings", "file-text", "music", "cloud"];
         for (const name of samples) {
@@ -207,22 +245,22 @@ export class StarIconsSettingTab extends PluginSettingTab {
             renderIcon(ic, def.id, 16);
           }
         }
-      }
-    }
+      },
+    };
+  }
+
+  /** Give a section row a full-width box that hosts the imperative UI. */
+  private mountSection(setting: Setting, build: (el: HTMLElement) => void): void {
+    setting.settingEl.addClass("si-section");
+    build(setting.settingEl.createDiv({ cls: "si-settings-box" }));
   }
 
   /* --- file types ------------------------------------------------------------ */
 
-  private renderFileTypes(): void {
-    const { containerEl } = this;
+  private renderFileTypes(el: HTMLElement): void {
     const s = this.plugin.settings;
-    new Setting(containerEl).setName("File type icons").setHeading();
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: "Fallback icons for file extensions (used when no rule matches). Priority: override > rules > this > default.",
-    });
 
-    const listEl = containerEl.createDiv({ cls: "si-filetype-list" });
+    const listEl = el.createDiv({ cls: "si-filetype-list" });
     const render = () => {
       listEl.empty();
 
@@ -288,7 +326,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
           }
           void this.plugin.saveSettings().then(() => {
             this.plugin.refreshIcons();
-            this.display();
+            this.update();
           });
         },
       }).open();
@@ -302,7 +340,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
           delete s.fileTypeDefaults[ext];
           await this.plugin.saveSettings();
           this.plugin.refreshIcons();
-          this.display();
+          this.update();
         })();
       });
     }
@@ -310,16 +348,10 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
   /* --- rules ----------------------------------------------------------------- */
 
-  private renderRules(): void {
-    const { containerEl } = this;
+  private renderRules(el: HTMLElement): void {
     const s = this.plugin.settings;
-    new Setting(containerEl).setName("Rules").setHeading();
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: "Rules run top-to-bottom; the first enabled match wins. Drag to reorder.",
-    });
 
-    const listEl = containerEl.createDiv({ cls: "si-rule-list" });
+    const listEl = el.createDiv({ cls: "si-rule-list" });
     const render = () => {
       listEl.empty();
       if (s.rules.length === 0) {
@@ -407,13 +439,13 @@ export class StarIconsSettingTab extends PluginSettingTab {
     };
     render();
 
-    new Setting(containerEl).addButton((b) =>
+    new Setting(el).addButton((b) =>
       b.setButtonText("＋ Add rule").setCta().onClick(() => {
         new RuleEditModal(this.app, this.plugin.store, () => this.plugin.settings, async (r) => {
           s.rules.push(r);
           await this.plugin.saveSettings();
           this.plugin.refreshIcons();
-          this.display();
+          this.update();
         }).open();
       }),
     );
@@ -421,15 +453,9 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
   /* --- collections -------------------------------------------------------------- */
 
-  private renderCollections(): void {
-    const { containerEl } = this;
+  private renderCollections(el: HTMLElement): void {
     const s = this.plugin.settings;
-    new Setting(containerEl).setName("Collections").setHeading();
-    containerEl.createDiv({
-      cls: "setting-item-description",
-      text: "Curate icon sets here; drag & drop in the Icon Manager. Used by “random” rule actions.",
-    });
-    const list = containerEl.createDiv({ cls: "si-col-summary" });
+    const list = el.createDiv({ cls: "si-col-summary" });
     if (s.collections.length === 0) {
       list.createDiv({ cls: "si-empty", text: "No collections yet" });
     }
@@ -443,18 +469,15 @@ export class StarIconsSettingTab extends PluginSettingTab {
       open.createSpan({ text: "Manage" });
       open.addEventListener("click", () => void this.plugin.openManager());
     }
-    new Setting(containerEl).addButton((b) =>
+    new Setting(el).addButton((b) =>
       b.setButtonText("Open Icon Manager").onClick(() => void this.plugin.openManager()),
     );
   }
 
   /* --- data ------------------------------------------------------------------------ */
 
-  private renderData(): void {
-    const { containerEl } = this;
-    new Setting(containerEl).setName("Data").setHeading();
-
-    new Setting(containerEl)
+  private renderData(el: HTMLElement): void {
+    new Setting(el)
       .setName("Export")
       .setDesc("Download your overrides, rules, collections, favorites and tags as JSON.")
       .addButton((b) =>
@@ -463,7 +486,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
         }),
       );
 
-    new Setting(containerEl)
+    new Setting(el)
       .setName("Import")
       .setDesc("Restore from an exported JSON file.")
       .addButton((b) => {
@@ -478,7 +501,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
                 this.plugin.settings = mergeSettings(JSON.parse(text));
                 await this.plugin.saveSettings();
                 this.plugin.refreshIcons();
-                this.display();
+                this.update();
                 new Notice("Settings imported");
               } catch {
                 new Notice("Could not parse that JSON file");
@@ -489,26 +512,28 @@ export class StarIconsSettingTab extends PluginSettingTab {
         });
       });
 
-    new Setting(containerEl)
+    new Setting(el)
       .setName("Reset")
       .setDesc("Restore factory defaults (favorites, rules, collections…).")
       .addButton((b) =>
-        b.setButtonText("Reset all").setWarning().onClick(async () => {
-          const confirmed = await confirmDialog(this.app, {
-            title: "Reset all Star Icons settings?",
-            message: "This cannot be undone.",
-            confirmLabel: "Reset all",
-            danger: true,
-          });
-          if (!confirmed) return;
-          this.plugin.settings = mergeSettings(undefined);
-          await this.plugin.saveSettings();
-          this.plugin.refreshIcons();
-          this.display();
+        b.setButtonText("Reset all").setDestructive().onClick(() => {
+          void (async () => {
+            const confirmed = await confirmDialog(this.app, {
+              title: "Reset all Star Icons settings?",
+              message: "This cannot be undone.",
+              confirmLabel: "Reset all",
+              danger: true,
+            });
+            if (!confirmed) return;
+            this.plugin.settings = mergeSettings(undefined);
+            await this.plugin.saveSettings();
+            this.plugin.refreshIcons();
+            this.update();
+          })();
         }),
       );
 
-    new Setting(containerEl)
+    new Setting(el)
       .setName("Report a bug")
       .setDesc("Copy a diagnostic report (versions, platform, pack state) to paste into an issue.")
       .addButton((b) =>
@@ -524,7 +549,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
         }),
       );
 
-    new Setting(containerEl)
+    new Setting(el)
       .setName("Issue tracker URL (optional)")
       .setDesc("If set, the bug report dialog gets an “Open issue page” button.")
       .addText((t) =>

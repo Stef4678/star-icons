@@ -78,7 +78,7 @@ export function confirmDialog(app: App, opts: ConfirmOptions): Promise<boolean> 
       )
       .addButton((b) => {
         const btn = b.setButtonText(opts.confirmLabel ?? "Confirm");
-        if (opts.danger) btn.setWarning();
+        if (opts.danger) btn.setDestructive();
         else btn.setCta();
         btn.onClick(() => {
           modal.close();
