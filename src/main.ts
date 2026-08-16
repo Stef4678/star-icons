@@ -9,7 +9,7 @@ import { Menu, Notice, Plugin, TAbstractFile, TFile, TFolder, setIcon } from "ob
 import { IconApplier, prettyIconName } from "./core/applier";
 import { IconStore } from "./core/iconStore";
 import { brandIconId } from "./ui/components";
-import { confirmDialog } from "./ui/promptModal";
+import { confirmDialog, promptSize } from "./ui/promptModal";
 import { ReportBugModal, obsidianVersion } from "./ui/reportBugModal";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
@@ -294,9 +294,11 @@ export class StarIconsPlugin extends Plugin {
       editorCallback: (editor) => {
         new IconPickerModal(this.app, () => this.store, {
           title: "Insert an icon",
-          onPick: (icon) => {
+          onPick: async (icon) => {
             if (!icon) return;
-            editor.replaceSelection(svgForClipboard(icon.svg, 24));
+            const size = await promptSize(this.app, { title: `Insert “${icon.name}”` });
+            if (!size) return;
+            editor.replaceSelection(svgForClipboard(icon.svg, size));
           },
         }).open();
       },

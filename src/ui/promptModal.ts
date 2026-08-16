@@ -133,3 +133,70 @@ export function promptTextArea(app: App, opts: TextAreaOptions): Promise<string 
     modal.open();
   });
 }
+
+export interface SizeOptions {
+  title?: string;
+  presets?: number[];
+  initial?: number;
+}
+
+/** Pick a size for an inserted icon (preset chips + custom number input). */
+export function promptSize(app: App, opts: SizeOptions = {}): Promise<number | null> {
+  return new Promise((resolve) => {
+    const modal = new Modal(app);
+    modal.titleEl.setText(opts.title ?? "Icon size");
+    const presets = opts.presets ?? [16, 24, 32, 48, 64, 96];
+    let size = opts.initial ?? 24;
+
+    const chips = modal.contentEl.createDiv({ cls: "si-chips si-size-picker" });
+    const buttons: HTMLButtonElement[] = [];
+    for (const p of presets) {
+      const btn = chips.createEl("button", {
+        cls: "si-chip" + (p === size ? " is-active" : ""),
+        attr: { type: "button" },
+      });
+      btn.createSpan({ text: `${p}px` });
+      btn.addEventListener("click", () => {
+        size = p;
+        input.value = String(p);
+        buttons.forEach((b) => b.removeClass("is-active"));
+        btn.addClass("is-active");
+      });
+      buttons.push(btn);
+    }
+
+    const customRow = modal.contentEl.createDiv({ cls: "si-size-custom" });
+    customRow.createSpan({ cls: "si-label", text: "Custom" });
+    const input = customRow.createEl("input", {
+      cls: "si-text-input",
+      attr: { type: "number", min: "1", max: "512", placeholder: "24" },
+    }) as HTMLInputElement;
+    input.value = String(size);
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        const v = parseInt(input.value, 10);
+        modal.close();
+        resolve(!isNaN(v) && v > 0 ? v : null);
+      }
+    });
+    window.setTimeout(() => input.select(), 30);
+
+    new Setting(modal.contentEl)
+      .addButton((b) =>
+        b.setButtonText("Cancel").onClick(() => {
+          modal.close();
+          resolve(null);
+        }),
+      )
+      .addButton((b) =>
+        b.setButtonText("Insert").setCta().onClick(() => {
+          const v = parseInt(input.value, 10);
+          modal.close();
+          resolve(!isNaN(v) && v > 0 ? v : null);
+        }),
+      );
+
+    modal.open();
+  });
+}

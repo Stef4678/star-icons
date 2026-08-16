@@ -497,6 +497,22 @@
   outline: none;
 }
 
+/* size picker (insert icon) */
+.si-size-picker {
+  margin-bottom: 10px;
+}
+
+.si-size-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.si-size-custom .si-text-input {
+  width: 90px;
+}
+
 .si-btn-small {
   padding: 3px 10px;
   font-size: 12px;

@@ -13,7 +13,7 @@ import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON }
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
-import { promptText, confirmDialog, promptTextArea } from "./promptModal";
+import { promptText, confirmDialog, promptTextArea, promptSize } from "./promptModal";
 import { svgForClipboard } from "../utils";
 import { IconPickerModal } from "./iconPicker";
 
@@ -775,14 +775,16 @@ export class IconManagerView extends ItemView {
   }
 
   /** Insert the icon as inline SVG at the cursor of the user's note. */
-  private insertIconAtCursor(icon: IconDef): void {
+  private async insertIconAtCursor(icon: IconDef): Promise<void> {
     const view =
       this.app.workspace.getActiveViewOfType(MarkdownView) ?? this.lastMarkdownView();
     if (!view) {
       new Notice("Open a note first.");
       return;
     }
-    view.editor.replaceSelection(svgForClipboard(icon.svg, 24));
+    const size = await promptSize(this.app, { title: `Insert “${icon.name}”` });
+    if (!size) return;
+    view.editor.replaceSelection(svgForClipboard(icon.svg, size));
   }
 
   /**
