@@ -476,7 +476,22 @@ export class IconManagerView extends ItemView {
         },
       }).open();
     });
+    const deleteCol = head.createEl("button", { cls: "si-btn si-btn-small is-danger", attr: { type: "button" } });
+    setIcon(deleteCol, "trash");
+    deleteCol.createSpan({ text: "Delete" });
+    deleteCol.addEventListener("click", async () => {
+      const ok = await confirmDialog(this.app, {
+        title: `Delete collection “${col.name}”?`,
+        message: "The collection will be removed. Its icons stay in your library.",
+        confirmLabel: "Delete",
+        danger: true,
+      });
+      if (!ok) return;
+      await store.deleteCollection(col.id);
+      this.selectedCollection = null;
+    });
     head.appendChild(addIcon);
+    head.appendChild(deleteCol);
 
     const list = main.createDiv({ cls: "si-col-list" });
     if (col.iconIds.length === 0) {
