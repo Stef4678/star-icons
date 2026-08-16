@@ -14,6 +14,7 @@ import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedC
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
 import { promptText, confirmDialog, promptTextArea } from "./promptModal";
+import { svgForClipboard } from "../utils";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -568,7 +569,7 @@ export class IconManagerView extends ItemView {
             item.setTitle("Copy icon name").onClick(() => void navigator.clipboard.writeText(i.id));
           })
           .addItem((item) => {
-            item.setTitle("Copy SVG").onClick(() => void navigator.clipboard.writeText(i.svg));
+            item.setTitle("Copy SVG").onClick(() => void navigator.clipboard.writeText(svgForClipboard(i.svg)));
           })
           .addItem((item) => {
             if (i.pack === "user") {
@@ -672,7 +673,7 @@ export class IconManagerView extends ItemView {
     copyName.addEventListener("click", () => void navigator.clipboard.writeText(def.id));
     const copySvg = copyRow.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
     copySvg.createSpan({ text: "Copy SVG" });
-    copySvg.addEventListener("click", () => void navigator.clipboard.writeText(def.svg));
+    copySvg.addEventListener("click", () => void navigator.clipboard.writeText(svgForClipboard(def.svg)));
 
     /* tags */
     const tagsSection = detail.createDiv({ cls: "si-detail-section" });

@@ -9,7 +9,7 @@ import { App, Menu, Modal, Notice, setIcon } from "obsidian";
 import { getIcon } from "../data/icons";
 import { IconStore } from "../core/iconStore";
 import { IconDef, PackId, PACK_LABELS } from "../types";
-import { clamp, debounce } from "../utils";
+import { clamp, debounce, svgForClipboard } from "../utils";
 import { emptyState, iconTile, renderIcon, shortName } from "./components";
 import { PackFilterControl } from "./packFilter";
 
@@ -170,7 +170,7 @@ export class IconPickerModal extends Modal {
   private copySelected(kind: "name" | "svg"): void {
     const icon = this.results[this.selectedIndex];
     if (!icon) return;
-    navigator.clipboard.writeText(kind === "name" ? icon.id : icon.svg).then(() => {
+    navigator.clipboard.writeText(kind === "name" ? icon.id : svgForClipboard(icon.svg)).then(() => {
       new Notice("Copied " + (kind === "name" ? icon.id : "SVG") + " to clipboard");
     });
   }

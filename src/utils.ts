@@ -169,3 +169,14 @@ export function ensureSvg(text: string): string {
   if (/<svg[\s>]/i.test(t)) return t;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${t}</svg>`;
 }
+
+/**
+ * Version of an SVG meant for pasting into notes/clipboard: adds an explicit
+ * width/height so it doesn't blow up to the container width when rendered
+ * inline in markdown. (Obsidian sizes its own icon slots via CSS, so the
+ * attributes don't affect file-explorer/ribbon rendering.)
+ */
+export function svgForClipboard(svg: string, size = 24): string {
+  if (/\swidth=|\sheight=/i.test(svg)) return svg;
+  return svg.replace(/^<svg/i, `<svg width="${size}" height="${size}"`);
+}
