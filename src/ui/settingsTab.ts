@@ -8,13 +8,14 @@
 import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { PACK_GROUPS, PACK_LABELS, PackId, Rule } from "../types";
+import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
 import { iconTile, makeSortable, renderIcon } from "./components";
 import { IconPickerModal } from "./iconPicker";
 import { RuleEditModal } from "./ruleEditor";
 import { confirmDialog } from "./promptModal";
+import { ReportBugModal } from "./reportBugModal";
 
 export function summarizeRule(rule: Rule): string {
   if (rule.conditions.length === 0) return "matches everything";
@@ -496,6 +497,35 @@ export class StarIconsSettingTab extends PluginSettingTab {
           this.plugin.refreshIcons();
           this.display();
         }),
+      );
+
+    new Setting(containerEl)
+      .setName("Report a bug")
+      .setDesc("Copy a diagnostic report (versions, platform, pack state) to paste into an issue.")
+      .addButton((b) =>
+        b.setButtonText("Open report dialog").onClick(() => {
+          new ReportBugModal(this.app, {
+            pluginVersion: this.plugin.manifest.version,
+            appVersion: this.app.manifest.version,
+            packs: ALL_PACKS.length,
+            enabledPacks: ALL_PACKS.filter((p) => this.plugin.settings.enabledPacks[p] !== false).length,
+            icons: this.plugin.store.totalCount(),
+            reportUrl: this.plugin.settings.reportUrl || undefined,
+          }).open();
+        }),
+      );
+
+    new Setting(containerEl)
+      .setName("Issue tracker URL (optional)")
+      .setDesc("If set, the bug report dialog gets an “Open issue page” button.")
+      .addText((t) =>
+        t
+          .setPlaceholder("https://github.com/you/star-icons/issues")
+          .setValue(this.plugin.settings.reportUrl)
+          .onChange(async (v) => {
+            this.plugin.settings.reportUrl = v.trim();
+            await this.plugin.saveSettings();
+          }),
       );
   }
 }

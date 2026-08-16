@@ -183,6 +183,8 @@ export interface StarIconsSettings {
   /* --- UI preferences --- */
   lastPackFilter: PackId | "all";
   iconGridDensity: "comfortable" | "compact";
+  /** Optional URL for the "Report a bug" dialog's issue link. */
+  reportUrl: string;
 }
 
 export const DEFAULT_SETTINGS: StarIconsSettings = {
@@ -250,6 +252,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
 
   lastPackFilter: "all",
   iconGridDensity: "comfortable",
+  reportUrl: "",
 };
 
 export const PACK_LABELS: Record<PackId, string> = {

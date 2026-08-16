@@ -10,11 +10,13 @@ import { IconApplier, prettyIconName } from "./core/applier";
 import { IconStore } from "./core/iconStore";
 import { brandIconId } from "./ui/components";
 import { confirmDialog } from "./ui/promptModal";
+import { ReportBugModal } from "./ui/reportBugModal";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
 import { mergeSettings } from "./settings";
 import { StarIconsSettings } from "./types";
+import { ALL_PACKS } from "./types";
 import { debounce, svgForClipboard } from "./utils";
 
 export class StarIconsPlugin extends Plugin {
@@ -135,7 +137,7 @@ export class StarIconsPlugin extends Plugin {
   }
 
   async setOverrideForActiveFile(iconId: string): Promise<void> {
-    const file = this.app.workspace.getActiveFile();
+    const file = this.lastActiveFile();
     if (!file) {
       new Notice("No active file.");
       return;
@@ -144,6 +146,21 @@ export class StarIconsPlugin extends Plugin {
     await this.saveSettings();
     this.refreshIcons();
     new Notice(`Icon set for “${file.basename}”`);
+  }
+
+  /**
+   * The file the user is actually working on. When triggered from the Icon
+   * Manager (right sidebar) the manager itself is the active leaf, so
+   * getActiveFile() returns null — fall back to the most recently opened file.
+   */
+  private lastActiveFile(): TFile | null {
+    const active = this.app.workspace.getActiveFile();
+    if (active) return active;
+    for (const path of this.app.workspace.getLastOpenFiles()) {
+      const file = this.app.vault.getFileByPath(path);
+      if (file) return file;
+    }
+    return null;
   }
 
   async pickIconFor(file: TAbstractFile): Promise<void> {
@@ -281,6 +298,21 @@ export class StarIconsPlugin extends Plugin {
             if (!icon) return;
             editor.replaceSelection(svgForClipboard(icon.svg, 24));
           },
+        }).open();
+      },
+    });
+
+    this.addCommand({
+      id: "report-bug",
+      name: "Report a bug…",
+      callback: () => {
+        new ReportBugModal(this.app, {
+          pluginVersion: this.manifest.version,
+          appVersion: this.app.manifest.version,
+          packs: ALL_PACKS.length,
+          enabledPacks: ALL_PACKS.filter((p) => this.settings.enabledPacks[p] !== false).length,
+          icons: this.store.totalCount(),
+          reportUrl: this.settings.reportUrl || undefined,
         }).open();
       },
     });
