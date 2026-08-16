@@ -12,6 +12,7 @@ import { getIcon } from "../data/icons";
 import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
+import { CollectionFilterControl } from "./collectionFilter";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -32,9 +33,12 @@ export class IconManagerView extends ItemView {
   private headerTitleEl!: HTMLElement;
   private searchEl!: HTMLInputElement;
   private packFilterControl?: PackFilterControl;
+  private collectionFilterControl?: CollectionFilterControl;
   private sideEl!: HTMLElement;
   private mainEl!: HTMLElement;
   private detailEl!: HTMLElement;
+  private visibleLimit = 600;
+  private filterSignature = "";
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -120,6 +124,23 @@ export class IconManagerView extends ItemView {
       },
     });
     this.packFilterControl.mount(toolbar);
+    this.collectionFilterControl = new CollectionFilterControl({
+      store: this.plugin.store,
+      getCurrent: () => this.selectedCollection,
+      onSelect: (col) => {
+        this.selectedCollection = col;
+        this.selectedId = null;
+        if (col) this.filter = { ...this.filter, tag: null };
+        this.closeSideIfNarrow();
+        this.render();
+      },
+      onCreate: async () => {
+        const name = await this.promptText("Collection name", "My icons");
+        if (!name) return null;
+        return this.plugin.store.createCollection(name);
+      },
+    });
+    this.collectionFilterControl.mount(toolbar);
     const toolbarRight = toolbar.createDiv({ cls: "si-manager-toolbar-right" });
     const sideToggle = toolbarRight.createEl("button", {
       cls: "si-btn si-btn-small si-side-toggle",
@@ -159,6 +180,7 @@ export class IconManagerView extends ItemView {
     this.renderMain();
     this.renderDetail();
     this.packFilterControl?.update();
+    this.collectionFilterControl?.update();
   }
 
   private renderHeader(): void {
@@ -283,7 +305,6 @@ export class IconManagerView extends ItemView {
     }
 
     const icons = this.collectIcons();
-    const grid = main.createDiv({ cls: "si-grid " + this.plugin.settings.iconGridDensity });
     if (icons.length === 0) {
       const pack = this.filter.pack;
       if (pack !== "all") {
@@ -313,8 +334,25 @@ export class IconManagerView extends ItemView {
       main.appendChild(emptyState("No icons match", "Clear the search or switch packs."));
       return;
     }
-    for (const icon of icons) {
+
+    const shown = icons.slice(0, this.visibleLimit);
+    const grid = main.createDiv({ cls: "si-grid " + this.plugin.settings.iconGridDensity });
+    for (const icon of shown) {
       grid.appendChild(this.buildTile(icon));
+    }
+    if (icons.length > shown.length) {
+      const more = main.createDiv({ cls: "si-more-row" });
+      more.createSpan({
+        cls: "si-more-count",
+        text: `Showing ${shown.length.toLocaleString()} of ${icons.length.toLocaleString()} icons`,
+      });
+      const btn = more.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+      btn.createSpan({ text: "Show more" });
+      btn.addEventListener("click", () => {
+        this.visibleLimit += 1000;
+        this.renderMain();
+      });
+      main.appendChild(more);
     }
     makeSortable(grid, {
       handleSelector: null,
@@ -392,7 +430,13 @@ export class IconManagerView extends ItemView {
           i.id.includes(q),
       );
     }
-    return icons.slice(0, 600);
+    // Reset the "show more" pagination whenever the filter changes.
+    const signature = `${this.filter.pack}|${this.filter.tag ?? ""}|${this.filter.query.trim()}|${this.selectedCollection?.id ?? ""}`;
+    if (signature !== this.filterSignature) {
+      this.filterSignature = signature;
+      this.visibleLimit = 600;
+    }
+    return icons;
   }
 
   private buildTile(icon: IconDef): HTMLElement {

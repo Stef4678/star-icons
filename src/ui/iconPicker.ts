@@ -28,6 +28,7 @@ export class IconPickerModal extends Modal {
   private packFilter: PackId | "all";
   private showFavoritesOnly = false;
   private selectedIndex = 0;
+  private pickerLimit = 400;
   private gridEl!: HTMLElement;
   private footerNameEl!: HTMLElement;
   private footerIconEl!: HTMLElement;
@@ -66,6 +67,7 @@ export class IconPickerModal extends Modal {
       getCurrent: () => this.packFilter,
       onSelect: (pack) => {
         this.packFilter = pack;
+        this.pickerLimit = 400;
         this.selectedIndex = 0;
         this.renderGrid();
       },
@@ -125,6 +127,7 @@ export class IconPickerModal extends Modal {
     }, 120);
     input.addEventListener("input", () => {
       this.query = input.value;
+      this.pickerLimit = 400;
       doSearch();
     });
     input.addEventListener("keydown", (ev) => this.onKey(ev, input));
@@ -195,10 +198,11 @@ export class IconPickerModal extends Modal {
   private renderGrid(): void {
     this.gridEl.empty();
 
-    const icons =
+    const all =
       this.showFavoritesOnly
         ? this.store.favoriteIcons()
-        : this.store.search(this.query, this.packFilter, 400);
+        : this.store.search(this.query, this.packFilter, 5000);
+    const icons = all.slice(0, this.pickerLimit);
 
     const sections: { title: string; icons: IconDef[] }[] = [];
     if (!this.query.trim() && !this.showFavoritesOnly) {
@@ -208,7 +212,7 @@ export class IconPickerModal extends Modal {
       if (favs.length) sections.push({ title: "Favorites", icons: favs.slice(0, 24) });
       sections.push({ title: "All icons", icons });
     } else {
-      sections.push({ title: this.query.trim() ? `Results (${icons.length})` : "Icons", icons });
+      sections.push({ title: this.query.trim() ? `Results (${all.length})` : "Icons", icons });
     }
 
     this.results = sections.flatMap((s) => s.icons);
@@ -267,6 +271,20 @@ export class IconPickerModal extends Modal {
         if (idx === this.selectedIndex) tile.addClass("is-selected");
         grid.appendChild(tile);
       }
+    }
+
+    if (all.length > this.pickerLimit) {
+      const more = this.gridEl.createDiv({ cls: "si-more-row" });
+      more.createSpan({
+        cls: "si-more-count",
+        text: `Showing ${this.pickerLimit.toLocaleString()} of ${all.length.toLocaleString()}`,
+      });
+      const btn = more.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+      btn.createSpan({ text: "Show more" });
+      btn.addEventListener("click", () => {
+        this.pickerLimit += 500;
+        this.renderGrid();
+      });
     }
     this.updateFooter();
   }

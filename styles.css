@@ -267,6 +267,26 @@
   flex-shrink: 0;
 }
 
+.si-pf-row.si-pf-new {
+  margin-top: 6px;
+  border-top: 1px solid var(--si-border);
+  border-radius: 0 0 var(--radius-s, 6px) var(--radius-s, 6px);
+}
+
+/* "Show more" row under the grid */
+.si-more-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 0 8px;
+}
+
+.si-more-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* --------------------------------------------------------------------------
    Collapsible pack groups (Settings) + sidebar details
    -------------------------------------------------------------------------- */
