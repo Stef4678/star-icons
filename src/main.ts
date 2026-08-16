@@ -10,7 +10,7 @@ import { IconApplier, prettyIconName } from "./core/applier";
 import { IconStore } from "./core/iconStore";
 import { brandIconId } from "./ui/components";
 import { confirmDialog } from "./ui/promptModal";
-import { ReportBugModal } from "./ui/reportBugModal";
+import { ReportBugModal, obsidianVersion } from "./ui/reportBugModal";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
@@ -308,7 +308,7 @@ export class StarIconsPlugin extends Plugin {
       callback: () => {
         new ReportBugModal(this.app, {
           pluginVersion: this.manifest.version,
-          appVersion: this.app.manifest.version,
+          appVersion: obsidianVersion(this.app),
           packs: ALL_PACKS.length,
           enabledPacks: ALL_PACKS.filter((p) => this.settings.enabledPacks[p] !== false).length,
           icons: this.store.totalCount(),

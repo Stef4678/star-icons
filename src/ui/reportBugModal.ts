@@ -17,6 +17,12 @@ export interface BugReportContext {
   reportUrl?: string;
 }
 
+/** Obsidian's own version (App.manifest isn't in the public typings). */
+export function obsidianVersion(app: App): string {
+  const m = (app as unknown as { manifest?: { version?: string } }).manifest;
+  return m?.version ?? "unknown";
+}
+
 export function buildBugReport(ctx: BugReportContext): string {
   const platform = Platform.isMobileApp
     ? "Mobile"
@@ -25,7 +31,7 @@ export function buildBugReport(ctx: BugReportContext): string {
       : "Unknown";
   const os = Platform.isMacOS
     ? "macOS"
-    : Platform.isWindows
+    : Platform.isWin
       ? "Windows"
       : Platform.isLinux
         ? "Linux"

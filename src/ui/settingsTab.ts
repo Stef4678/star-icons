@@ -15,7 +15,7 @@ import { iconTile, makeSortable, renderIcon } from "./components";
 import { IconPickerModal } from "./iconPicker";
 import { RuleEditModal } from "./ruleEditor";
 import { confirmDialog } from "./promptModal";
-import { ReportBugModal } from "./reportBugModal";
+import { ReportBugModal, obsidianVersion } from "./reportBugModal";
 
 export function summarizeRule(rule: Rule): string {
   if (rule.conditions.length === 0) return "matches everything";
@@ -506,7 +506,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
         b.setButtonText("Open report dialog").onClick(() => {
           new ReportBugModal(this.app, {
             pluginVersion: this.plugin.manifest.version,
-            appVersion: this.app.manifest.version,
+            appVersion: obsidianVersion(this.app),
             packs: ALL_PACKS.length,
             enabledPacks: ALL_PACKS.filter((p) => this.plugin.settings.enabledPacks[p] !== false).length,
             icons: this.plugin.store.totalCount(),
