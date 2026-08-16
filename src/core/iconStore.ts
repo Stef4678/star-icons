@@ -346,4 +346,11 @@ export class IconStore {
       }
     });
   }
+
+  /** Remove every user tag from every icon. */
+  async clearAllUserTags(): Promise<void> {
+    await this.mutate((s) => {
+      s.iconTags = {};
+    });
+  }
 }

@@ -265,6 +265,22 @@ export class IconManagerView extends ItemView {
     const tagSection = side.createDiv({ cls: "si-side-section" });
     const tagHead = tagSection.createDiv({ cls: "si-side-head" });
     tagHead.createSpan({ cls: "si-side-title", text: "Tags" });
+    const clearTags = tagHead.createEl("button", {
+      cls: "si-icon-btn",
+      attr: { type: "button", "aria-label": "Delete all tags" },
+    });
+    setIcon(clearTags, "trash");
+    clearTags.addEventListener("click", async () => {
+      const ok = await confirmDialog(this.app, {
+        title: "Delete all user tags?",
+        message: "Every custom tag will be removed from all icons.",
+        confirmLabel: "Delete all",
+        danger: true,
+      });
+      if (!ok) return;
+      this.filter.tag = null;
+      await store.clearAllUserTags();
+    });
     const tagList = tagSection.createDiv({ cls: "si-side-list" });
     const allTags = store.allUserTags();
     if (allTags.length === 0) {
