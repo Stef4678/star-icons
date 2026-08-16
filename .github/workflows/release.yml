@@ -47,6 +47,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Star Icons ${{ github.ref_name }}
+          # Auto-generate release notes from commits/PRs since the last tag.
+          generate_release_notes: true
           # Obsidian downloads only these files; extra artifacts (e.g. a zip)
           # are ignored, so keep the release to exactly what the store needs.
           files: |
