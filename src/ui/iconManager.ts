@@ -390,8 +390,18 @@ export class IconManagerView extends ItemView {
     const store = this.plugin.store;
 
     if (this.selectedCollection) {
-      this.renderCollectionDetail(main, this.selectedCollection);
-      return;
+      // Resolve the collection FRESH from settings every render — the held
+      // reference can be stale after a rename, and the collection may have
+      // been deleted (drop the selection so the grid shows instead of a
+      // ghost of the deleted collection).
+      const fresh = store.getSettings().collections.find(
+        (c) => c.id === this.selectedCollection?.id,
+      );
+      if (fresh) {
+        this.renderCollectionDetail(main, fresh);
+        return;
+      }
+      this.selectedCollection = null;
     }
 
     const icons = this.collectIcons();
@@ -488,8 +498,8 @@ export class IconManagerView extends ItemView {
         danger: true,
       });
       if (!ok) return;
-      await store.deleteCollection(col.id);
       this.selectedCollection = null;
+      await store.deleteCollection(col.id);
     });
     head.appendChild(addIcon);
     head.appendChild(deleteCol);
