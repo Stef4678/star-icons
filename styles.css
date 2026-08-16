@@ -589,6 +589,10 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow-wrap: anywhere;
+  /* Grid centering is immune to flex-parent quirks: centers every child
+     (including bare text nodes) horizontally, at any container width. */
+  display: grid;
+  justify-items: center;
 }
 
 .si-empty-icon {
