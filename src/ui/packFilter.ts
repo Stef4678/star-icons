@@ -83,6 +83,12 @@ export class PackFilterControl {
   private open(): void {
     if (!this.root) return;
     this.popover = this.root.createDiv({ cls: "si-pack-filter-pop" });
+    // Cap the popover to the pane, not the viewport (85vw overflows a narrow
+    // right sidebar and the manager clips it).
+    const manager = this.root.closest(".si-manager") as HTMLElement | null;
+    if (manager) {
+      this.popover.style.maxWidth = `min(300px, ${Math.max(180, manager.clientWidth - 24)}px)`;
+    }
 
     const head = this.popover.createDiv({ cls: "si-pf-head" });
     head.createSpan({ cls: "si-pf-title", text: "Packs" });
