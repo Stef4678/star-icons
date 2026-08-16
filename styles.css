@@ -116,6 +116,233 @@
 }
 
 /* --------------------------------------------------------------------------
+   Pack filter dropdown (compact replacement for the pack chip rows)
+   -------------------------------------------------------------------------- */
+
+.si-pack-filter {
+  position: relative;
+  display: inline-block;
+}
+
+.si-pack-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  max-width: 260px;
+}
+
+.si-pack-filter-btn:hover {
+  border-color: var(--si-gold);
+}
+
+.si-pack-filter-btn .si-pack-filter-icon {
+  display: flex;
+  align-items: center;
+  color: var(--si-gold);
+  flex-shrink: 0;
+}
+
+.si-pack-filter-btn > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-pack-filter-chev {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.si-pack-filter-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  width: min(300px, 85vw);
+  max-height: min(65vh, 480px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius-lg);
+  background: var(--background-primary);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+.si-pf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.si-pf-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.si-pf-search .si-search-input {
+  padding: 6px 10px 6px 30px;
+  font-size: 13px;
+}
+
+.si-pf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.si-pf-group-title {
+  margin: 8px 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.si-pf-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius-s, 6px);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.1s ease;
+}
+
+.si-pf-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.si-pf-row.is-current {
+  background: color-mix(in srgb, var(--si-gold) 14%, transparent);
+}
+
+.si-pf-row.is-off {
+  opacity: 0.55;
+}
+
+.si-pf-row input[type="checkbox"] {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.si-pf-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.si-pf-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.si-pf-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-pf-count {
+  font-size: 11px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Collapsible pack groups (Settings) + sidebar details
+   -------------------------------------------------------------------------- */
+
+.si-pack-group {
+  margin-bottom: 10px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-secondary);
+}
+
+.si-pack-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--si-radius);
+  list-style: none;
+}
+
+.si-pack-group-head::-webkit-details-marker {
+  display: none;
+}
+
+.si-pack-group-head::before {
+  content: "▸";
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.si-pack-group[open] .si-pack-group-head::before {
+  transform: rotate(90deg);
+}
+
+.si-pack-group-head:hover {
+  background: var(--background-modifier-hover);
+}
+
+.si-pack-group-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.si-pack-group .setting-item {
+  border-top: 1px solid var(--si-border);
+}
+
+.si-side-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.si-side-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.si-side-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.si-side-details summary::before {
+  content: "▸ ";
+  color: var(--text-muted);
+}
+
+.si-side-details[open] summary::before {
+  content: "▾ ";
+}
+
+/* --------------------------------------------------------------------------
    Shared: chips, segmented, buttons, inputs, toggles
    -------------------------------------------------------------------------- */
 

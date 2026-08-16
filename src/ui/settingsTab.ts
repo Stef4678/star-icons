@@ -8,7 +8,7 @@
 import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { ALL_PACKS, PACK_LABELS, PackId, Rule } from "../types";
+import { PACK_GROUPS, PACK_LABELS, PackId, Rule } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
 import { iconTile, makeSortable, renderIcon } from "./components";
@@ -176,26 +176,33 @@ export class StarIconsSettingTab extends PluginSettingTab {
       science: "Emoji science & space — from your system emoji font.",
     };
 
-    for (const pack of ALL_PACKS) {
-      const setting = new Setting(containerEl)
-        .setName(PACK_LABELS[pack] ?? pack)
-        .setDesc(`${descriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`)
-        .addToggle((t) =>
-          t.setValue(s.enabledPacks[pack] !== false).onChange(async (v) => {
-            s.enabledPacks[pack] = v;
-            await this.plugin.saveSettings();
-            if (v) await this.plugin.store.loadPack(pack);
-            this.plugin.store.notify(); // keep open views (manager totals) in sync on BOTH enable and disable
-            this.plugin.refreshIcons();
-          }),
-        );
-      const preview = setting.settingEl.createDiv({ cls: "si-pack-preview" });
-      const samples = ["home", "folder", "star", "heart", "settings", "file-text", "music", "cloud"];
-      for (const name of samples) {
-        const def = getIcon(`si-${pack}-${name}`);
-        if (def) {
-          const ic = preview.createSpan({ cls: "si-pack-sample" });
-          renderIcon(ic, def.id, 16);
+    for (const group of PACK_GROUPS) {
+      const details = containerEl.createEl("details", { cls: "si-pack-group" });
+      if (group.open) details.setAttr("open", "");
+      const summary = details.createEl("summary", { cls: "si-pack-group-head" });
+      summary.createSpan({ text: group.title });
+      summary.createSpan({ cls: "si-pack-group-meta", text: `${group.packs.length} packs` });
+      for (const pack of group.packs) {
+        const setting = new Setting(details)
+          .setName(PACK_LABELS[pack] ?? pack)
+          .setDesc(`${descriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`)
+          .addToggle((t) =>
+            t.setValue(s.enabledPacks[pack] !== false).onChange(async (v) => {
+              s.enabledPacks[pack] = v;
+              await this.plugin.saveSettings();
+              if (v) await this.plugin.store.loadPack(pack);
+              this.plugin.store.notify(); // keep open views (manager totals) in sync on BOTH enable and disable
+              this.plugin.refreshIcons();
+            }),
+          );
+        const preview = setting.settingEl.createDiv({ cls: "si-pack-preview" });
+        const samples = ["home", "folder", "star", "heart", "settings", "file-text", "music", "cloud"];
+        for (const name of samples) {
+          const def = getIcon(`si-${pack}-${name}`);
+          if (def) {
+            const ic = preview.createSpan({ cls: "si-pack-sample" });
+            renderIcon(ic, def.id, 16);
+          }
         }
       }
     }

@@ -282,6 +282,117 @@ export const PACK_LABELS: Record<PackId, string> = {
   science: "Science",
 };
 
+/** One sample icon name per pack (used for previews; missing ones are skipped). */
+export const PACK_SAMPLE_ICON: Record<string, string> = {
+  star: "star-sparkle",
+  lucide: "sparkles",
+  material: "home",
+  "material-outlined": "home",
+  "material-sharp": "home",
+  tabler: "layout-grid",
+  "tabler-filled": "home",
+  unicons: "apps",
+  "unicons-solid": "home",
+  "unicons-monochrome": "home",
+  "unicons-thinline": "home",
+  remix: "home-line",
+  phosphor: "house",
+  "phosphor-bold": "house-bold",
+  "phosphor-fill": "house-fill",
+  "phosphor-light": "house-light",
+  "phosphor-thin": "house-thin",
+  "phosphor-duotone": "house-duotone",
+  bootstrap: "house",
+  boxicons: "home",
+  "boxicons-solid": "home",
+  "boxicons-logos": "github",
+  heroicons: "home",
+  "heroicons-solid": "home",
+  fontawesome: "house",
+  "simple-icons": "github",
+  ionicons: "home",
+  antd: "home-outlined",
+  "line-awesome": "home",
+  eva: "home-outline",
+  octicons: "home-16",
+  cssgg: "home",
+  openmoji: "grinning-face",
+  "openmoji-black": "grinning-face",
+  twemoji: "grinning-face",
+  fluent: "smiling-face",
+  animals: "dog",
+  nature: "rose",
+  science: "microscope",
+};
+
+export interface PackGroup {
+  title: string;
+  packs: PackId[];
+  /** Start expanded in Settings (default: collapsed). */
+  open?: boolean;
+}
+
+/** Logical groupings used by the pack dropdown and the settings list. */
+export const PACK_GROUPS: PackGroup[] = [
+  {
+    title: "Essentials · on by default",
+    open: true,
+    packs: [
+      "lucide",
+      "material",
+      "star",
+      "tabler",
+      "tabler-filled",
+      "unicons",
+      "remix",
+      "phosphor",
+      "bootstrap",
+      "boxicons",
+      "heroicons",
+      "openmoji",
+      "animals",
+      "nature",
+      "science",
+    ],
+  },
+  {
+    title: "More icon sets",
+    open: true,
+    packs: [
+      "fontawesome",
+      "simple-icons",
+      "ionicons",
+      "antd",
+      "line-awesome",
+      "eva",
+      "octicons",
+      "cssgg",
+      "twemoji",
+      "fluent",
+    ],
+  },
+  {
+    title: "Weights & variants",
+    open: false,
+    packs: [
+      "material-outlined",
+      "material-sharp",
+      "phosphor-bold",
+      "phosphor-fill",
+      "phosphor-light",
+      "phosphor-thin",
+      "phosphor-duotone",
+      "unicons-solid",
+      "unicons-monochrome",
+      "unicons-thinline",
+      "boxicons-solid",
+      "boxicons-logos",
+      "heroicons-solid",
+      "openmoji-black",
+    ],
+  },
+];
+
 export const CONDITION_LABELS: Record<ConditionType, string> = {
   filename: "File name",
   path: "File path",

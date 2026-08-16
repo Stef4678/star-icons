@@ -8,9 +8,10 @@
 import { App, Menu, Modal, Notice, setIcon } from "obsidian";
 import { getIcon } from "../data/icons";
 import { IconStore } from "../core/iconStore";
-import { ALL_PACKS, IconDef, PackId, PACK_LABELS } from "../types";
+import { IconDef, PackId, PACK_LABELS } from "../types";
 import { clamp, debounce } from "../utils";
 import { emptyState, iconTile, renderIcon, shortName } from "./components";
+import { PackFilterControl } from "./packFilter";
 
 export interface IconPickerOptions {
   title?: string;
@@ -19,13 +20,6 @@ export interface IconPickerOptions {
   allowNone?: boolean;
   /** Called with null when the user picks "none". */
   onPick: (icon: IconDef | null) => void;
-}
-
-function packChips(): { value: string; label: string }[] {
-  return [
-    { value: "all", label: "All" },
-    ...ALL_PACKS.map((p) => ({ value: p, label: PACK_LABELS[p] })),
-  ];
 }
 
 export class IconPickerModal extends Modal {
@@ -67,20 +61,16 @@ export class IconPickerModal extends Modal {
     searchRow.appendChild(searchWrap);
 
     const chips = contentEl.createDiv({ cls: "si-chips si-picker-chips" });
-    for (const chip of packChips()) {
-      const btn = chips.createEl("button", {
-        cls: "si-chip" + (chip.value === this.packFilter ? " is-active" : ""),
-        attr: { type: "button" },
-      });
-      btn.createSpan({ text: chip.label });
-      btn.addEventListener("click", () => {
-        this.packFilter = chip.value as PackId | "all";
-        chips.querySelectorAll(".si-chip").forEach((c) => c.removeClass("is-active"));
-        btn.addClass("is-active");
+    const packFilter = new PackFilterControl({
+      store: this.store,
+      getCurrent: () => this.packFilter,
+      onSelect: (pack) => {
+        this.packFilter = pack;
         this.selectedIndex = 0;
         this.renderGrid();
-      });
-    }
+      },
+    });
+    packFilter.mount(chips);
     const favChip = chips.createEl("button", {
       cls: "si-chip" + (this.showFavoritesOnly ? " is-active" : ""),
       attr: { type: "button" },

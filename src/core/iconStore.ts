@@ -143,6 +143,15 @@ export class IconStore {
     this.notify();
   }
 
+  /** Disable a pack (icons stay cached, so re-enabling is instant). */
+  async disablePack(pack: PackId): Promise<void> {
+    const s = this.getSettingsFn();
+    if (s.enabledPacks[pack] === false) return;
+    s.enabledPacks[pack] = false;
+    await this.save();
+    this.notify();
+  }
+
   /* --- pack info ---------------------------------------------------------- */
 
   getPackInfo(pack: PackId): PackManifestEntry {

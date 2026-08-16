@@ -9,8 +9,9 @@
 import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS } from "../types";
+import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
+import { PackFilterControl } from "./packFilter";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -30,7 +31,7 @@ export class IconManagerView extends ItemView {
 
   private headerTitleEl!: HTMLElement;
   private searchEl!: HTMLInputElement;
-  private packChipsEl!: HTMLElement;
+  private packFilterControl?: PackFilterControl;
   private sideEl!: HTMLElement;
   private mainEl!: HTMLElement;
   private detailEl!: HTMLElement;
@@ -110,7 +111,15 @@ export class IconManagerView extends ItemView {
     });
 
     const toolbar = header.createDiv({ cls: "si-manager-toolbar" });
-    this.packChipsEl = toolbar.createDiv({ cls: "si-chips" });
+    this.packFilterControl = new PackFilterControl({
+      store: this.plugin.store,
+      getCurrent: () => this.filter.pack,
+      onSelect: (pack) => {
+        this.filter.pack = pack;
+        this.render();
+      },
+    });
+    this.packFilterControl.mount(toolbar);
     const toolbarRight = toolbar.createDiv({ cls: "si-manager-toolbar-right" });
     const sideToggle = toolbarRight.createEl("button", {
       cls: "si-btn si-btn-small si-side-toggle",
@@ -149,29 +158,13 @@ export class IconManagerView extends ItemView {
     this.renderSidebar();
     this.renderMain();
     this.renderDetail();
+    this.packFilterControl?.update();
   }
 
   private renderHeader(): void {
     const store = this.plugin.store;
     const total = store.totalCount();
     this.headerTitleEl.setText(`${total.toLocaleString()} icons · ${ALL_PACKS.length} packs · offline`);
-
-    this.packChipsEl.empty();
-    const chips: { value: string; label: string }[] = [
-      { value: "all", label: `All (${total.toLocaleString()})` },
-      ...ALL_PACKS.map((p) => ({ value: p, label: `${PACK_LABELS[p]} (${store.getPackCount(p).toLocaleString()})` })),
-    ];
-    for (const chip of chips) {
-      const btn = this.packChipsEl.createEl("button", {
-        cls: "si-chip" + (this.filter.pack === chip.value ? " is-active" : ""),
-        attr: { type: "button" },
-      });
-      btn.createSpan({ text: chip.label });
-      btn.addEventListener("click", () => {
-        this.filter.pack = chip.value as PackId | "all";
-        this.render();
-      });
-    }
   }
 
   private renderSidebar(): void {
@@ -264,54 +257,16 @@ export class IconManagerView extends ItemView {
       });
     }
 
-    /* --- packs info --- */
+    /* --- packs info (collapsible to save space) --- */
     const packSection = side.createDiv({ cls: "si-side-section" });
-    packSection.createDiv({ cls: "si-side-title", text: "Packs" });
-    const packSampleIcon: Record<string, string> = {
-      star: "star-sparkle",
-      lucide: "sparkles",
-      material: "home",
-      "material-outlined": "home",
-      "material-sharp": "home",
-      tabler: "layout-grid",
-      "tabler-filled": "home",
-      unicons: "apps",
-      "unicons-solid": "home",
-      "unicons-monochrome": "home",
-      "unicons-thinline": "home",
-      remix: "home-line",
-      phosphor: "house",
-      "phosphor-bold": "house-bold",
-      "phosphor-fill": "house-fill",
-      "phosphor-light": "house-light",
-      "phosphor-thin": "house-thin",
-      "phosphor-duotone": "house-duotone",
-      bootstrap: "house",
-      boxicons: "home",
-      "boxicons-solid": "home",
-      "boxicons-logos": "github",
-      heroicons: "home",
-      "heroicons-solid": "home",
-      fontawesome: "house",
-      "simple-icons": "github",
-      ionicons: "home",
-      antd: "home-outlined",
-      "line-awesome": "home",
-      eva: "home-outline",
-      octicons: "home-16",
-      cssgg: "home",
-      openmoji: "grinning-face",
-      "openmoji-black": "grinning-face",
-      twemoji: "grinning-face",
-      fluent: "smiling-face",
-      animals: "dog",
-      nature: "rose",
-      science: "microscope",
-    };
+    const packDetails = packSection.createEl("details", { cls: "si-side-details" });
+    packDetails.setAttr("open", "");
+    const packSummary = packDetails.createEl("summary", { cls: "si-side-title" });
+    packSummary.createSpan({ text: `Packs (${ALL_PACKS.length})` });
     for (const pack of ALL_PACKS) {
-      const row = packSection.createDiv({ cls: "si-side-item si-side-static" });
+      const row = packDetails.createDiv({ cls: "si-side-item si-side-static" });
       const ic = row.createSpan({ cls: "si-side-item-icon" });
-      renderIcon(ic, `si-${pack}-${packSampleIcon[pack] ?? "home"}`);
+      renderIcon(ic, `si-${pack}-${PACK_SAMPLE_ICON[pack] ?? "home"}`);
       row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack] ?? pack} v${this.plugin.store.getPackVersion(pack)}` });
       row.createSpan({ cls: "si-side-item-count", text: String(this.plugin.store.getPackCount(pack)) });
     }
