@@ -187,6 +187,9 @@ export interface StarIconsSettings {
   reportUrl: string;
 }
 
+/** Default bug-report target (override in Settings → Data). */
+export const DEFAULT_REPORT_URL = "https://github.com/Stef4678/star-icons/issues";
+
 export const DEFAULT_SETTINGS: StarIconsSettings = {
   fileExplorerIcons: true,
   tabIcons: true,
@@ -252,7 +255,7 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
 
   lastPackFilter: "all",
   iconGridDensity: "comfortable",
-  reportUrl: "",
+  reportUrl: DEFAULT_REPORT_URL,
 };
 
 export const PACK_LABELS: Record<PackId, string> = {

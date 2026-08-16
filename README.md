@@ -163,11 +163,11 @@ preview to sanity-check before saving.
 
 ## 🤝 Contributing
 
-- **Report bugs** & request features via GitHub issues.
+- **Report bugs** & request features via [GitHub issues](https://github.com/Stef4678/star-icons/issues) — the plugin has a built-in *Report a bug* dialog (`Ctrl+P` → "Star Icons: Report a bug…") that copies a diagnostic report for you.
 - **Add icons**: edit `src/data/packs/star.ts` (24×24 stroke-style SVGs) and open a PR.
 - **Add packs**: extend `scripts/build-icon-data.mjs` and re-run `npm run build:icons`.
 
-Star Icons is open source (MIT) — like the plugins it learns from
+Star Icons is open source (MIT) — [star on GitHub](https://github.com/Stef4678/star-icons) and like the plugins it learns from
 ([Iconize](https://github.com/FlorianWoelki/obsidian-iconize),
 [Iconic](https://github.com/ram02z/obsidian-iconic), [AutoIcons](https://github.com/NotPunchnox/obsidian-auto-icons)).
 
@@ -175,4 +175,4 @@ Star Icons is open source (MIT) — like the plugins it learns from
 
 ## 📜 License
 
-MIT © Star Icons. Bundled icon packs retain their respective licenses (see above).
+MIT © Stef4678. Bundled icon packs retain their respective licenses (see above).

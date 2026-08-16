@@ -16,7 +16,7 @@ import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
 import { mergeSettings } from "./settings";
 import { StarIconsSettings } from "./types";
-import { ALL_PACKS } from "./types";
+import { ALL_PACKS, DEFAULT_REPORT_URL } from "./types";
 import { debounce, svgForClipboard } from "./utils";
 
 export class StarIconsPlugin extends Plugin {
@@ -312,7 +312,7 @@ export class StarIconsPlugin extends Plugin {
           packs: ALL_PACKS.length,
           enabledPacks: ALL_PACKS.filter((p) => this.settings.enabledPacks[p] !== false).length,
           icons: this.store.totalCount(),
-          reportUrl: this.settings.reportUrl || undefined,
+          reportUrl: this.settings.reportUrl || DEFAULT_REPORT_URL,
         }).open();
       },
     });

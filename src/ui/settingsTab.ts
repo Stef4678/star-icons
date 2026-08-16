@@ -8,7 +8,7 @@
 import { App, Notice, PluginSettingTab, Setting, setIcon } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS } from "../types";
+import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS, DEFAULT_REPORT_URL } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
 import { iconTile, makeSortable, renderIcon } from "./components";
@@ -510,7 +510,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
             packs: ALL_PACKS.length,
             enabledPacks: ALL_PACKS.filter((p) => this.plugin.settings.enabledPacks[p] !== false).length,
             icons: this.plugin.store.totalCount(),
-            reportUrl: this.plugin.settings.reportUrl || undefined,
+            reportUrl: this.plugin.settings.reportUrl || DEFAULT_REPORT_URL,
           }).open();
         }),
       );
