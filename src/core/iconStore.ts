@@ -132,6 +132,16 @@ export class IconStore {
     return Promise.allSettled(enabled.map((p) => this.loadPack(p))).then(() => undefined);
   }
 
+  /** Enable a pack in settings and load it immediately (used by the UI). */
+  async enablePack(pack: PackId): Promise<void> {
+    const s = this.getSettingsFn();
+    if (s.enabledPacks[pack] === true && isPackMounted(pack)) return;
+    s.enabledPacks[pack] = true;
+    await this.save();
+    await this.loadPack(pack);
+    this.notify();
+  }
+
   /* --- pack info ---------------------------------------------------------- */
 
   getPackInfo(pack: PackId): PackManifestEntry {

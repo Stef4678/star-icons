@@ -330,6 +330,31 @@ export class IconManagerView extends ItemView {
     const icons = this.collectIcons();
     const grid = main.createDiv({ cls: "si-grid " + this.plugin.settings.iconGridDensity });
     if (icons.length === 0) {
+      const pack = this.filter.pack;
+      if (pack !== "all") {
+        if (!store.packEnabled(pack)) {
+          const box = main.createDiv({ cls: "si-empty" });
+          box.createDiv({ cls: "si-empty-icon", text: "🔒" });
+          box.createDiv({ cls: "si-empty-text", text: `${PACK_LABELS[pack] ?? pack} is not enabled` });
+          box.createDiv({
+            cls: "si-empty-hint",
+            text: `${store.getPackCount(pack).toLocaleString()} icons are available — enable the pack to browse them.`,
+          });
+          const btn = box.createEl("button", { cls: "si-btn si-btn-primary", attr: { type: "button" } });
+          btn.createSpan({ text: "Enable pack" });
+          btn.addEventListener("click", async () => {
+            await store.enablePack(pack);
+            this.render();
+          });
+          main.appendChild(box);
+          return;
+        }
+        if (!store.isPackLoaded(pack)) {
+          main.appendChild(emptyState("Loading icons…", `${PACK_LABELS[pack] ?? pack} is loading from disk.`));
+          void store.loadPack(pack);
+          return;
+        }
+      }
       main.appendChild(emptyState("No icons match", "Clear the search or switch packs."));
       return;
     }

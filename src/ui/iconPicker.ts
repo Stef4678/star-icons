@@ -224,6 +224,19 @@ export class IconPickerModal extends Modal {
     this.results = sections.flatMap((s) => s.icons);
 
     if (this.results.length === 0) {
+      const pack = this.packFilter;
+      if (pack !== "all" && !this.store.packEnabled(pack)) {
+        const box = this.gridEl.createDiv({ cls: "si-empty" });
+        box.createDiv({ cls: "si-empty-text", text: `${PACK_LABELS[pack] ?? pack} is not enabled` });
+        box.createDiv({ cls: "si-empty-hint", text: "Enable the pack to pick from it." });
+        const btn = box.createEl("button", { cls: "si-btn si-btn-primary", attr: { type: "button" } });
+        btn.createSpan({ text: "Enable pack" });
+        btn.addEventListener("click", async () => {
+          await this.store.enablePack(pack);
+          this.renderGrid();
+        });
+        return;
+      }
       this.gridEl.appendChild(emptyState("No icons found", "Try a different search or pack."));
       return;
     }
