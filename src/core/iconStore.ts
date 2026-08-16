@@ -62,7 +62,8 @@ export class IconStore {
     return () => this.listeners.delete(fn);
   }
 
-  private notify(): void {
+  /** Re-render open views (called after settings/library changes). */
+  notify(): void {
     for (const fn of this.listeners) fn();
   }
 

@@ -2,8 +2,21 @@
  * Star Icons — small reusable DOM pieces shared across the UI.
  */
 
-import { setIcon } from "obsidian";
+import { getIcon as obsGetIcon, setIcon } from "obsidian";
 import { IconDef } from "../types";
+
+/**
+ * The brand icon id, verified against Obsidian's live icon registry.
+ * Falls back to the guaranteed built-in "star" if the custom star-sparkle
+ * icon ever fails to register (ribbon, tab, status bar must never be empty).
+ */
+export function brandIconId(): string {
+  try {
+    return obsGetIcon("si-star-sparkle") ? "si-star-sparkle" : "star";
+  } catch {
+    return "star";
+  }
+}
 
 /** Safely render an icon (registered or built-in) into an element. */
 export function renderIcon(el: HTMLElement, iconId: string, size?: number): void {

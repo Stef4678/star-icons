@@ -8,6 +8,7 @@
 import { Menu, Notice, Plugin, TAbstractFile, TFile, TFolder, setIcon } from "obsidian";
 import { IconApplier, prettyIconName } from "./core/applier";
 import { IconStore } from "./core/iconStore";
+import { brandIconId } from "./ui/components";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
 import { StarIconsSettingTab } from "./ui/settingsTab";
@@ -45,7 +46,7 @@ export class StarIconsPlugin extends Plugin {
         return false;
       }
     };
-    if (!addRibbon("si-star-sparkle")) addRibbon("star");
+    if (!addRibbon(brandIconId())) addRibbon("star");
 
     this.registerCommands();
     this.registerMenus();
@@ -164,7 +165,7 @@ export class StarIconsPlugin extends Plugin {
     }
     const iconEl = this.statusBarEl.createSpan({ cls: "si-status-icon" });
     try {
-      setIcon(iconEl, "si-star-sparkle");
+      setIcon(iconEl, brandIconId());
     } catch {
       /* ignore */
     }
@@ -245,7 +246,7 @@ export class StarIconsPlugin extends Plugin {
         menu.addItem((item) =>
           item
             .setTitle("Set icon…")
-            .setIcon("si-star-sparkle")
+            .setIcon(brandIconId())
             .onClick(() => void this.pickIconFor(file)),
         );
         menu.addItem((item) =>
@@ -276,7 +277,7 @@ export class StarIconsPlugin extends Plugin {
         menu.addItem((item) =>
           item
             .setTitle("Set icon for this note…")
-            .setIcon("si-star-sparkle")
+            .setIcon(brandIconId())
             .onClick(() => void this.pickIconFor(file)),
         );
       }),

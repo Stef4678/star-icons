@@ -185,6 +185,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
             s.enabledPacks[pack] = v;
             await this.plugin.saveSettings();
             if (v) await this.plugin.store.loadPack(pack);
+            this.plugin.store.notify(); // keep open views (manager totals) in sync on BOTH enable and disable
             this.plugin.refreshIcons();
           }),
         );

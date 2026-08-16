@@ -236,6 +236,15 @@ try {
   }
   console.log(`OK: opt-in pack loads on demand (now ${plugin.store.totalCount().toLocaleString()} icons)`);
 
+  // Disabling must drop the "All" total again (settings toggle sync).
+  plugin.settings.enabledPacks["twemoji"] = false;
+  const afterDisable = plugin.store.totalCount();
+  if (afterDisable !== 26932) {
+    console.error(`FAIL: disabling a pack did not update the total (got ${afterDisable}, expected 26932)`);
+    process.exit(1);
+  }
+  console.log("OK: disabling a pack updates the total count");
+
   // Exercise the icon application paths with realistic fixtures.
   plugin.settings.overrides["note.md"] = "si-lucide-home";
   plugin.refreshIcons();

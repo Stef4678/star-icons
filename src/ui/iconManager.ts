@@ -10,7 +10,7 @@ import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
 import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS } from "../types";
-import { emptyState, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
+import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -51,7 +51,7 @@ export class IconManagerView extends ItemView {
   }
 
   getIcon(): string {
-    return "si-star-sparkle";
+    return brandIconId();
   }
 
   async onOpen(): Promise<void> {
@@ -93,7 +93,7 @@ export class IconManagerView extends ItemView {
     const header = root.createDiv({ cls: "si-manager-header" });
     const titleWrap = header.createDiv({ cls: "si-manager-title" });
     const brand = titleWrap.createSpan({ cls: "si-manager-brand" });
-    renderIcon(brand, "si-star-sparkle", 22);
+    renderIcon(brand, brandIconId(), 22);
     titleWrap.createSpan({ cls: "si-manager-name", text: "Star Icons" });
     this.headerTitleEl = titleWrap.createSpan({ cls: "si-manager-sub" });
 
@@ -504,7 +504,7 @@ export class IconManagerView extends ItemView {
     if (!id) {
       detail.addClass("is-empty");
       const hint = detail.createDiv({ cls: "si-detail-hint" });
-      renderIcon(hint, "si-star-sparkle", 40);
+      renderIcon(hint, brandIconId(), 40);
       hint.createEl("div", { cls: "si-detail-hint-text", text: "Select an icon" });
       return;
     }
