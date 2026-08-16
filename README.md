@@ -175,4 +175,4 @@ Star Icons is open source (MIT) — [star on GitHub](https://github.com/Stef4678
 
 ## 📜 License
 
-MIT © Stef4678. Bundled icon packs retain their respective licenses (see above).
+MIT © 2026 Kerekes Stefan (Star Icons). Bundled icon packs retain their respective licenses (see above).
