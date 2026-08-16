@@ -38,9 +38,11 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          # The ZIP is the canonical artifact (it preserves the packs/ folder
+          # structure). Uploading packs/*.json flat would collide with
+          # manifest.json (packs/manifest.json vs root manifest.json).
           files: |
             main.js
             manifest.json
             styles.css
-            packs/*.json
             star-icons.zip
