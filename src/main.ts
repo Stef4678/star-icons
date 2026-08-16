@@ -37,18 +37,7 @@ export class StarIconsPlugin extends Plugin {
 
     this.registerView(ICON_MANAGER_VIEW_TYPE, (leaf) => new IconManagerView(leaf, this));
 
-    // Never let a ribbon-icon registration failure take the plugin down.
-    const addRibbon = (icon: string): boolean => {
-      try {
-        this.addRibbonIcon(icon, "Star Icons — open the Icon Manager", () => {
-          void this.openManager();
-        });
-        return true;
-      } catch {
-        return false;
-      }
-    };
-    if (!addRibbon(brandIconId())) addRibbon("star");
+    this.ensureRibbonIcon();
 
     this.registerCommands();
     this.registerMenus();
@@ -71,6 +60,49 @@ export class StarIconsPlugin extends Plugin {
   onunload(): void {
     this.applier.dispose();
     this.app.workspace.detachLeavesOfType(ICON_MANAGER_VIEW_TYPE);
+  }
+
+  /* --- ribbon ------------------------------------------------------------- */
+
+  private ribbonAdded = false;
+
+  /**
+   * Add the plugin icon to the ribbon, verifying the button actually got
+   * attached to the DOM and retrying with built-in icons until one sticks.
+   * (Obsidian can silently skip an icon if the ribbon isn't ready yet.)
+   */
+  private ensureRibbonIcon(): void {
+    const tryAdd = (icon: string): boolean => {
+      try {
+        const el = this.addRibbonIcon(icon, "Star Icons — open the Icon Manager", () => {
+          void this.openManager();
+        });
+        if (el && !el.isConnected) {
+          // Obsidian didn't attach the button — drop it and try another icon.
+          el.remove();
+          return false;
+        }
+        this.ribbonAdded = true;
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const attempt = (): void => {
+      if (this.ribbonAdded) return;
+      const icons = [brandIconId(), "star", "sparkles", "settings"];
+      for (const icon of icons) {
+        if (tryAdd(icon)) return;
+      }
+    };
+
+    attempt();
+
+    // Retry once the workspace is fully laid out (and once shortly after),
+    // in case the ribbon wasn't ready during onload.
+    this.app.workspace.onLayoutReady(() => attempt());
+    window.setTimeout(() => attempt(), 1500);
   }
 
   /* --- persistence ------------------------------------------------------- */
