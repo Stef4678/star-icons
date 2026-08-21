@@ -33,6 +33,15 @@ Star Icons takes a third path in the icon-plugin landscape:
 
 <img src="assets/settings-2.png" alt="Settings — data & packs" width="520"/>
 
+| | | |
+|---|---|---|
+| <img src="assets/settings-3.png" alt="Settings — Colors" width="300"/> | <img src="assets/settings-4.png" alt="Settings — Dataview collections" width="300"/> | <img src="assets/settings-5.png" alt="Settings — Soundscapes" width="300"/> |
+| **Settings** — Colors | **Settings** — Dataview collections | **Settings** — Soundscapes |
+
+<img src="assets/icon-galaxy.png" alt="Icon Galaxy — 3D view" width="520"/>
+
+**Icon Galaxy** — browse the whole library as an interactive 3D universe
+
 ---
 
 ## ✨ Features
