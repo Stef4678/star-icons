@@ -1,6 +1,6 @@
 {
   "name": "star-icons",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Star Icons — the icon collection manager for Obsidian. Bundle Lucide, Material Symbols and custom star icons; organize them into collections and tags; apply them to files, folders and tabs with an intuitive rules engine and live preview.",
   "main": "main.js",
   "scripts": {
