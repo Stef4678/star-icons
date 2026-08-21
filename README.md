@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/static/v1?label=manager&message=71.7k%20icons&color=f5b301) ![Offline](https://img.shields.io/badge/static/v1?label=offline&message=after-first-load&color=brightgreen) ![License](https://img.shields.io/badge/static/v1?label=license&message=MIT&color=blue)
+![Icon Manager](https://img.shields.io/static/v1?label=manager&message=71.7k%20icons&color=f5b301) ![Offline](https://img.shields.io/static/v1?label=offline&message=after-first-load&color=brightgreen) ![License](https://img.shields.io/static/v1?label=license&message=MIT&color=blue)
 
 > ⚠️ **Attribution & trademarks:** Star Icons bundles icon sets from many third
 > parties — Font Awesome, Twemoji, OpenMoji, Simple Icons, brand logos and
