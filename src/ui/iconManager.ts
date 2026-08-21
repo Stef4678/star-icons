@@ -862,10 +862,12 @@ export class IconManagerView extends ItemView {
 
   private importSvgFiles(): void {
     const input = createEl("input", {
+      parent: document.body,
       attr: { type: "file", accept: ".svg,image/svg+xml", multiple: true },
     });
     input.addEventListener("change", () => {
       const files = Array.from(input.files ?? []);
+      input.remove();
       if (!files.length) return;
       void (async () => {
         const entries = await Promise.all(

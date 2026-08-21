@@ -851,34 +851,35 @@ export class StarIconsSettingTab extends PluginSettingTab {
     const upload = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
     upload.createSpan({ text: "Upload" });
     upload.addEventListener("click", () => {
-      const input = createEl("input", { attr: { type: "file", accept: "audio/*" } });
+      // Attach the input to the document so the native picker opens —
+      // Electron can silently ignore click() on detached file inputs.
+      const input = createEl("input", {
+        parent: document.body,
+        attr: { type: "file", accept: "audio/*" },
+      });
       input.addEventListener("change", () => {
         const file = input.files?.[0];
+        input.remove();
         if (!file) return;
         void (async () => {
-          const buffer = await file.arrayBuffer();
-          const dir = normalizePath(
-            `${this.plugin.app.vault.configDir}/plugins/${this.plugin.manifest.id}/sounds`,
-          );
           try {
-            await this.plugin.app.vault.adapter.mkdir(dir);
-          } catch {
-            /* already exists */
-          }
-          const ext = (file.name.split(".").pop() ?? "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
-          const target = normalizePath(`${dir}/${kind}-${Date.now().toString(36)}.${ext}`);
-          try {
+            const buffer = await file.arrayBuffer();
+            const dir = normalizePath(
+              `${this.plugin.app.vault.configDir}/plugins/${this.plugin.manifest.id}/sounds`,
+            );
+            await this.plugin.app.vault.adapter.mkdir(dir).catch(() => undefined);
+            const ext = (file.name.split(".").pop() ?? "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
+            const target = normalizePath(`${dir}/${kind}-${Date.now().toString(36)}.${ext}`);
             await this.plugin.app.vault.adapter.writeBinary(target, buffer);
+            s.customSounds[kind] = target;
+            await this.plugin.saveSettings();
+            const ok = await this.plugin.soundscape?.loadCustom(kind, target);
+            new Notice(ok ? `Sound loaded for “${SOUND_KIND_LABELS[kind]}”` : "Sound file could not be decoded");
+            render();
           } catch (err) {
             new Notice("Could not save the sound file");
-            console.warn("[Star Icons] sound write failed", err);
-            return;
+            console.warn("[Star Icons] sound upload failed", err);
           }
-          s.customSounds[kind] = target;
-          await this.plugin.saveSettings();
-          const ok = await this.plugin.soundscape?.loadCustom(kind, target);
-          new Notice(ok ? `Sound loaded for “${SOUND_KIND_LABELS[kind]}”` : "Sound file could not be decoded");
-          render();
         })();
       });
       input.click();
@@ -913,11 +914,15 @@ export class StarIconsSettingTab extends PluginSettingTab {
       .setDesc("Restore from an exported JSON file.")
       .addButton((b) => {
         b.setButtonText("Import JSON").onClick(() => {
-          const input = createEl("input", { attr: { type: "file", accept: "application/json" } });
+          const input = createEl("input", {
+            parent: document.body,
+            attr: { type: "file", accept: "application/json" },
+          });
           input.addEventListener("change", () => {
+            const file = input.files?.[0];
+            input.remove();
+            if (!file) return;
             void (async () => {
-              const file = input.files?.[0];
-              if (!file) return;
               try {
                 const text = await file.text();
                 this.plugin.settings = mergeSettings(JSON.parse(text));
