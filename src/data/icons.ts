@@ -129,7 +129,6 @@ const SHELL_BY_PACK: Record<string, (inner: string, viewBox: string) => string> 
   lucide: strokeShell,
   tabler: strokeShell,
   heroicons: strokeShell,
-  cssgg: strokeShell,
   // fill-based
   "tabler-filled": fillShell,
   material: fillShell,

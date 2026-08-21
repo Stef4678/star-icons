@@ -1,0 +1,21 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+================================================================
+
+This is a reference file for the CC BY 4.0 license used by the Twemoji and
+Font Awesome Free icon sets bundled in this project.
+
+The authoritative legal text is published by Creative Commons and must be
+read from the official source — it is not reproduced here:
+
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+What the license requires of this project (summary — the legal text governs):
+
+  - Appropriate credit: name of the creator, copyright notice, license
+    notice, disclaimer notice, and a link to the licensed material.
+  - Indication of changes: if the material was modified, that must be stated.
+  - No additional restrictions: you may not apply terms that restrict what
+    the license otherwise permits.
+
+The required attribution for each CC BY pack bundled here is given in
+THIRD-PARTY-NOTICES.md (see the "Required attribution" section).

@@ -532,41 +532,6 @@ function buildOcticons() {
 }
 
 /* ------------------------------------------------------------------ */
-/* CSS.gg                                                              */
-/* ------------------------------------------------------------------ */
-
-function buildCssgg() {
-  const dir = probe("css.gg", "icons/svg", "icons");
-  if (!dir) return null;
-  const icons = [];
-  const scan = (scanDir) => {
-    let entries;
-    try {
-      entries = readdirSync(scanDir);
-    } catch {
-      return;
-    }
-    for (const f of entries) {
-      const p = join(scanDir, f);
-      if (!f.endsWith(".svg")) {
-        try {
-          if (readdirSync(p)) scan(p);
-        } catch {
-          /* not a directory */
-        }
-        continue;
-      }
-      const parsed = parseSvg(p);
-      if (!parsed) continue;
-      icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [] });
-    }
-  };
-  scan(dir);
-  icons.sort((a, b) => a.name.localeCompare(b.name));
-  return { pack: "cssgg", version: pkgVersion("css.gg"), count: icons.length, icons };
-}
-
-/* ------------------------------------------------------------------ */
 /* Generic flat-pack builder (one directory of SVGs)                   */
 /* ------------------------------------------------------------------ */
 
@@ -738,7 +703,6 @@ const STYLE_TAGS = {
   "line-awesome": ["line", "outline"],
   eva: null, // name-based
   octicons: ["filled"],
-  cssgg: ["outline", "stroke"],
   twemoji: ["color", "emoji"],
   fluent: ["color", "emoji"],
 };
@@ -806,7 +770,6 @@ const ALL_BUILT = [
   buildFlatPack("line-awesome", "line-awesome", ["svg", "dist/svg"], ["line", "outline"]),
   buildEva(),
   buildFlatPack("octicons", "@primer/octicons", ["build/svg", "svg"], ["filled"]),
-  buildCssgg(),
   // Tier 3 — full-color emoji SVGs
   buildTwemoji(),
   buildFluent(),

@@ -76,7 +76,6 @@ export class StarIconsSettingTab extends PluginSettingTab {
     "line-awesome": "Line Awesome — 1,544 line-style icons (includes brands).",
     eva: "Eva Icons — 490 outline + fill icons.",
     octicons: "Octicons — 743 GitHub-style icons (all sizes).",
-    cssgg: "CSS.gg — 704 hand-crafted stroke icons.",
     openmoji: "OpenMoji Color — 1,718 full-color emoji SVGs (CC BY-SA 4.0).",
     "openmoji-black": "OpenMoji monochrome — 1,860 line-drawn emoji.",
     twemoji: "Twemoji — 4,009 full-color emoji SVGs (CC BY 4.0).",
@@ -214,6 +213,19 @@ export class StarIconsSettingTab extends PluginSettingTab {
         name: "Data",
         desc: "Export, import, reset and diagnostics.",
         render: (setting) => this.mountSection(setting, (el) => this.renderData(el)),
+      },
+
+      /* --- About --- */
+      {
+        type: "group",
+        heading: "About",
+        items: [
+          {
+            name: "Licenses and Attribution",
+            desc: "Project license, third-party pack licenses, required credit lines and trademark notices.",
+            render: (setting) => this.mountSection(setting, (el) => this.renderAbout(el)),
+          },
+        ],
       },
     ];
   }
@@ -561,5 +573,55 @@ export class StarIconsSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           }),
       );
+  }
+
+  /* --- about ------------------------------------------------------------------------- */
+
+  private renderAbout(el: HTMLElement): void {
+    new Setting(el)
+      .setName("Star Icons")
+      .setDesc(`Version ${this.plugin.manifest.version} · MIT License`)
+      .addButton((b) =>
+        b.setButtonText("Report a bug").onClick(() => {
+          new ReportBugModal(this.app, {
+            pluginVersion: this.plugin.manifest.version,
+            appVersion: obsidianVersion(this.app),
+            packs: ALL_PACKS.length,
+            enabledPacks: ALL_PACKS.filter((p) => this.plugin.settings.enabledPacks[p] !== false).length,
+            icons: this.plugin.store.totalCount(),
+            reportUrl: this.plugin.settings.reportUrl || DEFAULT_REPORT_URL,
+          }).open();
+        }),
+      );
+
+    const box = el.createDiv({ cls: "si-licenses" });
+    const heading = (text: string) => box.createEl("h4", { text });
+    const para = (text: string) => box.createEl("p", { text });
+
+    heading("Project license");
+    para(
+      "The Star Icons source code and original Star Icons assets are licensed under the MIT License. Third-party icon packs are not relicensed under MIT — each bundled pack keeps its original license.",
+    );
+
+    heading("Third-party packs");
+    para(
+      "Lucide (ISC) · Material Symbols incl. Outlined/Sharp (Apache 2.0) · Tabler & Tabler Filled (MIT) · Bootstrap Icons (MIT) · Phosphor, all weights (MIT) · Heroicons & Solid (MIT) · Ionicons (MIT) · Ant Design (MIT) · Line Awesome (MIT) · Boxicons incl. Solid/Logos (MIT) · Octicons (MIT) · Eva Icons (MIT) · Fluent Emoji (MIT) · Remix Icon (Remix Icon License v1.0) · Unicons, all styles (IconScout Simple License) · OpenMoji Color/Mono (CC BY-SA 4.0) · Twemoji (CC BY 4.0) · Font Awesome Free (CC BY 4.0 · OFL 1.1 · MIT) · Simple Icons (CC0 1.0) · Animals/Nature/Science (your system emoji font) · Star Icons (MIT, original).",
+    );
+
+    heading("Required attribution");
+    para(
+      "Twemoji graphics — Twitter, Inc. (https://twemoji.twitter.com), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "Font Awesome Free — Fonticons, Inc. (https://fontawesome.com), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "OpenMoji — https://openmoji.org, licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).",
+    );
+
+    heading("Trademarks");
+    para(
+      "Brand icons are trademarks of their respective owners. Their inclusion does not imply sponsorship, endorsement, affiliation, or ownership by Star Icons.",
+    );
   }
 }

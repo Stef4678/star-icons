@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-for (const pack of ["lucide", "material", "material-outlined", "material-sharp", "tabler", "tabler-filled", "unicons", "unicons-solid", "unicons-monochrome", "unicons-thinline", "remix", "phosphor", "phosphor-bold", "phosphor-fill", "phosphor-light", "phosphor-thin", "phosphor-duotone", "bootstrap", "boxicons", "boxicons-solid", "boxicons-logos", "heroicons", "heroicons-solid", "fontawesome", "simple-icons", "ionicons", "antd", "line-awesome", "eva", "octicons", "cssgg", "openmoji", "openmoji-black", "twemoji", "fluent"]) {
+for (const pack of ["lucide", "material", "material-outlined", "material-sharp", "tabler", "tabler-filled", "unicons", "unicons-solid", "unicons-monochrome", "unicons-thinline", "remix", "phosphor", "phosphor-bold", "phosphor-fill", "phosphor-light", "phosphor-thin", "phosphor-duotone", "bootstrap", "boxicons", "boxicons-solid", "boxicons-logos", "heroicons", "heroicons-solid", "fontawesome", "simple-icons", "ionicons", "antd", "line-awesome", "eva", "octicons", "openmoji", "openmoji-black", "twemoji", "fluent"]) {
   const data = JSON.parse(readFileSync(path.join(root, "src", "data", "generated", `${pack}.json`), "utf8"));
   let malformed = 0;
   let control = 0;

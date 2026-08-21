@@ -1641,3 +1641,15 @@
 .si-settings-box {
   flex-basis: 100%;
 }
+
+/* --- About: licenses & attribution --------------------------------------- */
+
+.si-licenses h4 {
+  margin: 0.8em 0 0.25em;
+}
+
+.si-licenses p {
+  margin: 0.2em 0 0.6em;
+  opacity: 0.85;
+  line-height: 1.5;
+}

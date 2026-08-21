@@ -1,6 +1,6 @@
 # ⭐ Star Icons
 
-**The icon collection manager for Obsidian** — 72,000+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
+**The icon collection manager for Obsidian** — 71,000+ icons, organized into collections and tags, and applied to files, folders and tabs through an intuitive rules engine with live preview and full transparency.
 
 Star Icons takes a third path in the icon-plugin landscape:
 
@@ -8,7 +8,14 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-72.4k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-after-first-load-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/manager-71.7k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-after-first-load-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+
+> ⚠️ **Attribution & trademarks:** Star Icons bundles icon sets from many third
+> parties — Font Awesome, Twemoji, OpenMoji, Simple Icons, brand logos and
+> more. Every pack keeps its original license and any required credit line
+> (details in [Licenses & trademarks](#licenses--trademarks) below), and
+> third-party logos/names are trademarks of their respective owners — their
+> inclusion here is not an endorsement.
 
 ---
 
@@ -33,24 +40,24 @@ Star Icons takes a third path in the icon-plugin landscape:
 ### 🗂️ Icon Collection Manager (the hub)
 A dedicated sidebar view — *the* place to browse your icons.
 
-- **72,361 icons, offline after first load** — pack data ships with the repo
+- **71,657 icons, offline after first load** — pack data ships with the repo
   and manual installs; when a pack file is missing (Obsidian's community
   installer only downloads `main.js`, `styles.css` and `manifest.json`) it is
   fetched once from a CDN and **cached locally**, so everything works offline
   afterwards. Packs load **on demand**: `main.js` stays small, only the packs
   you enable are read, and every icon carries **style tags**
-  (`outline`, `filled`, `bold`, `color`, `brand`…) so searching 72k icons never
-  feels like 72k near-duplicates.
+  (`outline`, `filled`, `bold`, `color`, `brand`…) so searching 71k icons never
+  feels like 71k near-duplicates.
   - **Core — on by default (26,932 icons):** Material Symbols (7,798) ·
     Tabler (5,130) · Remix Icon (3,078) · Bootstrap (2,078) · Lucide (2,025) ·
     OpenMoji Color (1,718) · Phosphor (1,512) · Unicons (1,215) ·
     Tabler Filled (1,054) · Boxicons (814) · Heroicons (324) · Animals (94) ·
     Science (47) · Nature & Flowers (31) · Star Icons (14)
-  - **Extended — opt-in in Settings (45,429 more):** Material Outlined (7,798) ·
+  - **Extended — opt-in in Settings (44,725 more):** Material Outlined (7,798) ·
     Material Sharp (7,798) · Twemoji 🎨 (4,009) · Simple Icons (3,453) ·
     Fluent Emoji 🎨 (3,145) · Phosphor Bold/Fill/Light/Thin/Duotone (7,560) ·
     Font Awesome (2,274) · OpenMoji Mono (1,860) · Ionicons (1,357) ·
-    Line Awesome (1,544) · Ant Design (846) · Octicons (743) · CSS.gg (704) ·
+    Line Awesome (1,544) · Ant Design (846) · Octicons (743) ·
     Boxicons Solid/Logos (820) · Eva (490) · Heroicons Solid (324) ·
     Unicons Solid/Mono/Thinline (704)
 - Search with fuzzy matching across names, tags and styles
@@ -88,8 +95,16 @@ Manual override  >  Rules (in order)  >  File-type default  >  Global default
 - Pack on/off toggles (instantly shrinks search space)
 - Export / import your whole configuration as JSON
 - Settings reset, keyboard-navigable icon picker, dark/light theme aware
-- Zero runtime dependencies beyond the Obsidian API — pack data is bundled or
-  fetched on demand and cached locally
+- No runtime dependencies beyond the Obsidian API — the plugin itself ships
+  standalone; the icon data comes from many third-party icon libraries (each
+  with its own license, see [Licenses & trademarks](#licenses--trademarks))
+  and is bundled or fetched on demand and cached locally
+
+### 🎨 Custom icons and SVG support
+Star Icons allows users to import SVG files, paste SVG markup, define custom tags, copy icon names or SVG code, and organize personal icons in the “My Icons” pack. Imported SVGs are normalized to a 24×24 viewBox when necessary. Custom icons can be favorited, added to collections, assigned to files and folders, and used in rules like bundled icons.
+
+### ⚡ Dynamic pack loading
+Icon packs are loaded on demand. Only enabled packs are mounted into the icon index, keeping startup time and search performance responsive even when the full library contains tens of thousands of icons.
 
 ---
 
@@ -151,36 +166,87 @@ preview to sanity-check before saving.
 
 ## 📦 Icon packs
 
+### Core — on by default (26,932 icons)
+
 | Pack | Count | Style | Source |
 | --- | --- | --- | --- |
 | Material Symbols | 7,798 | rounded (base+fill) | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
-| Material Outlined / Sharp | 15,596 | outlined / sharp | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
-| Tabler / Tabler Filled | 6,184 | outline / filled | [tabler.io/icons](https://tabler.io/icons) (MIT) |
-| Remix Icon | 3,078 | line + fill | [remixicon.com](https://remixicon.com) (Apache 2.0) |
+| Tabler | 5,130 | outline | [tabler.io/icons](https://tabler.io/icons) (MIT) |
+| Remix Icon | 3,078 | line + fill | [remixicon.com](https://remixicon.com) (Remix Icon License v1.0) |
+| Bootstrap Icons | 2,078 | filled | [icons.getbootstrap.com](https://icons.getbootstrap.com) (MIT) |
+| Lucide | 2,025 | stroke | [lucide.dev](https://lucide.dev) (ISC) |
+| OpenMoji Color | 1,718 | full-color emoji | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
+| Phosphor | 1,512 | regular | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Unicons | 1,215 | line | [iconscout.com/unicons](https://iconscout.com/unicons) (IconScout Simple License) |
+| Tabler Filled | 1,054 | filled | [tabler.io/icons](https://tabler.io/icons) (MIT) |
+| Boxicons | 814 | regular | [boxicons.com](https://boxicons.com) (MIT) |
+| Heroicons | 324 | outline | [heroicons.com](https://heroicons.com) (MIT) |
+| Animals | 94 | system emoji | rendered with your OS emoji font |
+| Science | 47 | system emoji | rendered with your OS emoji font |
+| Nature & Flowers | 31 | system emoji | rendered with your OS emoji font |
+| Star Icons | 14 | custom | original (MIT) |
+
+### Extended — opt-in in Settings (44,725 icons)
+
+| Pack | Count | Style | Source |
+| --- | --- | --- | --- |
+| Material Outlined | 7,798 | outlined | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
+| Material Sharp | 7,798 | sharp | [Google Fonts](https://fonts.google.com/icons) (Apache 2.0) |
 | Twemoji | 4,009 | full-color emoji | [twemoji](https://twemoji.twitter.com) (CC BY 4.0) |
 | Simple Icons | 3,453 | brand logos | [simpleicons.org](https://simpleicons.org) (CC0) |
 | Fluent Emoji | 3,145 | full-color flat | [fluentui-emoji](https://github.com/microsoft/fluentui-emoji) (MIT) |
-| Phosphor (×6 weights) | 9,072 | regular/bold/fill/light/thin/duotone | [phosphoricons.com](https://phosphoricons.com) (MIT) |
-| Bootstrap Icons | 2,078 | filled | [icons.getbootstrap.com](https://icons.getbootstrap.com) (MIT) |
-| Lucide | 2,025 | stroke | [lucide.dev](https://lucide.dev) (ISC) |
-| OpenMoji Color / Mono | 3,578 | color / monochrome emoji | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
-| Font Awesome Free | 2,274 | solid + regular | [fontawesome.com](https://fontawesome.com) (CC BY 4.0) |
-| Unicons (×4 styles) | 1,919 | line/solid/mono/thinline | [iconscout.com/unicons](https://iconscout.com/unicons) (Apache 2.0) |
+| Font Awesome Free | 2,274 | solid + regular | [fontawesome.com](https://fontawesome.com) (CC BY 4.0 · OFL 1.1 · MIT) |
+| OpenMoji Mono | 1,860 | monochrome emoji | [openmoji.org](https://openmoji.org) (CC BY-SA 4.0) |
 | Ionicons | 1,357 | base + outline + sharp | [ionicons.com](https://ionic.io/ionicons) (MIT) |
 | Line Awesome | 1,544 | line (incl. brands) | [icons8.com/line-awesome](https://icons8.com/line-awesome) (MIT) |
+| Phosphor Bold | 1,512 | bold | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Phosphor Fill | 1,512 | fill | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Phosphor Light | 1,512 | light | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Phosphor Thin | 1,512 | thin | [phosphoricons.com](https://phosphoricons.com) (MIT) |
+| Phosphor Duotone | 1,512 | duotone | [phosphoricons.com](https://phosphoricons.com) (MIT) |
 | Ant Design | 846 | outlined/filled/twotone | [ant.design](https://ant.design/components/icon) (MIT) |
-| Boxicons (×3 styles) | 1,634 | regular/solid/logos | [boxicons.com](https://boxicons.com) (MIT) |
 | Octicons | 743 | filled | [primer.style/octicons](https://primer.style/octicons) (MIT) |
-| CSS.gg | 704 | stroke | [css.gg](https://css.gg) (MIT) |
+| Boxicons Solid | 665 | solid | [boxicons.com](https://boxicons.com) (MIT) |
 | Eva Icons | 490 | outline + fill | [akveo.github.io/eva-icons](https://akveo.github.io/eva-icons) (MIT) |
-| Heroicons / Solid | 648 | outline / filled | [heroicons.com](https://heroicons.com) (MIT) |
-| Animals / Science / Nature | 172 | system emoji | rendered with your OS emoji font |
-| Star Icons | 14 | custom | original (MIT) |
+| Heroicons Solid | 324 | filled | [heroicons.com](https://heroicons.com) (MIT) |
+| Unicons Monochrome | 298 | monochrome | [iconscout.com/unicons](https://iconscout.com/unicons) (IconScout Simple License) |
+| Unicons Thinline | 216 | thinline | [iconscout.com/unicons](https://iconscout.com/unicons) (IconScout Simple License) |
+| Unicons Solid | 190 | solid | [iconscout.com/unicons](https://iconscout.com/unicons) (IconScout Simple License) |
+| Boxicons Logos | 155 | logos | [boxicons.com](https://boxicons.com) (MIT) |
+
+**Total: 71,657 icons** (26,932 core + 44,725 extended).
 
 ### Licenses & trademarks
-- **Attribution (CC BY):** Font Awesome Free and Twemoji require a credit line — provided above and in the plugin's About/README.
-- **Share-alike (CC BY-SA):** OpenMoji SVGs are bundled unmodified.
-- **Brands:** Simple Icons (CC0), Boxicons Logos, Line Awesome brands and Octicons contain third-party logos. Free to use; do not imply endorsement.
+Every bundled pack keeps its original license and copyright, and any required
+credit line stays visible here. The complete per-pack inventory — sources,
+versions, attribution requirements and compliance notes — is maintained in
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), with full license texts in
+[`licenses/`](licenses/).
+
+| Pack(s) | License | Attribution | Modifications |
+| --- | --- | --- | --- |
+| Twemoji | CC BY 4.0 | ⚠️ **Credit line required** | Mark modifications if applicable |
+| Font Awesome Free | CC BY 4.0 (icons) · OFL 1.1 (fonts) · MIT (code) | ⚠️ **Credit line required** | Check logo and trademark restrictions |
+| OpenMoji Color / Mono | CC BY-SA 4.0 | Attribution + share-alike | Share adaptations under the same license |
+| Material Symbols (base, Outlined, Sharp) | Apache 2.0 | Keep license + copyright notices | Preserve notices |
+| Lucide | ISC | Keep copyright notice | Preserve notice |
+| Remix Icon | Remix Icon License v1.0 | Keep a license copy when redistributing the set | Custom license — review terms |
+| Unicons (all styles) | IconScout Simple License | Not required (encouraged) | Attribute the creator when republishing edited assets |
+| Tabler · Tabler Filled · Bootstrap · Phosphor (all weights) · Ionicons · Line Awesome · Ant Design · Boxicons (all styles) · Octicons · Eva · Heroicons · Fluent Emoji | MIT | Keep copyright notice | — |
+| Simple Icons | CC0 | None required | — |
+| Animals · Nature & Flowers · Science | OS emoji font | None required | Rendered with your system emoji font; no font is redistributed |
+| Star Icons (custom) | MIT (original) | None required | — |
+
+Brand icons are trademarks of their respective owners. Their inclusion does
+not imply sponsorship, endorsement, affiliation, or ownership by Star Icons.
+This applies especially to Simple Icons and the "brands" packs (Boxicons
+Logos, Line Awesome brands, Octicons), which contain logos of GitHub, Google,
+Microsoft, Apple, Docker, OpenAI and others — an icon license does not grant
+trademark rights.
+
+The Animals, Nature & Flowers and Science packs render Unicode emoji with your
+system's emoji font; Star Icons does not redistribute emoji font files, so the
+applicable license is your operating system's font license.
 
 ---
 
@@ -198,4 +264,12 @@ Star Icons is open source (MIT) — [star on GitHub](https://github.com/Stef4678
 
 ## 📜 License
 
-MIT © 2026 Kerekes Stefan (Star Icons). Bundled icon packs retain their respective licenses (see above).
+The Star Icons source code and original Star Icons assets are licensed under
+the MIT License — see [`LICENSE`](LICENSE).
+
+Third-party icon packs are not relicensed under MIT. Each bundled pack remains
+under its original license. See [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md)
+and the in-app Licenses and Attribution section for details.
+
+Brand icons and logos are trademarks of their respective owners. Their inclusion
+does not imply sponsorship, endorsement, affiliation, or ownership by Star Icons.
