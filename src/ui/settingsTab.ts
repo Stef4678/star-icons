@@ -595,8 +595,8 @@ export class StarIconsSettingTab extends PluginSettingTab {
       );
 
     const box = el.createDiv({ cls: "si-licenses" });
-    const heading = (text: string) => box.createEl("h4", { text });
     const para = (text: string) => box.createEl("p", { text });
+    const heading = (text: string) => new Setting(box).setName(text).setHeading();
 
     heading("Project license");
     para(
