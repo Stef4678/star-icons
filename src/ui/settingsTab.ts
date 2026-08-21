@@ -30,9 +30,9 @@ import {
   SOUND_KIND_GROUPS,
   SOUND_KIND_LABELS,
   SOUND_PACKS,
-  SoundKind,
   SoundPackId,
 } from "../types";
+import type { SoundKind } from "../types";
 import { mergeSettings } from "../settings";
 import { downloadJson, normalizeExt, uid } from "../utils";
 import { makeSortable, renderIcon } from "./components";
@@ -265,7 +265,6 @@ export class StarIconsSettingTab extends PluginSettingTab {
                 sl
                   .setLimits(0, 100, 5)
                   .setValue(s.soundIntensity)
-                  .setDynamicTooltip()
                   .onChange((v) => {
                     s.soundIntensity = v;
                     void this.plugin.saveSettings();

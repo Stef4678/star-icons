@@ -1715,6 +1715,11 @@
 
 .si-color-custom {
   position: relative;
+  background: conic-gradient(#e93147, #f5b301, #98c379, #40c4ff, #a78bfa, #e93147);
+}
+
+.si-color-custom.is-custom {
+  background: var(--si-swatch, #ffffff);
 }
 
 .si-color-custom-plus {
@@ -1977,6 +1982,10 @@
   cursor: grab;
 }
 
+.si-galaxy-canvas canvas.is-hovering {
+  cursor: pointer;
+}
+
 .si-galaxy-search {
   position: absolute;
   top: 14px;
@@ -2001,6 +2010,11 @@
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: none;
+}
+
+.si-galaxy-tooltip.is-visible {
+  display: block;
 }
 
 .si-galaxy-panel {

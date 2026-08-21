@@ -26,7 +26,9 @@ export interface GalaxyViewOptions {
 
 function webglAvailable(): boolean {
   try {
-    const canvas = document.createElement("canvas");
+    // createEl appends to the document body by default — detach the probe.
+    const canvas = createEl("canvas");
+    canvas.remove();
     return !!(
       window.WebGLRenderingContext &&
       (canvas.getContext("webgl2") || canvas.getContext("webgl"))
@@ -101,13 +103,12 @@ export class GalaxyViewModal extends Modal {
     this.contentEl.addClass("si-galaxy");
     this.buildDom();
     this.initScene();
-    this.animate = this.animate.bind(this);
-    this.rafId = requestAnimationFrame(this.animate);
+    this.rafId = window.requestAnimationFrame(this.animate);
   }
 
   onClose(): void {
     this.disposed = true;
-    cancelAnimationFrame(this.rafId);
+    window.cancelAnimationFrame(this.rafId);
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     this.controls?.dispose();
@@ -148,7 +149,6 @@ export class GalaxyViewModal extends Modal {
     });
 
     this.tooltipEl = content.createDiv({ cls: "si-galaxy-tooltip" });
-    this.tooltipEl.style.display = "none";
 
     this.panelEl = content.createDiv({ cls: "si-galaxy-panel" });
     this.panelHintEl = content.createDiv({
@@ -305,23 +305,25 @@ export class GalaxyViewModal extends Modal {
     this.lastRaycast = now;
     const index = this.pickAt(ev);
     this.hovered = index;
-    this.renderer.domElement.style.cursor = index !== null ? "pointer" : "grab";
+    this.renderer.domElement.toggleClass("is-hovering", index !== null);
     if (index !== null) {
       const id = this.data.iconIds[index];
-      this.tooltipEl.style.display = "block";
-      this.tooltipEl.style.left = `${ev.clientX + 14}px`;
-      this.tooltipEl.style.top = `${ev.clientY + 14}px`;
+      this.tooltipEl.addClass("is-visible");
+      this.tooltipEl.setCssStyles({
+        left: `${ev.clientX + 14}px`,
+        top: `${ev.clientY + 14}px`,
+      });
       const def = getIcon(id);
-      this.tooltipEl.setText(def ? `${def.name} · ${PACK_LABELS[def.pack as keyof typeof PACK_LABELS] ?? def.pack}` : id);
+      this.tooltipEl.setText(def ? `${def.name} · ${PACK_LABELS[def.pack] ?? def.pack}` : id);
     } else {
-      this.tooltipEl.style.display = "none";
+      this.tooltipEl.removeClass("is-visible");
     }
   };
 
   private onPointerLeave = (): void => {
     this.hovered = null;
-    this.tooltipEl.style.display = "none";
-    this.renderer.domElement.style.cursor = "grab";
+    this.tooltipEl.removeClass("is-visible");
+    this.renderer.domElement.removeClass("is-hovering");
   };
 
   private onClick = (ev: MouseEvent): void => {
@@ -468,7 +470,8 @@ export class GalaxyViewModal extends Modal {
   /* --- sprite textures -------------------------------------------------------- */
 
   private glowTexture(): THREE.Texture {
-    const canvas = document.createElement("canvas");
+    const canvas = createEl("canvas");
+    canvas.remove();
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d")!;
@@ -484,7 +487,8 @@ export class GalaxyViewModal extends Modal {
   }
 
   private labelTexture(text: string): THREE.Texture {
-    const canvas = document.createElement("canvas");
+    const canvas = createEl("canvas");
+    canvas.remove();
     canvas.width = 512;
     canvas.height = 128;
     const ctx = canvas.getContext("2d")!;
@@ -508,7 +512,8 @@ export class GalaxyViewModal extends Modal {
     const img = new Image();
     img.onload = () => {
       if (this.disposed) return;
-      const canvas = document.createElement("canvas");
+      const canvas = createEl("canvas");
+      canvas.remove();
       canvas.width = 128;
       canvas.height = 128;
       const ctx = canvas.getContext("2d")!;
@@ -521,7 +526,7 @@ export class GalaxyViewModal extends Modal {
       ctx.drawImage(img, 30, 30, 68, 68);
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
-      const mat = this.highlight.material as THREE.SpriteMaterial;
+      const mat = this.highlight.material;
       if (mat.map && mat.map !== this.glowTex) mat.map.dispose();
       mat.map = tex;
       mat.needsUpdate = true;
@@ -534,9 +539,9 @@ export class GalaxyViewModal extends Modal {
 
   /* --- loop --------------------------------------------------------------- */
 
-  private animate(time: number): void {
+  private animate = (time: number): void => {
     if (this.disposed) return;
-    this.rafId = requestAnimationFrame(this.animate);
+    this.rafId = window.requestAnimationFrame(this.animate);
     this.controls.update();
     // Slow galaxy rotation + subtle twinkle.
     const group = this.galaxyPoints.parent;
@@ -547,7 +552,7 @@ export class GalaxyViewModal extends Modal {
     }
     if (this.fly) this.stepFly(time);
     this.renderer.render(this.scene, this.camera);
-  }
+  };
 }
 
 function disposeMaterial(m: THREE.Material): void {

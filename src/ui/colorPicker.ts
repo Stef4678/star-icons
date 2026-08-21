@@ -63,14 +63,13 @@ export function renderColorPicker(container: HTMLElement, opts: ColorPickerOptio
     cls: "si-color-input",
     attr: { type: "color" },
   });
-  if (isCustom) {
-    custom.style.background = current;
-  } else {
-    custom.style.background =
-      "conic-gradient(#e93147, #f5b301, #98c379, #40c4ff, #a78bfa, #e93147)";
-  }
+  // The swatch shows the chosen color (via a CSS custom property) or a
+  // rainbow hint when none is set (default class style).
+  custom.toggleClass("is-custom", isCustom);
+  if (isCustom) custom.setCssProps({ "--si-swatch": current });
   input.addEventListener("input", () => {
-    custom.style.background = input.value;
+    custom.toggleClass("is-custom", true);
+    custom.setCssProps({ "--si-swatch": input.value });
     opts.onChange(input.value);
   });
   swatches.appendChild(custom);
