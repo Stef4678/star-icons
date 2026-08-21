@@ -3,7 +3,7 @@
 	"name": "Star Icons",
 	"version": "1.0.4",
 	"minAppVersion": "1.13.0",
-	"description": "The icon collection manager for Obsidian. Browse 71,000+ bundled icons, build collections and tags, and apply icons to files, folders and tabs with an intuitive rules engine and live preview.",
+	"description": "The icon collection manager. Browse and manage 71,000+ bundled icons from Lucide, Material Symbols and custom star packs, build collections and tags, and apply icons to files, folders and tabs with an intuitive rules engine and live preview.",
 	"author": "Stef4678",
 	"authorUrl": "https://github.com/Stef4678",
 	"isDesktopOnly": false
