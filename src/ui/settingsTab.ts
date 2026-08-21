@@ -27,8 +27,8 @@ import {
   Rule,
   ALL_PACKS,
   DEFAULT_REPORT_URL,
+  SOUND_KIND_GROUPS,
   SOUND_KIND_LABELS,
-  SOUND_KIND_ORDER,
   SOUND_PACKS,
   SoundKind,
   SoundPackId,
@@ -813,75 +813,88 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
     el.createDiv({
       cls: "si-hint",
-      text: "Upload an audio file to replace a built-in sound. Files are copied into the plugin folder and used as-is (the intensity slider still controls volume).",
+      text: "Upload an audio file to replace a built-in sound (animals included — dog → bark, cat → meow…). Files are copied into the plugin folder and used as-is (the intensity slider still controls volume).",
     });
 
     const list = el.createDiv({ cls: "si-sound-list" });
     const render = () => {
       list.empty();
-      for (const kind of SOUND_KIND_ORDER) {
-        const path = s.customSounds[kind];
-        const row = list.createDiv({ cls: "si-sound-row" });
-        row.createSpan({ cls: "si-sound-kind", text: SOUND_KIND_LABELS[kind] });
-        const fileEl = row.createSpan({
-          cls: "si-sound-file" + (path ? " has-file" : ""),
-          text: path ? path.split("/").pop() ?? path : "synthesized",
-        });
-        fileEl.title = path ?? "";
-
-        const play = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
-        play.createSpan({ text: "Play" });
-        play.addEventListener("click", () => this.plugin.soundscape?.playKind(kind));
-
-        const upload = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
-        upload.createSpan({ text: "Upload" });
-        upload.addEventListener("click", () => {
-          const input = createEl("input", { attr: { type: "file", accept: "audio/*" } });
-          input.addEventListener("change", () => {
-            const file = input.files?.[0];
-            if (!file) return;
-            void (async () => {
-              const buffer = await file.arrayBuffer();
-              const dir = normalizePath(
-                `${this.plugin.app.vault.configDir}/plugins/${this.plugin.manifest.id}/sounds`,
-              );
-              try {
-                await this.plugin.app.vault.adapter.mkdir(dir);
-              } catch {
-                /* already exists */
-              }
-              const ext = (file.name.split(".").pop() ?? "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
-              const target = normalizePath(`${dir}/${kind}-${Date.now().toString(36)}.${ext}`);
-              try {
-                await this.plugin.app.vault.adapter.writeBinary(target, buffer);
-              } catch (err) {
-                new Notice("Could not save the sound file");
-                console.warn("[Star Icons] sound write failed", err);
-                return;
-              }
-              s.customSounds[kind] = target;
-              await this.plugin.saveSettings();
-              const ok = await this.plugin.soundscape?.loadCustom(kind, target);
-              new Notice(ok ? `Sound loaded for “${SOUND_KIND_LABELS[kind]}”` : "Sound file could not be decoded");
-              render();
-            })();
-          });
-          input.click();
-        });
-
-        if (path) {
-          const clear = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
-          clear.createSpan({ text: "Clear" });
-          clear.addEventListener("click", () => {
-            delete s.customSounds[kind];
-            void this.plugin.saveSettings();
-            this.plugin.soundscape?.clearCustom(kind);
-            render();
-          });
+      for (const group of SOUND_KIND_GROUPS) {
+        const head = list.createDiv({ cls: "si-sound-group", text: group.title });
+        void head;
+        for (const kind of group.kinds) {
+          this.soundRow(list, kind, s.customSounds[kind], render);
         }
       }
     };
     render();
+  }
+
+  private soundRow(
+    list: HTMLElement,
+    kind: SoundKind,
+    path: string | undefined,
+    render: () => void,
+  ): void {
+    const s = this.plugin.settings;
+    const row = list.createDiv({ cls: "si-sound-row" });
+    row.createSpan({ cls: "si-sound-kind", text: SOUND_KIND_LABELS[kind] });
+    const fileEl = row.createSpan({
+      cls: "si-sound-file" + (path ? " has-file" : ""),
+      text: path ? path.split("/").pop() ?? path : "synthesized",
+    });
+    fileEl.title = path ?? "";
+
+    const play = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+    play.createSpan({ text: "Play" });
+    play.addEventListener("click", () => this.plugin.soundscape?.playKind(kind));
+
+    const upload = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+    upload.createSpan({ text: "Upload" });
+    upload.addEventListener("click", () => {
+      const input = createEl("input", { attr: { type: "file", accept: "audio/*" } });
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        void (async () => {
+          const buffer = await file.arrayBuffer();
+          const dir = normalizePath(
+            `${this.plugin.app.vault.configDir}/plugins/${this.plugin.manifest.id}/sounds`,
+          );
+          try {
+            await this.plugin.app.vault.adapter.mkdir(dir);
+          } catch {
+            /* already exists */
+          }
+          const ext = (file.name.split(".").pop() ?? "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
+          const target = normalizePath(`${dir}/${kind}-${Date.now().toString(36)}.${ext}`);
+          try {
+            await this.plugin.app.vault.adapter.writeBinary(target, buffer);
+          } catch (err) {
+            new Notice("Could not save the sound file");
+            console.warn("[Star Icons] sound write failed", err);
+            return;
+          }
+          s.customSounds[kind] = target;
+          await this.plugin.saveSettings();
+          const ok = await this.plugin.soundscape?.loadCustom(kind, target);
+          new Notice(ok ? `Sound loaded for “${SOUND_KIND_LABELS[kind]}”` : "Sound file could not be decoded");
+          render();
+        })();
+      });
+      input.click();
+    });
+
+    if (path) {
+      const clear = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+      clear.createSpan({ text: "Clear" });
+      clear.addEventListener("click", () => {
+        delete s.customSounds[kind];
+        void this.plugin.saveSettings();
+        this.plugin.soundscape?.clearCustom(kind);
+        render();
+      });
+    }
   }
 
   /* --- data ------------------------------------------------------------------------ */

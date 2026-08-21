@@ -1896,6 +1896,19 @@
   margin-top: 8px;
 }
 
+.si-sound-group {
+  margin: 8px 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.si-sound-group:first-child {
+  margin-top: 0;
+}
+
 .si-sound-row {
   display: flex;
   align-items: center;

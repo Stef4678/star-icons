@@ -201,9 +201,9 @@ export const ICON_COLOR_PALETTE: string[] = [
 
 /**
  * The kinds of sounds the engine can play. Icon-specific kinds are derived
- * from an icon's name (star -> twinkle, trash -> crash, bell -> ding…);
- * `click`/`select`/`transition` are the interaction sounds (hover, pick,
- * automatic icon change).
+ * from an icon's name (star -> twinkle, trash -> crash, bell -> ding,
+ * dog -> bark, cat -> meow, …); `click`/`select`/`transition` are the
+ * interaction sounds (hover, pick, automatic icon change).
  */
 export type SoundKind =
   | "click"
@@ -213,7 +213,24 @@ export type SoundKind =
   | "crash"
   | "ding"
   | "pop"
-  | "chime";
+  | "chime"
+  | "bark"
+  | "meow"
+  | "roar"
+  | "chatter"
+  | "chirp"
+  | "cluck"
+  | "quack"
+  | "hoot"
+  | "moo"
+  | "neigh"
+  | "oink"
+  | "baa"
+  | "ribbit"
+  | "squeak"
+  | "buzz"
+  | "trumpet"
+  | "howl";
 
 /** Built-in sound packs (synthesis presets). */
 export type SoundPackId = "8bit" | "cinematic" | "minimal";
@@ -224,17 +241,42 @@ export const SOUND_PACKS: { id: SoundPackId; label: string; desc: string }[] = [
   { id: "minimal", label: "Minimal", desc: "Quiet sine blips — barely there." },
 ];
 
-/** Every interaction/icon sound kind, in display order. */
-export const SOUND_KIND_ORDER: SoundKind[] = [
-  "click",
-  "select",
-  "transition",
-  "twinkle",
-  "crash",
-  "ding",
-  "pop",
-  "chime",
+/** Display groups for the custom-sounds list in Settings. */
+export const SOUND_KIND_GROUPS: { title: string; kinds: SoundKind[] }[] = [
+  {
+    title: "Interactions",
+    kinds: ["click", "select", "transition"],
+  },
+  {
+    title: "Themed",
+    kinds: ["twinkle", "crash", "ding", "pop", "chime"],
+  },
+  {
+    title: "Animals",
+    kinds: [
+      "bark",
+      "meow",
+      "roar",
+      "howl",
+      "chatter",
+      "chirp",
+      "cluck",
+      "quack",
+      "hoot",
+      "moo",
+      "neigh",
+      "oink",
+      "baa",
+      "ribbit",
+      "squeak",
+      "buzz",
+      "trumpet",
+    ],
+  },
 ];
+
+/** Every interaction/icon sound kind, in display order. */
+export const SOUND_KIND_ORDER: SoundKind[] = SOUND_KIND_GROUPS.flatMap((g) => g.kinds);
 
 export const SOUND_KIND_LABELS: Record<SoundKind, string> = {
   click: "Hover",
@@ -245,6 +287,23 @@ export const SOUND_KIND_LABELS: Record<SoundKind, string> = {
   ding: "Ding (bells)",
   pop: "Pop (add)",
   chime: "Chime (hearts)",
+  bark: "Bark (dogs)",
+  meow: "Meow (cats)",
+  roar: "Roar (lions, tigers, bears)",
+  howl: "Howl (wolves)",
+  chatter: "Chatter (monkeys)",
+  chirp: "Chirp (songbirds)",
+  cluck: "Cluck (chickens)",
+  quack: "Quack (ducks)",
+  hoot: "Hoot (owls)",
+  moo: "Moo (cows)",
+  neigh: "Neigh (horses)",
+  oink: "Oink (pigs)",
+  baa: "Baa (sheep)",
+  ribbit: "Ribbit (frogs)",
+  squeak: "Squeak (mice, hamsters)",
+  buzz: "Buzz (bees, flies)",
+  trumpet: "Trumpet (elephants)",
 };
 
 export interface StarIconsSettings {

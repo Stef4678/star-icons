@@ -21,11 +21,30 @@ const KIND_RULES: [RegExp, SoundKind][] = [
   [/(heart|love|romance|kiss)/, "chime"],
   [/(plus|add|new|create|bubble)/, "pop"],
   [/(music|note|song|melody|audio|sound|headphone)/, "chime"],
+  // Animals — meaning-matched sounds. Specific rules come before generic ones.
+  [/(wolf|coyote)/, "howl"],
+  [/(dog|fox|puppy|canine|husky|bark)/, "bark"],
+  [/(cat|kitten|feline|meow)/, "meow"],
+  [/(lion|tiger|bear|panda|leopard|jaguar|lynx|panther|cheetah|roar)/, "roar"],
+  [/(monkey|chimpanzee|gorilla|orangutan|primate|ape|chimp)/, "chatter"],
+  [/(bird|sparrow|robin|wren|finch|canary|swallow|dove|parrot|eagle|penguin|peacock|chirp|tweet)/, "chirp"],
+  [/(chicken|hen|rooster|chick|turkey|cluck)/, "cluck"],
+  [/(duck|goose|swan|quack)/, "quack"],
+  [/(owl|hoot)/, "hoot"],
+  [/(cow|bull|ox|bison|buffalo|yak|moo)/, "moo"],
+  [/(horse|pony|donkey|zebra|mule|neigh)/, "neigh"],
+  [/(pig|boar|hog|sow|oink)/, "oink"],
+  [/(sheep|goat|ram|lamb|baa)/, "baa"],
+  [/(frog|toad|ribbit)/, "ribbit"],
+  [/(mouse|hamster|rat|squirrel|chipmunk|guinea|mole|squeak)/, "squeak"],
+  [/(bee|fly|wasp|hornet|mosquito|insect|bug|beetle|buzz)/, "buzz"],
+  [/(elephant|mammoth|trumpet)/, "trumpet"],
 ];
 
 /**
  * Classify an icon by its id/name into a sound kind (star -> twinkle,
- * trash -> crash, bell -> ding, …). Unknown icons get the neutral "click".
+ * trash -> crash, bell -> ding, dog -> bark, …). Unknown icons get the
+ * neutral "click".
  */
 export function soundKindForIcon(nameOrId: string): SoundKind {
   const s = nameOrId.toLowerCase();
@@ -73,6 +92,7 @@ const SINE: OscillatorType = "sine";
 const SQUARE: OscillatorType = "square";
 
 const MINIMAL: PackSpec = {
+  ...animalPack(SINE, undefined, 0.8),
   click: { tones: [{ f: 880, t: 0, d: 0.05, w: SINE, g: 0.5 }], master: 0.5, attack: 0.003, release: 0.04 },
   select: { tones: [{ f: 660, t: 0, d: 0.09, w: SINE }, { f: 990, t: 0.05, d: 0.12, w: SINE }], master: 0.6, attack: 0.003, release: 0.08 },
   transition: {
@@ -117,6 +137,7 @@ const MINIMAL: PackSpec = {
 };
 
 const EIGHT_BIT: PackSpec = {
+  ...animalPack(SQUARE, undefined, 0.7),
   click: { tones: [{ f: 660, t: 0, d: 0.04, w: SQUARE, g: 0.45 }], master: 0.5, attack: 0.002, release: 0.03 },
   select: { tones: [{ f: 523, f2: 784, t: 0, d: 0.1, w: SQUARE, g: 0.5 }], master: 0.55, attack: 0.002, release: 0.05 },
   transition: { tones: [{ f: 220, f2: 880, t: 0, d: 0.18, w: SQUARE, g: 0.45 }], master: 0.6, attack: 0.002, release: 0.06 },
@@ -154,6 +175,7 @@ const EIGHT_BIT: PackSpec = {
 };
 
 const CINEMATIC: PackSpec = {
+  ...animalPack(SINE, { delay: 0.22, feedback: 0.28 }, 0.85),
   click: { tones: [{ f: 440, t: 0, d: 0.08, w: SINE, g: 0.5 }], master: 0.55, attack: 0.006, release: 0.12, echo: { delay: 0.18, feedback: 0.25 } },
   select: {
     tones: [
@@ -211,6 +233,194 @@ const CINEMATIC: PackSpec = {
     echo: { delay: 0.26, feedback: 0.3 },
   },
 };
+
+/* --- animal kinds (meaning-matched, per pack) ------------------------------- */
+
+/**
+ * Animal one-shots, pack-agnostic (waveform is injected per pack). Tones use
+ * the generic Tone shape; `w` is optional and overridden by the pack.
+ * A function (not a const) so the pack literals below can call it — hoisting
+ * avoids the temporal-dead-zone.
+ */
+function animalSpecs(): Record<string, KindSpec> {
+  return {
+  bark: {
+    tones: [
+      { f: 170, t: 0, d: 0.08, g: 0.9 },
+      { f: 150, t: 0.12, d: 0.1, g: 0.8 },
+    ],
+    noise: 0.06,
+    noiseFilter: { type: "lowpass", freq: 900, q: 0.7 },
+    noiseGain: 0.4,
+    master: 0.7,
+    attack: 0.004,
+    release: 0.05,
+  },
+  meow: {
+    tones: [
+      { f: 420, f2: 880, t: 0, d: 0.16, g: 0.7 },
+      { f: 880, f2: 520, t: 0.16, d: 0.22, g: 0.6 },
+    ],
+    master: 0.65,
+    attack: 0.01,
+    release: 0.08,
+  },
+  roar: {
+    tones: [
+      { f: 95, t: 0, d: 0.5, g: 0.9 },
+      { f: 110, t: 0.12, d: 0.45, g: 0.7 },
+    ],
+    noise: 0.5,
+    noiseFilter: { type: "lowpass", freq: 300, freq2: 150, q: 0.7 },
+    noiseGain: 0.7,
+    master: 0.8,
+    attack: 0.02,
+    release: 0.2,
+  },
+  howl: {
+    tones: [
+      { f: 480, f2: 760, t: 0, d: 0.35, g: 0.6 },
+      { f: 760, f2: 500, t: 0.35, d: 0.4, g: 0.6 },
+    ],
+    master: 0.6,
+    attack: 0.02,
+    release: 0.2,
+  },
+  chatter: {
+    tones: [
+      { f: 1300, t: 0, d: 0.04, g: 0.5 },
+      { f: 1500, t: 0.05, d: 0.04, g: 0.5 },
+      { f: 1200, t: 0.1, d: 0.04, g: 0.5 },
+      { f: 1500, t: 0.15, d: 0.05, g: 0.5 },
+    ],
+    master: 0.55,
+    attack: 0.002,
+    release: 0.03,
+  },
+  chirp: {
+    tones: [
+      { f: 2400, f2: 3400, t: 0, d: 0.06, g: 0.6 },
+      { f: 2600, f2: 3600, t: 0.1, d: 0.06, g: 0.6 },
+    ],
+    master: 0.5,
+    attack: 0.002,
+    release: 0.04,
+  },
+  cluck: {
+    tones: [
+      { f: 520, t: 0, d: 0.05, g: 0.7 },
+      { f: 470, t: 0.07, d: 0.05, g: 0.6 },
+      { f: 520, t: 0.14, d: 0.05, g: 0.6 },
+    ],
+    master: 0.6,
+    attack: 0.002,
+    release: 0.03,
+  },
+  quack: {
+    tones: [{ f: 330, f2: 210, t: 0, d: 0.14, g: 0.7 }],
+    noise: 0.14,
+    noiseFilter: { type: "bandpass", freq: 900, q: 1 },
+    noiseGain: 0.35,
+    master: 0.65,
+    attack: 0.005,
+    release: 0.06,
+  },
+  hoot: {
+    tones: [{ f: 420, f2: 330, t: 0, d: 0.28, g: 0.7 }],
+    master: 0.6,
+    attack: 0.01,
+    release: 0.15,
+  },
+  moo: {
+    tones: [{ f: 190, f2: 120, t: 0, d: 0.4, g: 0.8 }],
+    master: 0.7,
+    attack: 0.02,
+    release: 0.2,
+  },
+  neigh: {
+    tones: [{ f: 760, f2: 320, t: 0, d: 0.34, g: 0.6 }],
+    noise: 0.3,
+    noiseFilter: { type: "bandpass", freq: 1400, q: 1 },
+    noiseGain: 0.25,
+    master: 0.6,
+    attack: 0.01,
+    release: 0.15,
+  },
+  oink: {
+    tones: [
+      { f: 260, t: 0, d: 0.07, g: 0.7 },
+      { f: 230, t: 0.1, d: 0.09, g: 0.7 },
+    ],
+    master: 0.6,
+    attack: 0.003,
+    release: 0.05,
+  },
+  baa: {
+    tones: [
+      { f: 520, f2: 360, t: 0, d: 0.2, g: 0.7 },
+      { f: 500, f2: 340, t: 0.24, d: 0.22, g: 0.6 },
+    ],
+    master: 0.6,
+    attack: 0.008,
+    release: 0.1,
+  },
+  ribbit: {
+    tones: [
+      { f: 220, t: 0, d: 0.06, g: 0.7 },
+      { f: 150, t: 0.09, d: 0.08, g: 0.7 },
+    ],
+    master: 0.6,
+    attack: 0.003,
+    release: 0.05,
+  },
+  squeak: {
+    tones: [{ f: 3000, f2: 4200, t: 0, d: 0.09, g: 0.5 }],
+    master: 0.5,
+    attack: 0.003,
+    release: 0.06,
+  },
+  buzz: {
+    tones: [
+      { f: 210, t: 0, d: 0.28, g: 0.5 },
+      { f: 226, t: 0, d: 0.28, g: 0.5 },
+    ],
+    master: 0.6,
+    attack: 0.01,
+    release: 0.15,
+  },
+  trumpet: {
+    tones: [{ f: 210, f2: 140, t: 0, d: 0.32, g: 0.8 }],
+    noise: 0.3,
+    noiseFilter: { type: "lowpass", freq: 700, q: 0.8 },
+    noiseGain: 0.35,
+    master: 0.7,
+    attack: 0.015,
+    release: 0.2,
+  },
+};
+}
+
+/** Build the animal-kind specs for one pack (waveform + echo + gain). */
+function animalPack(
+  wave: OscillatorType,
+  echo: { delay: number; feedback: number } | undefined,
+  gain: number,
+): Record<SoundKind, KindSpec> {
+  const out = {} as Record<SoundKind, KindSpec>;
+  const specs = animalSpecs();
+  for (const kind of Object.keys(specs) as SoundKind[]) {
+    const s = specs[kind];
+    out[kind] = {
+      tones: (s.tones ?? []).map((t) => ({ ...t, w: wave })),
+      ...(s.noise ? { noise: s.noise, noiseFilter: s.noiseFilter, noiseGain: s.noiseGain } : {}),
+      master: (s.master ?? 1) * gain,
+      attack: s.attack ?? 0.005,
+      release: s.release ?? 0.08,
+      ...(echo ? { echo } : {}),
+    };
+  }
+  return out;
+}
 
 const PACKS: Record<SoundPackId, PackSpec> = {
   "8bit": EIGHT_BIT,
@@ -393,7 +603,7 @@ export class SoundEngine {
       src.start();
       return true;
     }
-    playSpec(ctx, PACKS[pack]?.[kind] ?? MINIMAL[kind], master, intensity);
+    playSpec(ctx, PACKS[pack]?.[kind] ?? MINIMAL[kind] ?? MINIMAL.click, master, intensity);
     return true;
   }
 }
