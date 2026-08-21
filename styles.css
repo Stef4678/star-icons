@@ -1649,3 +1649,421 @@
   opacity: 0.85;
   line-height: 1.5;
 }
+
+/* --------------------------------------------------------------------------
+   Color palette (tinting applied icons)
+   -------------------------------------------------------------------------- */
+
+.si-color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.si-color-label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.si-color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.si-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid var(--si-border);
+  border-radius: 50%;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.si-color-swatch:hover {
+  border-color: var(--si-gold);
+  transform: scale(1.08);
+}
+
+.si-color-swatch.is-active {
+  border-color: var(--si-gold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--si-gold) 30%, transparent);
+}
+
+.si-color-auto {
+  background:
+    linear-gradient(
+      to top left,
+      transparent 0%,
+      transparent calc(50% - 1px),
+      var(--text-faint) 50%,
+      transparent calc(50% + 1px),
+      transparent 100%
+    ),
+    var(--background-secondary);
+}
+
+.si-color-custom {
+  position: relative;
+}
+
+.si-color-custom-plus {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.si-color-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* small color indicator dot (rule rows, file-type color buttons);
+   JS sets the inline background for colored dots */
+.si-color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--si-border);
+  background:
+    linear-gradient(
+      to top left,
+      transparent 0%,
+      transparent calc(50% - 1px),
+      var(--text-faint) 50%,
+      transparent calc(50% + 1px),
+      transparent 100%
+    ),
+    var(--background-secondary);
+  flex: none;
+}
+
+/* icon picker: palette row above the grid */
+.si-picker-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+}
+
+.si-picker-color-host {
+  flex: 1;
+  min-width: 0;
+}
+
+/* rule editor: color row under the action */
+.si-action-color-row {
+  align-items: flex-start;
+}
+
+.si-action-color {
+  flex: 1;
+  min-width: 0;
+}
+
+/* color modal */
+.si-color-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Dataview collections (settings + manager)
+   -------------------------------------------------------------------------- */
+
+.si-dv-status.is-ok {
+  color: var(--text-normal);
+}
+
+.si-dv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.si-dv-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+}
+
+.si-dv-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.si-dv-row.si-dv-query-row {
+  align-items: flex-start;
+}
+
+.si-dv-label {
+  flex: none;
+  width: 96px;
+}
+
+.si-dv-prop {
+  max-width: 200px;
+}
+
+.si-dv-query {
+  flex: 1;
+  min-height: 0;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  resize: vertical;
+}
+
+.si-dv-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.si-dv-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.si-dv-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.si-dv-swatches {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.si-dv-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Soundscapes (settings)
+   -------------------------------------------------------------------------- */
+
+.si-sound-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.si-sound-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+}
+
+.si-sound-kind {
+  flex: none;
+  width: 130px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.si-sound-file {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-sound-file.has-file {
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+}
+
+/* --------------------------------------------------------------------------
+   Icon Galaxy (3D view)
+   -------------------------------------------------------------------------- */
+
+.si-galaxy-modal.modal {
+  width: min(1100px, 92vw);
+  max-width: 92vw;
+  height: min(720px, 86vh);
+  max-height: 86vh;
+}
+
+.si-galaxy-modal .modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.si-galaxy {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, #0b0e1a 0%, #05060a 70%);
+}
+
+.si-galaxy-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.si-galaxy-canvas canvas {
+  display: block;
+  cursor: grab;
+}
+
+.si-galaxy-search {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, 70%);
+  z-index: 5;
+  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+}
+
+.si-galaxy-tooltip {
+  position: fixed;
+  z-index: 20;
+  padding: 4px 10px;
+  border-radius: var(--radius-s, 6px);
+  background: var(--background-secondary);
+  border: 1px solid var(--si-border);
+  color: var(--text-normal);
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.si-galaxy-panel {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--si-border);
+  border-radius: var(--si-radius);
+  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+  backdrop-filter: blur(6px);
+  min-width: 220px;
+  max-width: min(360px, 60%);
+}
+
+.si-galaxy-panel-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.si-galaxy-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.si-galaxy-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--si-radius);
+  background: var(--background-primary);
+  border: 1px solid var(--si-border);
+  color: var(--text-normal);
+}
+
+.si-galaxy-meta {
+  min-width: 0;
+}
+
+.si-galaxy-name {
+  font-weight: 600;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-galaxy-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.si-galaxy-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.si-galaxy-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  color: var(--text-faint);
+  font-size: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+}

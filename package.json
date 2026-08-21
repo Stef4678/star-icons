@@ -29,6 +29,7 @@
     "@svgmoji/twemoji": "^3.2.0",
     "@tabler/icons": "^3.46.0",
     "@types/node": "^26.2.0",
+    "@types/three": "^0.185.4",
     "bootstrap-icons": "^1.13.1",
     "boxicons": "^2.1.4",
     "css.gg": "^2.1.4",
@@ -49,5 +50,8 @@
     "twemoji-svg": "^17.0.2",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
   }
 }

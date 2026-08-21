@@ -193,12 +193,28 @@ export function matchRule(rule: Rule, ctx: FileContext): boolean {
 
 /* --- resolution -------------------------------------------------------- */
 
-export function resolveIcon(settings: StarIconsSettings, ctx: FileContext): Resolution {
+/**
+ * Resolve the icon (and optional color) for a file/folder.
+ *
+ * `dataviewResults` maps Dataview-collection id -> cached icon id list
+ * (refreshed by the plugin); it keeps this function pure — no Obsidian or
+ * Dataview access is needed to pick a deterministic "random" icon.
+ */
+export function resolveIcon(
+  settings: StarIconsSettings,
+  ctx: FileContext,
+  dataviewResults?: Record<string, string[]>,
+): Resolution {
   // 1. manual override
   const override = settings.overrides[ctx.path];
   if (override) {
     return valid(settings, override)
-      ? { iconId: override, source: "override", detail: "Manual override" }
+      ? {
+          iconId: override,
+          color: settings.overrideColors?.[ctx.path],
+          source: "override",
+          detail: "Manual override",
+        }
       : { iconId: null, source: "override", detail: "Manual override (icon unavailable)" };
   }
 
@@ -209,7 +225,13 @@ export function resolveIcon(settings: StarIconsSettings, ctx: FileContext): Reso
     const action = rule.action;
     if (action.type === "icon") {
       return valid(settings, action.iconId)
-        ? { iconId: action.iconId, source: "rule", detail: rule.name, ruleId: rule.id }
+        ? {
+            iconId: action.iconId,
+            color: action.color,
+            source: "rule",
+            detail: rule.name,
+            ruleId: rule.id,
+          }
         : { iconId: null, source: "rule", detail: `${rule.name} (icon unavailable)`, ruleId: rule.id };
     }
     if (action.type === "clear") {
@@ -222,6 +244,7 @@ export function resolveIcon(settings: StarIconsSettings, ctx: FileContext): Reso
         const id = ids[stableIndex(`${ctx.path}:${rule.id}`, ids.length)];
         return {
           iconId: id,
+          color: action.color,
           source: "rule",
           detail: `${rule.name} (random from "${col?.name ?? "collection"}")`,
           ruleId: rule.id,
@@ -229,13 +252,37 @@ export function resolveIcon(settings: StarIconsSettings, ctx: FileContext): Reso
       }
       continue; // empty collection -> fall through to next priority
     }
+    if (action.type === "randomDataview") {
+      const ids = dataviewResults?.[action.dataviewCollectionId] ?? [];
+      if (ids.length) {
+        const id = ids[stableIndex(`${ctx.path}:${rule.id}`, ids.length)];
+        if (valid(settings, id)) {
+          const col = settings.dataviewCollections.find(
+            (c) => c.id === action.dataviewCollectionId,
+          );
+          return {
+            iconId: id,
+            color: action.color,
+            source: "rule",
+            detail: `${rule.name} (random from dataview "${col?.name ?? "query"}")`,
+            ruleId: rule.id,
+          };
+        }
+      }
+      continue; // no (valid) results yet -> fall through to next priority
+    }
   }
 
   // 3. file-type default
   if (!ctx.isFolder) {
     const ft = settings.fileTypeDefaults[ctx.extension];
     if (ft && valid(settings, ft)) {
-      return { iconId: ft, source: "filetype", detail: `File type .${ctx.extension}` };
+      return {
+        iconId: ft,
+        color: settings.fileTypeDefaultColors?.[ctx.extension],
+        source: "filetype",
+        detail: `File type .${ctx.extension}`,
+      };
     }
     // invalid/disabled icon -> fall through to the global default
   }
@@ -243,7 +290,12 @@ export function resolveIcon(settings: StarIconsSettings, ctx: FileContext): Reso
   // 4. global default
   if (settings.defaultIcon) {
     return valid(settings, settings.defaultIcon)
-      ? { iconId: settings.defaultIcon, source: "default", detail: "Default icon" }
+      ? {
+          iconId: settings.defaultIcon,
+          color: settings.defaultIconColor,
+          source: "default",
+          detail: "Default icon",
+        }
       : { iconId: null, source: "default", detail: "Default icon (unavailable)" };
   }
 

@@ -94,6 +94,8 @@ export function iconTile(
     onPick?: (icon: IconDef) => void;
     onStar?: (icon: IconDef, ev: MouseEvent) => void;
     onContext?: (icon: IconDef, ev: MouseEvent) => void;
+    /** Called on mouseenter (soundscapes hover sound). */
+    onHover?: (icon: IconDef) => void;
   } = {},
 ): HTMLButtonElement {
   const btn = createEl("button", {
@@ -106,6 +108,9 @@ export function iconTile(
   btn.createDiv({ cls: "si-tile-name" }).textContent = icon.name;
 
   if (opts.onPick) btn.addEventListener("click", () => opts.onPick?.(icon));
+  if (opts.onHover) {
+    btn.addEventListener("mouseenter", () => opts.onHover?.(icon));
+  }
   if (opts.onStar) {
     const star = btn.createDiv({ cls: "si-tile-star", attr: { "aria-label": "Favorite" } });
     setIcon(star, "star");

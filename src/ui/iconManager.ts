@@ -9,7 +9,7 @@
 import { ItemView, MarkdownView, Menu, Notice, setIcon, WorkspaceLeaf } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { ALL_PACKS, Collection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
+import { ALL_PACKS, Collection, DataviewCollection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
@@ -28,6 +28,7 @@ interface FilterState {
 export class IconManagerView extends ItemView {
   private filter: FilterState = { pack: "all", tag: null, query: "" };
   private selectedCollection: Collection | null = null;
+  private selectedDataview: DataviewCollection | null = null;
   private selectedId: string | null = null;
   private unsub?: () => void;
   private resizeObserver?: ResizeObserver;
@@ -90,6 +91,15 @@ export class IconManagerView extends ItemView {
     if (this.contentEl.hasClass("is-narrow")) this.contentEl.removeClass("si-side-open");
   }
 
+  /** Select an icon programmatically (e.g. from the Galaxy View). */
+  selectIcon(id: string): void {
+    this.selectedId = id;
+    this.selectedCollection = null;
+    this.selectedDataview = null;
+    this.renderDetail();
+    this.renderMain();
+  }
+
   /* --- DOM scaffold ------------------------------------------------------ */
 
   private buildDom(): void {
@@ -131,6 +141,7 @@ export class IconManagerView extends ItemView {
       getCurrent: () => this.selectedCollection,
       onSelect: (col) => {
         this.selectedCollection = col;
+        this.selectedDataview = null;
         this.selectedId = null;
         if (col) this.filter = { ...this.filter, tag: null };
         this.closeSideIfNarrow();
@@ -156,6 +167,12 @@ export class IconManagerView extends ItemView {
         .addItem((i) => i.setTitle("Paste SVG code…").setIcon("clipboard").onClick(() => void this.pasteSvg()))
         .showAtMouseEvent(ev);
     });
+    const galaxyBtn = toolbarRight.createEl("button", {
+      cls: "si-btn si-btn-small",
+      attr: { type: "button", "aria-label": "Galaxy View — browse icons in 3D" },
+    });
+    galaxyBtn.createSpan({ text: "🌌 Galaxy" });
+    galaxyBtn.addEventListener("click", () => void this.plugin.openGalaxy());
     const sideToggle = toolbarRight.createEl("button", {
       cls: "si-btn si-btn-small si-side-toggle",
       attr: { type: "button", "aria-label": "Toggle collections panel" },
@@ -163,6 +180,17 @@ export class IconManagerView extends ItemView {
     renderIcon(sideToggle, "panel-left");
     sideToggle.addEventListener("click", () => {
       this.contentEl.classList.toggle("si-side-open");
+    });
+    const soundToggle = toolbarRight.createEl("button", {
+      cls: "si-btn si-btn-small" + (this.plugin.settings.soundscapesEnabled ? " is-active" : ""),
+      attr: { type: "button", "aria-label": "Toggle icon sounds" },
+    });
+    soundToggle.createSpan({ text: "🔊" });
+    soundToggle.addEventListener("click", () => {
+      this.plugin.settings.soundscapesEnabled = !this.plugin.settings.soundscapesEnabled;
+      void this.plugin.saveSettings();
+      soundToggle.toggleClass("is-active", this.plugin.settings.soundscapesEnabled);
+      this.plugin.soundscape?.playKind("select");
     });
     const density = toolbarRight.createDiv({ cls: "si-manager-density" });
     density.appendChild(
@@ -313,6 +341,7 @@ export class IconManagerView extends ItemView {
       item.addEventListener("click", () => {
         this.filter.tag = this.filter.tag === tag ? null : tag;
         this.selectedCollection = null;
+        this.selectedDataview = null;
         this.closeSideIfNarrow();
         this.render();
       });
@@ -326,6 +355,7 @@ export class IconManagerView extends ItemView {
               .onClick(() => {
                 this.filter.tag = this.filter.tag === tag ? null : tag;
                 this.selectedCollection = null;
+                this.selectedDataview = null;
                 this.render();
               }),
           )
@@ -386,12 +416,50 @@ export class IconManagerView extends ItemView {
       row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack] ?? pack} v${this.plugin.store.getPackVersion(pack)}` });
       row.createSpan({ cls: "si-side-item-count", text: String(this.plugin.store.getPackCount(pack)) });
     }
+
+    /* --- Dataview collections (dynamic, from queries) --- */
+    const dvCols = this.plugin.settings.dataviewCollections;
+    if (dvCols.length > 0) {
+      const dvSection = side.createDiv({ cls: "si-side-section" });
+      const dvHead = dvSection.createDiv({ cls: "si-side-head" });
+      dvHead.createSpan({ cls: "si-side-title", text: "Dataview" });
+      const dvList = dvSection.createDiv({ cls: "si-side-list" });
+      for (const col of dvCols) {
+        const item = dvList.createDiv({
+          cls: "si-side-item" + (this.selectedDataview?.id === col.id ? " is-active" : ""),
+        });
+        const icon = item.createSpan({ cls: "si-side-item-icon", text: "📊" });
+        void icon;
+        item.createSpan({ cls: "si-side-item-label", text: col.name });
+        const count = this.plugin.getDataviewResults()[col.id]?.length ?? 0;
+        item.createSpan({ cls: "si-side-item-count", text: String(count) });
+        item.addEventListener("click", () => {
+          this.selectedDataview = this.selectedDataview?.id === col.id ? null : col;
+          this.selectedCollection = null;
+          this.selectedId = null;
+          this.closeSideIfNarrow();
+          this.render();
+        });
+      }
+    }
   }
 
   private renderMain(): void {
     const main = this.mainEl;
     main.empty();
     const store = this.plugin.store;
+
+    if (this.selectedDataview) {
+      const fresh = this.plugin.settings.dataviewCollections.find(
+        (c) => c.id === this.selectedDataview?.id,
+      );
+      if (fresh) {
+        this.selectedDataview = fresh;
+        this.renderDataviewDetail(main, fresh);
+        return;
+      }
+      this.selectedDataview = null;
+    }
 
     if (this.selectedCollection) {
       // Resolve the collection FRESH from settings every render — the held
@@ -532,6 +600,43 @@ export class IconManagerView extends ItemView {
     });
   }
 
+  /** Browse the cached results of a Dataview collection (read-only). */
+  private renderDataviewDetail(main: HTMLElement, col: DataviewCollection): void {
+    const head = main.createDiv({ cls: "si-col-head" });
+    const back = head.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+    back.createSpan({ text: "← All icons" });
+    back.addEventListener("click", () => {
+      this.selectedDataview = null;
+      this.render();
+    });
+    const title = head.createDiv({ cls: "si-col-title" });
+    title.createSpan({ text: col.name });
+    const ids = this.plugin.getDataviewResults()[col.id] ?? [];
+    title.createSpan({ cls: "si-col-count", text: `${ids.length} icons · dataview` });
+    const refresh = head.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+    refresh.createSpan({ text: "Refresh" });
+    refresh.addEventListener("click", () => {
+      void this.plugin.refreshDataviewNow();
+    });
+    head.appendChild(refresh);
+
+    if (ids.length === 0) {
+      main.appendChild(
+        emptyState(
+          "This query returned no icons yet",
+          "Check the query and the icon property in Settings → Dataview collections.",
+        ),
+      );
+      return;
+    }
+    const grid = main.createDiv({ cls: "si-grid" });
+    for (const id of ids) {
+      const def = getIcon(id);
+      if (!def) continue;
+      grid.appendChild(this.buildTile(def));
+    }
+  }
+
   private collectIcons(): IconDef[] {
     const store = this.plugin.store;
     let icons = store.availableIcons();
@@ -550,7 +655,7 @@ export class IconManagerView extends ItemView {
       );
     }
     // Reset the "show more" pagination whenever the filter changes.
-    const signature = `${this.filter.pack}|${this.filter.tag ?? ""}|${this.filter.query.trim()}|${this.selectedCollection?.id ?? ""}`;
+    const signature = `${this.filter.pack}|${this.filter.tag ?? ""}|${this.filter.query.trim()}|${this.selectedCollection?.id ?? ""}|${this.selectedDataview?.id ?? ""}`;
     if (signature !== this.filterSignature) {
       this.filterSignature = signature;
       this.visibleLimit = 600;
@@ -563,10 +668,12 @@ export class IconManagerView extends ItemView {
     const tile = iconTile(icon, {
       selected: this.selectedId === icon.id,
       onPick: (i) => {
+        this.plugin.soundscape?.pick(i);
         this.selectedId = this.selectedId === i.id ? null : i.id;
         this.renderDetail();
         this.renderMain();
       },
+      onHover: (i) => this.plugin.soundscape?.hover(i),
       onStar: (i) => void store.toggleFavorite(i.id),
       onContext: (i, ev) => {
         ev.preventDefault();
@@ -678,6 +785,13 @@ export class IconManagerView extends ItemView {
     applyBtn.addEventListener("click", () => {
       void this.plugin.setOverrideForActiveFile(id);
     });
+    const colorBtn = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+    setIcon(colorBtn, "palette");
+    colorBtn.createSpan({ text: "Color…" });
+    colorBtn.addEventListener("click", () => void this.plugin.pickColorForActiveFile());
+    const soundBtn = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+    soundBtn.createSpan({ text: "🔊 Play sound" });
+    soundBtn.addEventListener("click", () => this.plugin.soundscape?.playIcon(def));
     const insertBtn = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
     insertBtn.createSpan({ text: "Insert in note" });
     insertBtn.addEventListener("click", () => void this.insertIconAtCursor(def));

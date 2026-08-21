@@ -10,6 +10,7 @@ import { IconStore } from "../core/iconStore";
 import { IconDef, PackId, PACK_LABELS } from "../types";
 import { clamp, debounce, svgForClipboard } from "../utils";
 import { emptyState, iconTile, renderIcon } from "./components";
+import { renderColorPicker } from "./colorPicker";
 import { PackFilterControl } from "./packFilter";
 
 export interface IconPickerOptions {
@@ -17,8 +18,17 @@ export interface IconPickerOptions {
   packFilter?: PackId | "all";
   /** Show a "No icon (Obsidian default)" option that resolves to null. */
   allowNone?: boolean;
+  /** Show the color palette; onPick receives the chosen color. */
+  allowColor?: boolean;
+  /** Initial color shown when allowColor is set (null = theme default). */
+  color?: string | null;
+  /** Optional soundscape hooks (hover/pick sounds). */
+  sound?: {
+    hover?: (icon: IconDef) => void;
+    pick?: (icon: IconDef) => void;
+  };
   /** Called with null when the user picks "none". */
-  onPick: (icon: IconDef | null) => void;
+  onPick: (icon: IconDef | null, color?: string | null) => void;
 }
 
 export class IconPickerModal extends Modal {
@@ -27,6 +37,7 @@ export class IconPickerModal extends Modal {
   private packFilter: PackId | "all";
   private showFavoritesOnly = false;
   private selectedIndex = 0;
+  private selectedColor: string | null = null;
   private pickerLimit = 400;
   private gridEl!: HTMLElement;
   private footerNameEl!: HTMLElement;
@@ -41,6 +52,7 @@ export class IconPickerModal extends Modal {
     super(app);
     this.store = storeProvider();
     this.packFilter = opts.packFilter ?? "all";
+    this.selectedColor = opts.color ?? null;
   }
 
   onOpen(): void {
@@ -92,6 +104,18 @@ export class IconPickerModal extends Modal {
       noneChip.addEventListener("click", () => {
         this.opts.onPick(null);
         this.close();
+      });
+    }
+
+    if (this.opts.allowColor) {
+      const colorRow = contentEl.createDiv({ cls: "si-picker-color" });
+      const colorHost = colorRow.createDiv({ cls: "si-picker-color-host" });
+      renderColorPicker(colorHost, {
+        value: this.selectedColor,
+        onChange: (c) => {
+          this.selectedColor = c;
+          this.updateFooter();
+        },
       });
     }
 
@@ -161,8 +185,9 @@ export class IconPickerModal extends Modal {
   }
 
   private pick(icon: IconDef): void {
+    this.opts.sound?.pick?.(icon);
     void this.store.pushRecent(icon.id);
-    this.opts.onPick(icon);
+    this.opts.onPick(icon, this.selectedColor);
     this.close();
   }
 
@@ -191,6 +216,7 @@ export class IconPickerModal extends Modal {
       return;
     }
     renderIcon(this.footerIconEl, icon.id, 18);
+    this.footerIconEl.style.color = this.selectedColor ?? "";
     this.footerNameEl.setText(`${icon.id}  ·  ${icon.tags.slice(0, 4).join(", ")}`);
   }
 
@@ -245,6 +271,7 @@ export class IconPickerModal extends Modal {
         const tile = iconTile(icon, {
           selected: idx === this.selectedIndex,
           onPick: (i) => this.pick(i),
+          onHover: this.opts.sound?.hover,
           onStar: (i) => void this.store.toggleFavorite(i.id),
           onContext: (i, ev) => {
             ev.preventDefault();

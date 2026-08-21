@@ -7,15 +7,19 @@
 
 import { Menu, Notice, Plugin, TAbstractFile, TFile, TFolder, setIcon } from "obsidian";
 import { IconApplier, prettyIconName } from "./core/applier";
+import { queryDataviewIcons } from "./core/dataview";
 import { IconStore } from "./core/iconStore";
+import { SoundscapeController } from "./core/soundscape";
 import { brandIconId } from "./ui/components";
+import { openColorModal } from "./ui/colorPicker";
 import { confirmDialog, promptSize } from "./ui/promptModal";
 import { ReportBugModal, obsidianVersion } from "./ui/reportBugModal";
 import { ICON_MANAGER_VIEW_TYPE, IconManagerView } from "./ui/iconManager";
 import { IconPickerModal } from "./ui/iconPicker";
+import { GalaxyViewModal } from "./ui/galaxyView";
 import { StarIconsSettingTab } from "./ui/settingsTab";
 import { mergeSettings } from "./settings";
-import { StarIconsSettings } from "./types";
+import { IconDef, StarIconsSettings } from "./types";
 import { ALL_PACKS, DEFAULT_REPORT_URL } from "./types";
 import { debounce, svgForClipboard } from "./utils";
 
@@ -23,7 +27,15 @@ export class StarIconsPlugin extends Plugin {
   settings!: StarIconsSettings;
   store!: IconStore;
   applier!: IconApplier;
+  soundscape!: SoundscapeController;
   private statusBarEl: HTMLElement | null = null;
+  /** Dataview collection id -> cached icon id list (rules read this). */
+  private dataviewIcons: Record<string, string[]> = {};
+  private dataviewRefreshTimer: number | null = null;
+  /** Path -> last resolved icon id (transition-sound detection). */
+  private lastIconByPath = new Map<string, string | null>();
+  private lastTransitionAt = 0;
+  private suppressTransitionNext = false;
 
   async onload(): Promise<void> {
     this.settings = mergeSettings(await this.loadData());
@@ -36,6 +48,9 @@ export class StarIconsPlugin extends Plugin {
     this.store.registerIcons();
     this.store.mountUserIcons();
     this.applier = new IconApplier(this, this.app);
+    this.soundscape = new SoundscapeController(() => this.settings, this.app);
+    // Load any custom sound files (no-op when none are configured).
+    void this.soundscape.preloadCustom();
 
     this.registerView(ICON_MANAGER_VIEW_TYPE, (leaf) => new IconManagerView(leaf, this));
 
@@ -56,12 +71,19 @@ export class StarIconsPlugin extends Plugin {
       .then(() => this.refreshIcons())
       .catch((err) => console.warn("[Star Icons] background pack load failed", err));
 
+    // Warm the Dataview-backed collections (no-op when Dataview is absent).
+    void this.refreshDataviewNow();
+
     this.app.workspace.onLayoutReady(() => this.refreshIcons());
   }
 
   onunload(): void {
     // Don't detach the manager's leaves: that would reset them to their
     // default location on the next load even if the user moved them.
+    if (this.dataviewRefreshTimer !== null) {
+      window.clearTimeout(this.dataviewRefreshTimer);
+      this.dataviewRefreshTimer = null;
+    }
     this.applier.dispose();
   }
 
@@ -120,6 +142,77 @@ export class StarIconsPlugin extends Plugin {
   refreshIcons(): void {
     this.applier.refreshAll();
     this.updateStatusBar();
+    this.detectActiveIconTransition();
+  }
+
+  /**
+   * Play the transition sound when the *active note's* icon changes on its
+   * own (rules re-evaluated, vault events, dataview collections shifting).
+   * Manual overrides set the icon through the picker (which already sounds),
+   * so they set `suppressTransitionNext` to avoid a double blip.
+   */
+  private detectActiveIconTransition(): void {
+    const file = this.app.workspace.getActiveFile();
+    if (!file) return;
+    const id = this.applier.resolve(file).iconId ?? null;
+    const seen = this.lastIconByPath.has(file.path);
+    const prev = this.lastIconByPath.get(file.path) ?? null;
+    if (this.suppressTransitionNext) {
+      this.suppressTransitionNext = false;
+    } else if (seen && id !== null && id !== prev) {
+      const now = Date.now();
+      if (now - this.lastTransitionAt > 2000) {
+        this.lastTransitionAt = now;
+        this.soundscape?.transition();
+      }
+    }
+    this.lastIconByPath.set(file.path, id);
+  }
+
+  /* --- Dataview-backed dynamic collections ------------------------------- */
+
+  /** Cached icon lists for Dataview collections (read by the applier). */
+  getDataviewResults(): Record<string, string[]> {
+    return this.dataviewIcons;
+  }
+
+  hasDataviewCollections(): boolean {
+    return this.settings.dataviewCollections.some((c) => c.query?.trim());
+  }
+
+  /**
+   * Re-run every configured Dataview query and refresh the cache. Only
+   * triggers a re-render when the results actually changed, so steady-state
+   * resolution stays stable (and no refresh loop can form).
+   */
+  async refreshDataviewNow(): Promise<void> {
+    const cols = this.settings.dataviewCollections.filter((c) => c.query?.trim());
+    if (!cols.length) {
+      if (Object.keys(this.dataviewIcons).length) {
+        this.dataviewIcons = {};
+        this.refreshIcons();
+      }
+      return;
+    }
+    const next: Record<string, string[]> = {};
+    await Promise.all(
+      cols.map(async (c) => {
+        next[c.id] = await queryDataviewIcons(this.app, c.query, c.iconProperty || "icon");
+      }),
+    );
+    if (JSON.stringify(next) !== JSON.stringify(this.dataviewIcons)) {
+      this.dataviewIcons = next;
+      this.refreshIcons();
+    }
+  }
+
+  /** Debounced variant used by vault events (avoids query spam while typing). */
+  private scheduleDataviewRefresh(): void {
+    if (this.dataviewRefreshTimer !== null) return;
+    this.dataviewRefreshTimer = window.setTimeout(() => {
+      this.dataviewRefreshTimer = null;
+      void this.refreshDataviewNow();
+    }, 3000);
   }
 
   async openManager(): Promise<void> {
@@ -137,13 +230,28 @@ export class StarIconsPlugin extends Plugin {
     this.app.workspace.setActiveLeaf(leaf);
   }
 
-  async setOverrideForActiveFile(iconId: string): Promise<void> {
+  /** Open the 3D Icon Galaxy; star selections sync to the Manager. */
+  openGalaxy(): void {
+    new GalaxyViewModal(this.app, this.store, {
+      onSelect: (iconId) => {
+        for (const leaf of this.app.workspace.getLeavesOfType(ICON_MANAGER_VIEW_TYPE)) {
+          const view = leaf.view as IconManagerView;
+          if (typeof view.selectIcon === "function") view.selectIcon(iconId);
+        }
+      },
+    }).open();
+  }
+
+  async setOverrideForActiveFile(iconId: string, color?: string | null): Promise<void> {
     const file = this.lastActiveFile();
     if (!file) {
       new Notice("No active file.");
       return;
     }
     this.settings.overrides[file.path] = iconId;
+    if (color) this.settings.overrideColors[file.path] = color;
+    else delete this.settings.overrideColors[file.path];
+    this.suppressTransitionNext = true;
     await this.saveSettings();
     this.refreshIcons();
     new Notice(`Icon set for “${file.basename}”`);
@@ -164,18 +272,59 @@ export class StarIconsPlugin extends Plugin {
     return null;
   }
 
+  /** Soundscape hooks for icon pickers (hover/pick sounds). */
+  private pickerSound(): { hover: (icon: IconDef) => void; pick: (icon: IconDef) => void } {
+    return {
+      hover: (icon: IconDef) => this.soundscape?.hover(icon),
+      pick: (icon: IconDef) => this.soundscape?.pick(icon),
+    };
+  }
+
   async pickIconFor(file: TAbstractFile): Promise<void> {
     const hasOverride = !!this.settings.overrides[file.path];
     new IconPickerModal(this.app, () => this.store, {
       title: `Icon for “${file.name}”`,
       allowNone: hasOverride,
-      onPick: (icon) => {
-        if (icon) this.settings.overrides[file.path] = icon.id;
-        else delete this.settings.overrides[file.path];
+      allowColor: true,
+      color: this.settings.overrideColors[file.path] ?? null,
+      sound: this.pickerSound(),
+      onPick: (icon, color) => {
+        if (icon) {
+          this.settings.overrides[file.path] = icon.id;
+          if (color) this.settings.overrideColors[file.path] = color;
+          else delete this.settings.overrideColors[file.path];
+        } else {
+          delete this.settings.overrides[file.path];
+          delete this.settings.overrideColors[file.path];
+        }
+        this.suppressTransitionNext = true;
         void this.saveSettings();
         this.refreshIcons();
       },
     }).open();
+  }
+
+  /** Change only the color of a file's icon override (palette modal). */
+  async pickColorFor(file: TAbstractFile): Promise<void> {
+    const result = await openColorModal(this.app, {
+      title: `Icon color for “${file.name}”`,
+      initial: this.settings.overrideColors[file.path] ?? null,
+    });
+    if (result === null) return; // cancelled
+    if (result.color) this.settings.overrideColors[file.path] = result.color;
+    else delete this.settings.overrideColors[file.path];
+    await this.saveSettings();
+    this.refreshIcons();
+  }
+
+  /** Color palette for the active note's override (Icon Manager detail). */
+  async pickColorForActiveFile(): Promise<void> {
+    const file = this.lastActiveFile();
+    if (!file) {
+      new Notice("No active file.");
+      return;
+    }
+    await this.pickColorFor(file);
   }
 
   async copyIconName(file: TAbstractFile): Promise<void> {
@@ -208,6 +357,7 @@ export class StarIconsPlugin extends Plugin {
         } catch {
           /* ignore */
         }
+        iconEl.style.color = res.color ?? "";
         iconEl.querySelector("svg")?.setAttribute("width", "14");
         iconEl.querySelector("svg")?.setAttribute("height", "14");
         this.statusBarEl.createSpan({ cls: "si-status-text", text: res.detail });
@@ -236,6 +386,12 @@ export class StarIconsPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "open-galaxy-view",
+      name: "Open Galaxy View (3D)",
+      callback: () => this.openGalaxy(),
+    });
+
+    this.addCommand({
       id: "set-icon-active-file",
       name: "Set icon for the active file…",
       callback: () => {
@@ -251,6 +407,7 @@ export class StarIconsPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile();
         if (!file) return;
         delete this.settings.overrides[file.path];
+        delete this.settings.overrideColors[file.path];
         await this.saveSettings();
         this.refreshIcons();
       },
@@ -271,6 +428,7 @@ export class StarIconsPlugin extends Plugin {
       callback: () => {
         new IconPickerModal(this.app, () => this.store, {
           title: "Copy an icon name",
+          sound: this.pickerSound(),
           onPick: (icon) => {
             if (!icon) return;
             void navigator.clipboard.writeText(icon.id).then(() => {
@@ -296,6 +454,7 @@ export class StarIconsPlugin extends Plugin {
       editorCallback: (editor) => {
         new IconPickerModal(this.app, () => this.store, {
           title: "Insert an icon",
+          sound: this.pickerSound(),
           onPick: (icon) => {
             if (!icon) return;
             void promptSize(this.app, { title: `Insert “${icon.name}”` }).then((size) => {
@@ -353,6 +512,12 @@ export class StarIconsPlugin extends Plugin {
             .setIcon("copy")
             .onClick(() => void this.copyIconName(file)),
         );
+        menu.addItem((item) =>
+          item
+            .setTitle("Set icon color…")
+            .setIcon("palette")
+            .onClick(() => void this.pickColorFor(file)),
+        );
         if (this.settings.overrides[file.path]) {
           menu.addItem((item) =>
             item
@@ -360,6 +525,19 @@ export class StarIconsPlugin extends Plugin {
               .setIcon("trash")
               .onClick(async () => {
                 delete this.settings.overrides[file.path];
+                delete this.settings.overrideColors[file.path];
+                await this.saveSettings();
+                this.refreshIcons();
+              }),
+          );
+        }
+        if (this.settings.overrideColors[file.path]) {
+          menu.addItem((item) =>
+            item
+              .setTitle("Remove color override")
+              .setIcon("undo")
+              .onClick(async () => {
+                delete this.settings.overrideColors[file.path];
                 await this.saveSettings();
                 this.refreshIcons();
               }),
@@ -383,7 +561,12 @@ export class StarIconsPlugin extends Plugin {
   }
 
   private registerEvents(): void {
-    const refresh = debounce(() => this.refreshIcons(), 200);
+    const refresh = debounce(() => {
+      this.refreshIcons();
+      // Dataview queries inspect the vault — keep dynamic collections fresh,
+      // but on their own (slower) schedule so typing never blocks rendering.
+      if (this.hasDataviewCollections()) this.scheduleDataviewRefresh();
+    }, 200);
 
     this.registerEvent(this.app.workspace.on("layout-change", refresh));
     this.registerEvent(this.app.workspace.on("file-open", refresh));

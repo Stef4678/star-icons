@@ -36,6 +36,7 @@ with it.
 | Unicons (line, Solid, Monochrome, Thinline) | [iconscout.com/unicons](https://iconscout.com/unicons) | 4.2.0 | IconScout Simple License | Not required (encouraged) | ⚠️ Custom license — see compliance notes below — `licenses/iconscout-simple.txt` |
 | Animals · Nature & Flowers · Science | — (system emoji) | — | OS emoji font | Depends on the OS font | The plugin renders Unicode emoji with the user's system font and does **not** redistribute emoji font files |
 | Star Icons | original | — | MIT | — | Custom icons owned by Star Icons — `LICENSE` |
+| Three.js | [threejs.org](https://threejs.org) | 0.185.1 | MIT | Keep copyright notice | 3D engine bundled for the Icon Galaxy view (code dependency, not an icon pack) — © 2010–2024 three.js authors — `licenses/mit.txt` |
 
 ## Required attribution
 

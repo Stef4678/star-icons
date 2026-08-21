@@ -8,7 +8,7 @@ Star Icons takes a third path in the icon-plugin landscape:
 - **AutoIcons** gives you set-and-forget automation.
 - **Star Icons** gives you a *library*: curate, tag and collect icons like music playlists, then apply them with rules that explain themselves.
 
-![Icon Manager](https://img.shields.io/badge/manager-71.7k%20icons-%23f5b301) ![Offline](https://img.shields.io/badge/offline-after-first-load-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Icon Manager](https://img.shields.io/badge/static/v1?label=manager&message=71.7k%20icons&color=f5b301) ![Offline](https://img.shields.io/badge/static/v1?label=offline&message=after-first-load&color=brightgreen) ![License](https://img.shields.io/badge/static/v1?label=license&message=MIT&color=blue)
 
 > ⚠️ **Attribution & trademarks:** Star Icons bundles icon sets from many third
 > parties — Font Awesome, Twemoji, OpenMoji, Simple Icons, brand logos and
@@ -91,14 +91,62 @@ Manual override  >  Rules (in order)  >  File-type default  >  Global default
 - Command palette commands + a ribbon button
 - Manual overrides, file-type defaults (`.md`, `.pdf`, …) and a global default
 
+### 🎨 Color palette
+Applied icons can be tinted, not just reshaped: pick a color from the preset
+palette (or any custom color) in **Settings → Colors**, per file type, per rule
+(in the rule editor), per manual override (via *Set icon…* / *Set icon color…*),
+and from the Icon Manager. The tint follows the same priority as the icon
+itself (override > rules > file type > default) and recolors stroke/fill packs
+(Lucide, Tabler, Material, …); full-color packs like OpenMoji/Twemoji and OS
+emoji keep their own colors.
+
+### 📊 Dataview integration
+Turn any Dataview query into a **dynamic icon collection**: in
+**Settings → Dataview collections** write a DQL query whose rows carry icon ids
+(`LIST icon FROM #project`, `TABLE icon FROM "notes"`, …) and pick the
+frontmatter property that holds them. Rules can then use *Random from
+Dataview* actions — each file gets a deterministic icon drawn from the query's
+current results, refreshed automatically on vault changes (Dataview itself is
+optional; rules fall through gracefully until it's installed). The Icon
+Manager lists your Dataview collections and lets you browse their live
+results. Combine with the color palette for fully dynamic, color-coded
+explorers.
+
+### 🔊 Icon Soundscapes
+Every icon can *sound* like itself. Turn on **Soundscapes** in
+Settings → Soundscapes and the Icon Manager / icon picker play short
+Web-Audio sounds — a subtle blip on hover, the icon's own voice on click
+(`star` → twinkle ✨, `trash` → crash 🗑️, `bell` → ding 🔔), and a transition
+sound when a file's icon changes automatically (e.g. a rule starts matching).
+Choose a synthesis pack (**8-bit**, **Cinematic**, **Minimal**), adjust the
+intensity from subtle to pronounced, toggle hover/click/change sounds
+individually, and override any sound with your own **.mp3/.wav** file
+(Settings → Soundscapes → Custom sounds). Preview icons' sounds from the Icon
+Manager's detail panel or its 🔊 toolbar button. Soundscapes default to off —
+no unexpected audio until you enable it.
+
+### 🌌 Icon Galaxy (3D)
+Browse your whole icon library as an **interactive 3D universe**: every icon is
+a glowing star orbiting its pack's planet along the galaxy's spiral arms
+(stars are tinted by pack). Open it from the Icon Manager's **🌌 Galaxy**
+button or the *Open Galaxy View (3D)* command:
+- **Drag to orbit**, **scroll/pinch to zoom** (OrbitControls with damping)
+- **Hover** a star for its name · **click** to select it (syncs to the
+  Manager's detail panel; copy name/SVG, favorite, or jump back)
+- **Search** — the camera *flies* to the matching star
+- Ambient starfield, additive glow sprites, pack-colored planets with labels,
+  and a slow galaxy rotation. Rendered with the bundled
+  [Three.js](https://threejs.org) engine; requires WebGL.
+
 ### 🧰 And more
 - Pack on/off toggles (instantly shrinks search space)
 - Export / import your whole configuration as JSON
 - Settings reset, keyboard-navigable icon picker, dark/light theme aware
-- No runtime dependencies beyond the Obsidian API — the plugin itself ships
-  standalone; the icon data comes from many third-party icon libraries (each
-  with its own license, see [Licenses & trademarks](#licenses--trademarks))
-  and is bundled or fetched on demand and cached locally
+- No runtime dependencies beyond the Obsidian API and the bundled Three.js
+  engine (MIT) used by the Galaxy View — the plugin itself ships standalone;
+  the icon data comes from many third-party icon libraries (each with its own
+  license, see [Licenses & trademarks](#licenses--trademarks)) and is bundled
+  or fetched on demand and cached locally
 
 ### 🎨 Custom icons and SVG support
 Star Icons allows users to import SVG files, paste SVG markup, define custom tags, copy icon names or SVG code, and organize personal icons in the “My Icons” pack. Imported SVGs are normalized to a 24×24 viewBox when necessary. Custom icons can be favorited, added to collections, assigned to files and folders, and used in rules like bundled icons.

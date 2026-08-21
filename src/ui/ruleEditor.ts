@@ -8,6 +8,7 @@
 
 import { App, Modal, Notice, setIcon } from "obsidian";
 import { IconStore } from "../core/iconStore";
+import { isDataviewAvailable } from "../core/dataview";
 import { buildFileContext, evaluateCondition } from "../core/ruleEngine";
 import { getIcon } from "../data/icons";
 import {
@@ -21,6 +22,7 @@ import {
 } from "../types";
 import { debounce, uid } from "../utils";
 import { emptyState, renderIcon, segmentedControl } from "./components";
+import { renderColorPicker } from "./colorPicker";
 import { IconPickerModal } from "./iconPicker";
 
 const TYPE_OPS: Record<ConditionType, CompareOp[]> = {
@@ -142,12 +144,14 @@ export class RuleEditModal extends Modal {
         [
           { value: "icon", label: "Set icon" },
           { value: "random", label: "Random from collection" },
+          { value: "randomDataview", label: "Random from Dataview" },
           { value: "clear", label: "Use Obsidian default" },
         ],
         this.rule.action.type,
         (v) => {
           if (v === "icon") this.rule.action = { type: "icon", iconId: "si-lucide-star" };
           else if (v === "random") this.rule.action = { type: "random", collectionId: this.getSettings().collections[0]?.id ?? "" };
+          else if (v === "randomDataview") this.rule.action = { type: "randomDataview", dataviewCollectionId: this.getSettings().dataviewCollections[0]?.id ?? "" };
           else this.rule.action = { type: "clear" };
           renderAction();
           this.refreshPreview();
@@ -159,16 +163,23 @@ export class RuleEditModal extends Modal {
         const row = actionWrap.createDiv({ cls: "si-action-row" });
         const preview = row.createDiv({ cls: "si-action-preview" });
         const def = getIcon(this.rule.action.iconId);
-        if (def) renderIcon(preview, def.id, 32);
-        else preview.setText("?");
+        if (def) {
+          renderIcon(preview, def.id, 32);
+          if (this.rule.action.color) preview.style.color = this.rule.action.color;
+        } else preview.setText("?");
         const choose = row.createEl("button", { cls: "si-btn", attr: { type: "button" } });
         choose.createSpan({ text: def ? `Change icon (${def.name})` : "Choose icon…" });
+        const currentAction = this.rule.action;
         choose.addEventListener("click", () => {
           new IconPickerModal(this.app, () => this.store, {
             title: "Icon for this rule",
             onPick: (icon) => {
               if (icon) {
-                this.rule.action = { type: "icon", iconId: icon.id };
+                this.rule.action = {
+                  type: "icon",
+                  iconId: icon.id,
+                  color: currentAction.type === "icon" ? currentAction.color : undefined,
+                };
                 renderAction();
                 this.refreshPreview();
               }
@@ -187,11 +198,71 @@ export class RuleEditModal extends Modal {
           select.createEl("option", { text: `${c.name} (${c.iconIds.length})`, value: c.id });
         }
         select.value = this.rule.action.collectionId;
+        const currentRandom = this.rule.action;
         select.addEventListener("change", () => {
-          this.rule.action = { type: "random", collectionId: select.value };
+          this.rule.action = {
+            type: "random",
+            collectionId: select.value,
+            color: currentRandom.type === "random" ? currentRandom.color : undefined,
+          };
         });
+      } else if (this.rule.action.type === "randomDataview") {
+        const row = actionWrap.createDiv({ cls: "si-action-row" });
+        row.createSpan({ cls: "si-label", text: "Dataview collection" });
+        const select = row.createEl("select", { cls: "dropdown" });
+        const cols = this.getSettings().dataviewCollections;
+        if (cols.length === 0) {
+          select.createEl("option", { text: "No Dataview collections — add one in Settings", value: "" });
+        }
+        for (const c of cols) {
+          select.createEl("option", {
+            text: c.query ? `${c.name} (${c.iconProperty || "icon"})` : `${c.name} (no query)`,
+            value: c.id,
+          });
+        }
+        select.value = this.rule.action.dataviewCollectionId;
+        const currentDv = this.rule.action;
+        select.addEventListener("change", () => {
+          this.rule.action = {
+            type: "randomDataview",
+            dataviewCollectionId: select.value,
+            color: currentDv.type === "randomDataview" ? currentDv.color : undefined,
+          };
+        });
+        if (!isDataviewAvailable(this.app)) {
+          actionWrap.createDiv({
+            cls: "si-hint",
+            text: "Dataview isn't installed or enabled — this rule falls through to the next priority until it is.",
+          });
+        }
       } else {
         actionWrap.createDiv({ cls: "si-hint", text: "The file/folder keeps Obsidian's built-in icon." });
+      }
+
+      // Color palette for icon/random actions (colors tint stroke/fill icons).
+      if (this.rule.action.type !== "clear") {
+        const colorRow = actionWrap.createDiv({ cls: "si-action-row si-action-color-row" });
+        const colorHost = colorRow.createDiv({ cls: "si-action-color" });
+        renderColorPicker(colorHost, {
+          value: this.rule.action.color,
+          onChange: (c) => {
+            if (this.rule.action.type === "icon") {
+              this.rule.action = {
+                type: "icon",
+                iconId: this.rule.action.iconId,
+                color: c ?? undefined,
+              };
+            } else if (this.rule.action.type === "random") {
+              this.rule.action = {
+                type: "random",
+                collectionId: this.rule.action.collectionId,
+                color: c ?? undefined,
+              };
+            }
+            renderAction();
+            this.refreshPreview();
+          },
+        });
       }
     };
     renderAction();
@@ -414,12 +485,15 @@ export class RuleEditModal extends Modal {
       return;
     }
     const list = this.previewEl.createDiv({ cls: "si-preview-items" });
+    const actionColor =
+      this.rule.action.type !== "clear" ? this.rule.action.color : undefined;
     for (const m of matches) {
       const item = list.createDiv({ cls: "si-preview-item" });
       const ic = item.createSpan({ cls: "si-preview-icon" });
       if (m.iconId) {
         try {
           renderIcon(ic, m.iconId);
+          if (actionColor) ic.style.color = actionColor;
         } catch {
           /* ignore */
         }

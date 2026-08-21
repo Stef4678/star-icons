@@ -9,6 +9,7 @@
 import {
   App,
   Notice,
+  normalizePath,
   PluginSettingTab,
   Setting,
   SettingDefinition,
@@ -17,10 +18,25 @@ import {
 } from "obsidian";
 import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
-import { PACK_GROUPS, PACK_LABELS, PackId, Rule, ALL_PACKS, DEFAULT_REPORT_URL } from "../types";
+import { isDataviewAvailable, queryDataviewIcons } from "../core/dataview";
+import {
+  DataviewCollection,
+  PACK_GROUPS,
+  PACK_LABELS,
+  PackId,
+  Rule,
+  ALL_PACKS,
+  DEFAULT_REPORT_URL,
+  SOUND_KIND_LABELS,
+  SOUND_KIND_ORDER,
+  SOUND_PACKS,
+  SoundKind,
+  SoundPackId,
+} from "../types";
 import { mergeSettings } from "../settings";
-import { downloadJson, normalizeExt } from "../utils";
+import { downloadJson, normalizeExt, uid } from "../utils";
 import { makeSortable, renderIcon } from "./components";
+import { openColorModal, renderColorPicker } from "./colorPicker";
 import { IconPickerModal } from "./iconPicker";
 import { RuleEditModal } from "./ruleEditor";
 import { confirmDialog } from "./promptModal";
@@ -182,6 +198,106 @@ export class StarIconsSettingTab extends PluginSettingTab {
         ],
       },
 
+      /* --- Colors --- */
+      {
+        type: "group",
+        heading: "Colors",
+        items: [
+          {
+            name: "Default icon color",
+            desc: "Tint every icon that doesn't set its own color (the global default).",
+            render: (setting) =>
+              this.mountSection(setting, (el) => {
+                renderColorPicker(el, {
+                  value: s.defaultIconColor,
+                  onChange: (c) => {
+                    s.defaultIconColor = c;
+                    void this.plugin.saveSettings();
+                    this.plugin.refreshIcons();
+                  },
+                });
+              }),
+          },
+          {
+            name: "Per file type",
+            desc: "Each file-type icon row below has its own color button.",
+            render: (setting) =>
+              this.mountSection(setting, (el) => {
+                el.createDiv({
+                  cls: "si-hint",
+                  text: "Open “File type icons” below — every row has a color swatch. Rules and manual overrides get colors from the rule editor and the “Set icon…” dialog.",
+                });
+              }),
+          },
+        ],
+      },
+
+      /* --- Soundscapes --- */
+      {
+        type: "group",
+        heading: "Soundscapes",
+        items: [
+          toggle("🔊 Icon Soundscapes", "Play synthesized sounds on icon interactions — hover, click, and automatic icon changes.",
+            () => s.soundscapesEnabled, (v) => {
+              s.soundscapesEnabled = v;
+              void this.plugin.saveSettings();
+              if (v) this.plugin.soundscape?.playKind("select");
+            }),
+          {
+            name: "Sound pack",
+            desc: "Synthesis preset for the built-in sounds.",
+            render: (setting) => {
+              setting.addDropdown((dd) => {
+                for (const p of SOUND_PACKS) dd.addOption(p.id, p.label);
+                dd.setValue(s.soundPack).onChange((v) => {
+                  s.soundPack = v as SoundPackId;
+                  void this.plugin.saveSettings();
+                  this.plugin.soundscape?.playKind("select");
+                });
+              });
+            },
+          },
+          {
+            name: "Intensity",
+            desc: "How loud and pronounced the sounds are (0 = muted).",
+            render: (setting) => {
+              setting.addSlider((sl) =>
+                sl
+                  .setLimits(0, 100, 5)
+                  .setValue(s.soundIntensity)
+                  .setDynamicTooltip()
+                  .onChange((v) => {
+                    s.soundIntensity = v;
+                    void this.plugin.saveSettings();
+                    this.plugin.soundscape?.playKind("click");
+                  }),
+              );
+            },
+          },
+          toggle("Hover sounds", "A subtle sound when hovering icon tiles.",
+            () => s.soundHover, (v) => {
+              s.soundHover = v;
+              void this.plugin.saveSettings();
+            }),
+          toggle("Click sounds", "A pronounced sound when picking an icon.",
+            () => s.soundClick, (v) => {
+              s.soundClick = v;
+              void this.plugin.saveSettings();
+              this.plugin.soundscape?.playKind("select");
+            }),
+          toggle("Icon-change sounds", "A transition sound when a file's icon changes automatically.",
+            () => s.soundTransition, (v) => {
+              s.soundTransition = v;
+              void this.plugin.saveSettings();
+            }),
+          {
+            name: "Custom sounds",
+            desc: "Override any built-in sound with your own .mp3/.wav file (uploaded into the plugin folder).",
+            render: (setting) => this.mountSection(setting, (el) => this.renderCustomSounds(el)),
+          },
+        ],
+      },
+
       /* --- Packs --- */
       {
         name: `${this.plugin.store.totalCount().toLocaleString()} icons available`,
@@ -208,6 +324,11 @@ export class StarIconsSettingTab extends PluginSettingTab {
         name: "Collections",
         desc: "Curate icon sets here; drag & drop in the Icon Manager. Used by “random” rule actions.",
         render: (setting) => this.mountSection(setting, (el) => this.renderCollections(el)),
+      },
+      {
+        name: "Dataview collections",
+        desc: "Dynamic icon sets generated by Dataview queries — used by “random from Dataview” rule actions.",
+        render: (setting) => this.mountSection(setting, (el) => this.renderDataview(el)),
       },
       {
         name: "Data",
@@ -316,25 +437,61 @@ export class StarIconsSettingTab extends PluginSettingTab {
     label: string,
   ): void {
     const s = this.plugin.settings;
+    const color = ext === "*" ? s.defaultIconColor : s.fileTypeDefaultColors[ext];
     const row = listEl.createDiv({ cls: "si-filetype-row" });
     const labelEl = row.createSpan({ cls: "si-filetype-label", text: label });
     void labelEl;
     const preview = row.createSpan({ cls: "si-filetype-icon" });
-    if (iconId) renderIcon(preview, iconId, 18);
-    else preview.setText("—");
+    if (iconId) {
+      renderIcon(preview, iconId, 18);
+      if (color) preview.style.color = color;
+    } else preview.setText("—");
+
+    const colorBtn = row.createEl("button", {
+      cls: "si-icon-btn",
+      attr: { type: "button", "aria-label": "Set icon color" },
+    });
+    const colorDot = colorBtn.createSpan({
+      cls: "si-color-dot" + (color ? " has-color" : ""),
+    });
+    if (color) colorDot.style.background = color;
+    colorBtn.addEventListener("click", () => {
+      void openColorModal(this.app, { title: `Color for ${label}`, initial: color ?? null }).then(
+        (result) => {
+          if (result === null) return; // cancelled
+          if (ext === "*") {
+            s.defaultIconColor = result.color;
+          } else if (result.color) {
+            s.fileTypeDefaultColors[ext] = result.color;
+          } else {
+            delete s.fileTypeDefaultColors[ext];
+          }
+          void this.plugin.saveSettings().then(() => {
+            this.plugin.refreshIcons();
+            this.update();
+          });
+        },
+      );
+    });
 
     const change = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
     change.createSpan({ text: "Change" });
     change.addEventListener("click", () => {
       new IconPickerModal(this.app, () => this.plugin.store, {
         title: `Icon for ${label}`,
-        onPick: (icon) => {
+        allowColor: true,
+        color: color ?? null,
+        onPick: (icon, pickedColor) => {
           if (ext === "*") {
             s.defaultIcon = icon ? icon.id : null;
+            s.defaultIconColor = pickedColor ?? s.defaultIconColor;
           } else if (icon) {
             s.fileTypeDefaults[ext] = icon.id;
+            if (pickedColor) s.fileTypeDefaultColors[ext] = pickedColor;
+            else delete s.fileTypeDefaultColors[ext];
           } else {
             delete s.fileTypeDefaults[ext];
+            delete s.fileTypeDefaultColors[ext];
           }
           void this.plugin.saveSettings().then(() => {
             this.plugin.refreshIcons();
@@ -350,6 +507,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
       remove.addEventListener("click", () => {
         void (async () => {
           delete s.fileTypeDefaults[ext];
+          delete s.fileTypeDefaultColors[ext];
           await this.plugin.saveSettings();
           this.plugin.refreshIcons();
           this.update();
@@ -402,8 +560,16 @@ export class StarIconsSettingTab extends PluginSettingTab {
         } else if (action.type === "random") {
           const col = s.collections.find((c) => c.id === action.collectionId);
           actionPreview.setText(`🎲 ${col?.name ?? "collection"}`);
+        } else if (action.type === "randomDataview") {
+          const col = s.dataviewCollections.find((c) => c.id === action.dataviewCollectionId);
+          actionPreview.setText(`📊 ${col?.name ?? "dataview query"}`);
         } else {
           actionPreview.setText("default");
+        }
+        if (action.type !== "clear" && action.color) {
+          actionPreview.style.color = action.color;
+          const dot = actionPreview.createSpan({ cls: "si-color-dot has-color" });
+          dot.style.background = action.color;
         }
 
         const edit = row.createEl("button", { cls: "si-icon-btn", attr: { type: "button" } });
@@ -484,6 +650,238 @@ export class StarIconsSettingTab extends PluginSettingTab {
     new Setting(el).addButton((b) =>
       b.setButtonText("Open Icon Manager").onClick(() => void this.plugin.openManager()),
     );
+  }
+
+  /* --- Dataview collections ------------------------------------------------------- */
+
+  private renderDataview(el: HTMLElement): void {
+    const s = this.plugin.settings;
+
+    const status = el.createDiv({ cls: "si-hint si-dv-status" });
+    const renderStatus = () => {
+      const available = isDataviewAvailable(this.app);
+      status.setText(
+        available
+          ? "✓ Dataview detected — queries run live and refresh automatically on vault changes."
+          : "⚠ Dataview is not installed or enabled. Install the “Dataview” community plugin to use dynamic collections.",
+      );
+      status.toggleClass("is-ok", available);
+    };
+    renderStatus();
+
+    const listEl = el.createDiv({ cls: "si-dv-list" });
+
+    const render = () => {
+      listEl.empty();
+      if (s.dataviewCollections.length === 0) {
+        listEl.createDiv({ cls: "si-empty", text: "No Dataview collections yet" });
+      }
+      for (const col of s.dataviewCollections) {
+        listEl.appendChild(this.dataviewCard(col, () => {
+          void this.plugin.saveSettings();
+          void this.plugin.refreshDataviewNow();
+          render();
+        }));
+      }
+    };
+    render();
+
+    const actions = el.createDiv({ cls: "si-dv-actions" });
+    const add = actions.createEl("button", { cls: "si-btn si-btn-primary", attr: { type: "button" } });
+    add.createSpan({ text: "＋ Add Dataview collection" });
+    add.addEventListener("click", () => {
+      s.dataviewCollections.push({
+        id: uid("dvcol"),
+        name: "New collection",
+        query: "LIST icon FROM #project",
+        iconProperty: "icon",
+      });
+      void this.plugin.saveSettings();
+      render();
+    });
+    const refreshNow = actions.createEl("button", { cls: "si-btn", attr: { type: "button" } });
+    refreshNow.createSpan({ text: "Refresh now" });
+    refreshNow.addEventListener("click", () => {
+      void this.plugin.refreshDataviewNow().then(() => {
+        new Notice("Dataview collections refreshed");
+      });
+    });
+  }
+
+  /** One editable Dataview collection card: name, property, query, test, delete. */
+  private dataviewCard(
+    col: DataviewCollection,
+    onChanged: () => void,
+  ): HTMLElement {
+    const s = this.plugin.settings;
+    const card = createDiv({ cls: "si-dv-card" });
+
+    const nameRow = card.createDiv({ cls: "si-dv-row" });
+    nameRow.createSpan({ cls: "si-label si-dv-label", text: "Name" });
+    const nameInput = nameRow.createEl("input", {
+      cls: "si-text-input",
+      attr: { placeholder: "Collection name", spellcheck: "false" },
+    });
+    nameInput.value = col.name;
+    nameInput.addEventListener("change", () => {
+      col.name = nameInput.value.trim() || "Untitled collection";
+      onChanged();
+    });
+
+    const propRow = card.createDiv({ cls: "si-dv-row" });
+    propRow.createSpan({ cls: "si-label si-dv-label", text: "Icon property" });
+    const propInput = propRow.createEl("input", {
+      cls: "si-text-input si-dv-prop",
+      attr: { placeholder: "icon", spellcheck: "false" },
+    });
+    propInput.value = col.iconProperty || "icon";
+    propInput.addEventListener("change", () => {
+      col.iconProperty = propInput.value.trim() || "icon";
+      onChanged();
+    });
+
+    const queryRow = card.createDiv({ cls: "si-dv-row si-dv-query-row" });
+    queryRow.createSpan({ cls: "si-label si-dv-label", text: "Query" });
+    const queryInput = queryRow.createEl("textarea", {
+      cls: "si-textarea si-dv-query",
+      attr: { rows: "3", placeholder: "LIST icon FROM #project", spellcheck: "false" },
+    });
+    queryInput.value = col.query;
+    queryInput.addEventListener("change", () => {
+      col.query = queryInput.value.trim();
+      onChanged();
+    });
+
+    const buttons = card.createDiv({ cls: "si-dv-buttons" });
+    const test = buttons.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+    test.createSpan({ text: "Test query" });
+    const result = buttons.createDiv({ cls: "si-dv-result" });
+    test.addEventListener("click", () => {
+      void (async () => {
+        result.empty();
+        result.setText("Running…");
+        const ids = await queryDataviewIcons(
+          this.app,
+          col.query,
+          col.iconProperty || "icon",
+        );
+        result.empty();
+        result.createSpan({
+          cls: "si-dv-count",
+          text: ids.length
+            ? `${ids.length} icon id${ids.length === 1 ? "" : "s"}`
+            : "No icon ids found",
+        });
+        const swatches = result.createSpan({ cls: "si-dv-swatches" });
+        for (const id of ids.slice(0, 24)) {
+          const def = getIcon(id);
+          const chip = swatches.createSpan({ cls: "si-pack-sample" });
+          if (def) renderIcon(chip, def.id, 14);
+          else chip.setText("?");
+          chip.title = id;
+        }
+      })();
+    });
+    const remove = buttons.createEl("button", { cls: "si-btn si-btn-small is-danger", attr: { type: "button" } });
+    remove.createSpan({ text: "Delete" });
+    remove.addEventListener("click", () => {
+      void (async () => {
+        const ok = await confirmDialog(this.app, {
+          title: `Delete Dataview collection “${col.name}”?`,
+          message: "Rules using it will fall back to the next priority.",
+          confirmLabel: "Delete",
+          danger: true,
+        });
+        if (!ok) return;
+        s.dataviewCollections = s.dataviewCollections.filter((c) => c.id !== col.id);
+        for (const rule of s.rules) {
+          if (rule.action.type === "randomDataview" && rule.action.dataviewCollectionId === col.id) {
+            rule.action = { type: "clear" };
+          }
+        }
+        onChanged();
+      })();
+    });
+
+    return card;
+  }
+
+  /* --- custom sounds ----------------------------------------------------------- */
+
+  private renderCustomSounds(el: HTMLElement): void {
+    const s = this.plugin.settings;
+
+    el.createDiv({
+      cls: "si-hint",
+      text: "Upload an audio file to replace a built-in sound. Files are copied into the plugin folder and used as-is (the intensity slider still controls volume).",
+    });
+
+    const list = el.createDiv({ cls: "si-sound-list" });
+    const render = () => {
+      list.empty();
+      for (const kind of SOUND_KIND_ORDER) {
+        const path = s.customSounds[kind];
+        const row = list.createDiv({ cls: "si-sound-row" });
+        row.createSpan({ cls: "si-sound-kind", text: SOUND_KIND_LABELS[kind] });
+        const fileEl = row.createSpan({
+          cls: "si-sound-file" + (path ? " has-file" : ""),
+          text: path ? path.split("/").pop() ?? path : "synthesized",
+        });
+        fileEl.title = path ?? "";
+
+        const play = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+        play.createSpan({ text: "Play" });
+        play.addEventListener("click", () => this.plugin.soundscape?.playKind(kind));
+
+        const upload = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+        upload.createSpan({ text: "Upload" });
+        upload.addEventListener("click", () => {
+          const input = createEl("input", { attr: { type: "file", accept: "audio/*" } });
+          input.addEventListener("change", () => {
+            const file = input.files?.[0];
+            if (!file) return;
+            void (async () => {
+              const buffer = await file.arrayBuffer();
+              const dir = normalizePath(
+                `${this.plugin.app.vault.configDir}/plugins/${this.plugin.manifest.id}/sounds`,
+              );
+              try {
+                await this.plugin.app.vault.adapter.mkdir(dir);
+              } catch {
+                /* already exists */
+              }
+              const ext = (file.name.split(".").pop() ?? "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
+              const target = normalizePath(`${dir}/${kind}-${Date.now().toString(36)}.${ext}`);
+              try {
+                await this.plugin.app.vault.adapter.writeBinary(target, buffer);
+              } catch (err) {
+                new Notice("Could not save the sound file");
+                console.warn("[Star Icons] sound write failed", err);
+                return;
+              }
+              s.customSounds[kind] = target;
+              await this.plugin.saveSettings();
+              const ok = await this.plugin.soundscape?.loadCustom(kind, target);
+              new Notice(ok ? `Sound loaded for “${SOUND_KIND_LABELS[kind]}”` : "Sound file could not be decoded");
+              render();
+            })();
+          });
+          input.click();
+        });
+
+        if (path) {
+          const clear = row.createEl("button", { cls: "si-btn si-btn-small", attr: { type: "button" } });
+          clear.createSpan({ text: "Clear" });
+          clear.addEventListener("click", () => {
+            delete s.customSounds[kind];
+            void this.plugin.saveSettings();
+            this.plugin.soundscape?.clearCustom(kind);
+            render();
+          });
+        }
+      }
+    };
+    render();
   }
 
   /* --- data ------------------------------------------------------------------------ */

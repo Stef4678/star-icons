@@ -268,6 +268,83 @@ describe("resolveIcon priority", () => {
     expect(["si-lucide-a", "si-lucide-b", "si-lucide-c"]).toContain(a.iconId);
   });
 
+  it("random from Dataview is deterministic per path", () => {
+    const s = settings({
+      dataviewCollections: [
+        { id: "dv1", name: "DV", query: "LIST icon FROM #x", iconProperty: "icon" },
+      ],
+      rules: [
+        {
+          id: "rr", name: "DVRand", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "randomDataview", dataviewCollectionId: "dv1" }, createdAt: 0,
+        },
+      ],
+    });
+    const results = { dv1: ["si-lucide-home", "si-lucide-star", "si-lucide-heart"] };
+    const a = resolveIcon(s, ctx(), results);
+    const b = resolveIcon(s, ctx(), results);
+    expect(a.iconId).toBe(b.iconId);
+    expect(a.source).toBe("rule");
+    expect(a.ruleId).toBe("rr");
+    expect(["si-lucide-home", "si-lucide-star", "si-lucide-heart"]).toContain(a.iconId);
+    expect(a.detail).toContain("DV");
+  });
+
+  it("random Dataview with no cached results falls through", () => {
+    const s = settings({
+      dataviewCollections: [
+        { id: "dv1", name: "DV", query: "LIST icon FROM #x", iconProperty: "icon" },
+      ],
+      rules: [
+        {
+          id: "r", name: "DVRand", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "randomDataview", dataviewCollectionId: "dv1" }, createdAt: 0,
+        },
+      ],
+      fileTypeDefaults: { md: "si-lucide-file-text" },
+    });
+    const res = resolveIcon(s, ctx(), { dv1: [] });
+    expect(res.iconId).toBe("si-lucide-file-text");
+    expect(res.source).toBe("filetype");
+  });
+
+  it("random Dataview falls through when the picked icon is unavailable", () => {
+    const s = settings({
+      enabledPacks: { lucide: false, material: true, star: true },
+      dataviewCollections: [
+        { id: "dv1", name: "DV", query: "LIST icon FROM #x", iconProperty: "icon" },
+      ],
+      rules: [
+        {
+          id: "r", name: "DVRand", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "randomDataview", dataviewCollectionId: "dv1" }, createdAt: 0,
+        },
+      ],
+      defaultIcon: "si-material-star",
+    });
+    // All candidates belong to the disabled lucide pack.
+    const res = resolveIcon(s, ctx(), { dv1: ["si-lucide-home", "si-lucide-star"] });
+    expect(res.iconId).toBe("si-material-star");
+    expect(res.source).toBe("default");
+  });
+
+  it("random Dataview action carries its color", () => {
+    const s = settings({
+      dataviewCollections: [
+        { id: "dv1", name: "DV", query: "LIST icon FROM #x", iconProperty: "icon" },
+      ],
+      rules: [
+        {
+          id: "r", name: "DVRand", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "randomDataview", dataviewCollectionId: "dv1", color: "#a78bfa" }, createdAt: 0,
+        },
+      ],
+    });
+    const res = resolveIcon(s, ctx(), { dv1: ["si-lucide-home"] });
+    expect(res.iconId).toBe("si-lucide-home");
+    expect(res.color).toBe("#a78bfa");
+  });
+
   it("unavailable icon (pack disabled) falls back to default", () => {
     const s = settings({
       enabledPacks: { lucide: false, material: true, star: true },
@@ -276,6 +353,93 @@ describe("resolveIcon priority", () => {
     });
     const res = resolveIcon(s, ctx());
     expect(res.iconId).toBe("si-material-star");
+  });
+});
+
+describe("resolveIcon colors", () => {
+  it("override carries its color", () => {
+    const s = settings({
+      overrides: { "folder/note.md": "si-lucide-home" },
+      overrideColors: { "folder/note.md": "#e93147" },
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.iconId).toBe("si-lucide-home");
+    expect(res.color).toBe("#e93147");
+  });
+
+  it("override without a color leaves color undefined", () => {
+    const s = settings({ overrides: { "folder/note.md": "si-lucide-home" } });
+    expect(resolveIcon(s, ctx()).color).toBeUndefined();
+  });
+
+  it("rule icon action color", () => {
+    const s = settings({
+      rules: [
+        {
+          id: "r", name: "R", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "icon", iconId: "si-lucide-star", color: "#3b82f6" }, createdAt: 0,
+        },
+      ],
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.iconId).toBe("si-lucide-star");
+    expect(res.color).toBe("#3b82f6");
+  });
+
+  it("random action color", () => {
+    const s = settings({
+      collections: [
+        { id: "col1", name: "C", iconIds: ["si-lucide-a", "si-lucide-b"], createdAt: 0 },
+      ],
+      rules: [
+        {
+          id: "rr", name: "Rand", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "random", collectionId: "col1", color: "#98c379" }, createdAt: 0,
+        },
+      ],
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.color).toBe("#98c379");
+    expect(["si-lucide-a", "si-lucide-b"]).toContain(res.iconId);
+  });
+
+  it("clear action has no color", () => {
+    const s = settings({
+      rules: [
+        {
+          id: "r", name: "Clear", enabled: true, match: "all" as const, conditions: [],
+          action: { type: "clear" }, createdAt: 0,
+        },
+      ],
+      fileTypeDefaults: { md: "si-lucide-file" },
+      fileTypeDefaultColors: { md: "#e93147" },
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.iconId).toBeNull();
+    expect(res.color).toBeUndefined();
+  });
+
+  it("file type default carries its color", () => {
+    const s = settings({
+      fileTypeDefaults: { md: "si-lucide-file-text" },
+      fileTypeDefaultColors: { md: "#98c379" },
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.iconId).toBe("si-lucide-file-text");
+    expect(res.color).toBe("#98c379");
+  });
+
+  it("global default carries its color", () => {
+    const s = settings({
+      defaultIcon: "si-material-star",
+      defaultIconColor: "#f5b301",
+    });
+    const res = resolveIcon(s, ctx());
+    expect(res.color).toBe("#f5b301");
+  });
+
+  it("no color when nothing configured", () => {
+    expect(resolveIcon(settings(), ctx()).color).toBeUndefined();
   });
 });
 

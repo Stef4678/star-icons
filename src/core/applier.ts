@@ -69,7 +69,7 @@ export class IconApplier {
   resolve(file: TAbstractFile | null | undefined): Resolution {
     if (!file) return { iconId: null, source: "none", detail: "No file" };
     const ctx = buildFileContext(file, this.app);
-    return resolveIcon(this.plugin.settings, ctx);
+    return resolveIcon(this.plugin.settings, ctx, this.plugin.getDataviewResults());
   }
 
   /* --- file explorer ---------------------------------------------------- */
@@ -147,6 +147,7 @@ export class IconApplier {
             /* icon not registered (pack disabled) — leave default */
           }
         }
+        IconApplier.applyResolutionColor(iconEl, res.iconId ? res.color : null);
         if (showTooltips && item.selfEl) {
           const label = res.iconId ? prettyIconName(res.iconId) : "Default icon";
           item.selfEl.title = `${label} — ${res.detail}`;
@@ -200,9 +201,12 @@ export class IconApplier {
       } catch {
         /* ignore */
       }
+      IconApplier.applyResolutionColor(iconEl, res.color);
       if (plugin.settings.showSourceTooltips) {
         iconEl.title = `${prettyIconName(res.iconId)} — ${res.detail}`;
       }
+    } else {
+      IconApplier.applyResolutionColor(iconEl, null);
     }
   }
 
@@ -264,9 +268,19 @@ export class IconApplier {
     } catch {
       /* ignore */
     }
+    IconApplier.applyResolutionColor(iconEl, res.color);
     if (this.plugin.settings.showSourceTooltips) {
       iconEl.title = `${prettyIconName(res.iconId)} — ${res.detail}`;
     }
+  }
+
+  /**
+   * Tint an icon container with the resolved color (or reset it to the theme
+   * default). Icons use `currentColor`, so setting `color` on the container
+   * recolors stroke/fill-based packs; full-color packs ignore it.
+   */
+  private static applyResolutionColor(el: HTMLElement, color?: string | null): void {
+    el.style.color = color ?? "";
   }
 }
 

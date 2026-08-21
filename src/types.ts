@@ -103,8 +103,9 @@ export interface RuleCondition {
 }
 
 export type RuleAction =
-  | { type: "icon"; iconId: string }
-  | { type: "random"; collectionId: string }
+  | { type: "icon"; iconId: string; color?: string }
+  | { type: "random"; collectionId: string; color?: string }
+  | { type: "randomDataview"; dataviewCollectionId: string; color?: string }
   | { type: "clear" };
 
 export interface Rule {
@@ -124,6 +125,22 @@ export interface Collection {
   /** Icon ids (si-…), in display order. */
   iconIds: string[];
   createdAt: number;
+}
+
+/**
+ * A dynamic collection backed by a Dataview query. The query's rows are
+ * expected to carry icon ids (either the row value itself, or a frontmatter
+ * property on each page — see `iconProperty`). Results are cached by the
+ * plugin and refreshed on vault/settings changes, so rules can pick
+ * "random from dataview" icons deterministically per file.
+ */
+export interface DataviewCollection {
+  id: string;
+  name: string;
+  /** Dataview DQL query (LIST or TABLE). */
+  query: string;
+  /** Frontmatter property holding the icon id (default "icon"). */
+  iconProperty: string;
 }
 
 /** A user-imported icon (the "My Icons" pack). */
@@ -149,7 +166,86 @@ export interface Resolution {
   detail: string;
   /** Matched rule id, when source === "rule". */
   ruleId?: string;
+  /**
+   * CSS color to tint the icon with ("#e93147", "var(--color-red)", …).
+   * Absent/undefined = keep the theme default color. Only meaningful when
+   * iconId is set; full-color packs (emoji) ignore it.
+   */
+  color?: string | null;
 }
+
+/**
+ * Preset swatches for the color palette. Chosen to stay legible on both
+ * Obsidian's light and dark themes (mid-brightness hues).
+ */
+export const ICON_COLOR_PALETTE: string[] = [
+  "#e93147", // red
+  "#ff7a45", // orange
+  "#f5b301", // gold (brand)
+  "#e5c07b", // sand
+  "#98c379", // green
+  "#0bbf7a", // emerald
+  "#40c4ff", // cyan
+  "#61dafb", // sky
+  "#3b82f6", // blue
+  "#7289da", // indigo
+  "#a78bfa", // violet
+  "#c678dd", // purple
+  "#f472b6", // pink
+  "#ff6b81", // rose
+  "#d29922", // dark gold
+  "#8b949e", // gray
+];
+
+/* --- Soundscapes -------------------------------------------------------- */
+
+/**
+ * The kinds of sounds the engine can play. Icon-specific kinds are derived
+ * from an icon's name (star -> twinkle, trash -> crash, bell -> ding…);
+ * `click`/`select`/`transition` are the interaction sounds (hover, pick,
+ * automatic icon change).
+ */
+export type SoundKind =
+  | "click"
+  | "select"
+  | "transition"
+  | "twinkle"
+  | "crash"
+  | "ding"
+  | "pop"
+  | "chime";
+
+/** Built-in sound packs (synthesis presets). */
+export type SoundPackId = "8bit" | "cinematic" | "minimal";
+
+export const SOUND_PACKS: { id: SoundPackId; label: string; desc: string }[] = [
+  { id: "8bit", label: "8-bit", desc: "Square-wave bleeps — retro arcade vibes." },
+  { id: "cinematic", label: "Cinematic", desc: "Soft, spacious tones with a subtle echo." },
+  { id: "minimal", label: "Minimal", desc: "Quiet sine blips — barely there." },
+];
+
+/** Every interaction/icon sound kind, in display order. */
+export const SOUND_KIND_ORDER: SoundKind[] = [
+  "click",
+  "select",
+  "transition",
+  "twinkle",
+  "crash",
+  "ding",
+  "pop",
+  "chime",
+];
+
+export const SOUND_KIND_LABELS: Record<SoundKind, string> = {
+  click: "Hover",
+  select: "Click / select",
+  transition: "Icon change",
+  twinkle: "Twinkle (stars)",
+  crash: "Crash (trash)",
+  ding: "Ding (bells)",
+  pop: "Pop (add)",
+  chime: "Chime (hearts)",
+};
 
 export interface StarIconsSettings {
   /* --- General --- */
@@ -167,15 +263,23 @@ export interface StarIconsSettings {
   /* --- Icon application --- */
   /** Vault-relative path -> icon id (manual overrides). */
   overrides: Record<string, string>;
+  /** Vault-relative path -> CSS color tint for that override's icon. */
+  overrideColors: Record<string, string>;
   /** Ordered rules; first enabled match wins. */
   rules: Rule[];
   /** Extension (no dot) -> icon id. "*" is the fallback default. */
   fileTypeDefaults: Record<string, string | null>;
+  /** Extension (no dot) -> CSS color tint for that file type's icon. */
+  fileTypeDefaultColors: Record<string, string>;
   defaultIcon: string | null;
+  /** CSS color tint for the global default icon (null = theme default). */
+  defaultIconColor: string | null;
 
   /* --- Library management --- */
   favoriteIconIds: string[];
   collections: Collection[];
+  /** Dataview-backed dynamic collections (query -> icon id list). */
+  dataviewCollections: DataviewCollection[];
   /** Icon id -> user-added tags. */
   iconTags: Record<string, string[]>;
   recentIconIds: string[];
@@ -187,6 +291,22 @@ export interface StarIconsSettings {
   iconGridDensity: "comfortable" | "compact";
   /** Optional URL for the "Report a bug" dialog's issue link. */
   reportUrl: string;
+
+  /* --- Soundscapes --- */
+  /** Master toggle for interaction sounds. */
+  soundscapesEnabled: boolean;
+  /** Synthesis preset pack. */
+  soundPack: SoundPackId;
+  /** 0–100; 0 = muted. */
+  soundIntensity: number;
+  /** Play a subtle sound when hovering icon tiles. */
+  soundHover: boolean;
+  /** Play a pronounced sound when picking/clicking an icon. */
+  soundClick: boolean;
+  /** Play a transition sound when a file's icon changes automatically. */
+  soundTransition: boolean;
+  /** Custom audio files: kind -> vault-relative path (.mp3/.wav). */
+  customSounds: Partial<Record<SoundKind, string>>;
 }
 
 /** Default bug-report target (override in Settings → Data). */
@@ -244,12 +364,16 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
   },
 
   overrides: {},
+  overrideColors: {},
   rules: [],
   fileTypeDefaults: {},
+  fileTypeDefaultColors: {},
   defaultIcon: null,
+  defaultIconColor: null,
 
   favoriteIconIds: [],
   collections: [],
+  dataviewCollections: [],
   iconTags: {},
   recentIconIds: [],
   userIcons: [],
@@ -257,6 +381,14 @@ export const DEFAULT_SETTINGS: StarIconsSettings = {
   lastPackFilter: "all",
   iconGridDensity: "comfortable",
   reportUrl: DEFAULT_REPORT_URL,
+
+  soundscapesEnabled: false,
+  soundPack: "minimal",
+  soundIntensity: 40,
+  soundHover: true,
+  soundClick: true,
+  soundTransition: true,
+  customSounds: {},
 };
 
 export const PACK_LABELS: Record<PackId, string> = {
