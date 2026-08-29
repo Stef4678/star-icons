@@ -218,7 +218,9 @@ export class StarIconsPlugin extends Plugin {
   async openManager(): Promise<void> {
     const existing = this.app.workspace.getLeavesOfType(ICON_MANAGER_VIEW_TYPE);
     if (existing.length > 0) {
-      this.app.workspace.setActiveLeaf(existing[0]);
+      // revealLeaf (not setActiveLeaf): it also uncollapses the sidebar, so
+      // the manager is visible even when the right sidebar was collapsed.
+      await this.app.workspace.revealLeaf(existing[0]);
       return;
     }
     const leaf = this.app.workspace.getRightLeaf(false);
@@ -227,7 +229,7 @@ export class StarIconsPlugin extends Plugin {
       return;
     }
     await leaf.setViewState({ type: ICON_MANAGER_VIEW_TYPE, active: true });
-    this.app.workspace.setActiveLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
   }
 
   /** Open the 3D Icon Galaxy; star selections sync to the Manager. */

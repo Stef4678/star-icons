@@ -21,11 +21,38 @@ import { Resolution } from "../types";
 import { buildFileContext, resolveIcon } from "./ruleEngine";
 
 type ExplorerLike = {
+  /** The view's own icon id (Obsidian views set e.g. "lucide-folder-closed"). */
+  icon?: string;
   fileItems?: Record<string, { file?: TAbstractFile; selfEl?: HTMLElement }>;
-  getIcon?: (file: TFile) => string | undefined;
-  getFolderIcon?: (folder: TFolder) => string | undefined;
+  getIcon?: (file?: TAbstractFile) => string | undefined;
+  getFolderIcon?: (folder?: TAbstractFile) => string | undefined;
   isIconVisible?: () => boolean;
 };
+
+/**
+ * Build the patched `getIcon`/`getFolderIcon` for a file-explorer view.
+ *
+ * Obsidian calls `view.getIcon()` with NO argument (WorkspaceLeaf.getViewState,
+ * tab headers) to ask for the view's *own* icon. The original implementation
+ * reads `this.icon`, so it must be invoked with the view as `this` — calling
+ * it as a bare function makes `this` undefined and throws
+ * "Cannot read properties of undefined (reading 'icon')" on every workspace
+ * state save, which silently breaks fresh installs. A real file/folder
+ * argument is resolved through the applier instead.
+ */
+export function makePatchedViewIcon(
+  receiver: { icon?: string },
+  resolve: (file: TAbstractFile) => Resolution,
+  original?: (file?: TAbstractFile) => string | undefined,
+): (file?: TAbstractFile) => string | undefined {
+  return (file?: TAbstractFile) => {
+    if (file) {
+      const res = resolve(file);
+      if (res.iconId) return res.iconId;
+    }
+    return original ? original.call(receiver, file) : undefined;
+  };
+}
 
 export class IconApplier {
   private patchedViews = new Set<ExplorerLike>();
@@ -90,15 +117,13 @@ export class IconApplier {
         isIconVisible: origIsIconVisible,
       };
 
-      view.getIcon = (file: TFile) => {
-        const res = this.resolve(file);
-        return res.iconId ?? (origGetIcon ? origGetIcon(file) : undefined);
-      };
+      view.getIcon = makePatchedViewIcon(view, (file) => this.resolve(file), origGetIcon);
       if (typeof view.getFolderIcon === "function") {
-        view.getFolderIcon = (folder: TFolder) => {
-          const res = this.resolve(folder);
-          return res.iconId ?? (origGetFolderIcon ? origGetFolderIcon(folder) : undefined);
-        };
+        view.getFolderIcon = makePatchedViewIcon(
+          view,
+          (folder) => this.resolve(folder),
+          origGetFolderIcon,
+        );
       }
       view.isIconVisible = () => true;
       void origIsIconVisible;

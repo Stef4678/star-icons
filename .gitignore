@@ -8,3 +8,5 @@ packs/
 
 .npm-cache/
 npm-verbose.log
+
+.test-vault/
