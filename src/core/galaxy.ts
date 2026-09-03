@@ -59,11 +59,12 @@ export function packColor(pack: string): [number, number, number] {
 
 /**
  * Two complementary CSS colors for the "Icon Aurora" backdrop, tinted to a
- * pack. "all" falls back to the brand gold + cyan. The second color is a
- * simple RGB rotation of the first so it reads as a harmonious secondary glow.
+ * pack. "all" (and any unrecognized pack) falls back to the brand gold + cyan.
+ * The second color is a simple RGB rotation of the first so it reads as a
+ * harmonious secondary glow.
  */
-export function auroraColors(pack: string | "all"): [string, string] {
-  if (pack === "all") return ["#f5b301", "#40c4ff"];
+export function auroraColors(pack: string): [string, string] {
+  if (!pack || pack === "all") return ["#f5b301", "#40c4ff"];
   const [r, g, b] = packColor(pack);
   return [`rgb(${r}, ${g}, ${b})`, `rgb(${b}, ${r}, ${g})`];
 }
