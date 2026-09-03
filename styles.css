@@ -37,8 +37,6 @@
 
 .si-tile:hover {
   background: var(--background-secondary);
-  border-color: var(--si-border);
-  transform: translateY(-2px);
 }
 
 .si-tile.is-selected {
@@ -80,7 +78,6 @@
   opacity: 0.85;
 }
 
-.si-tile:hover .si-tile-star,
 .si-tile.is-selected .si-tile-star {
   display: flex;
 }
@@ -2093,4 +2090,43 @@
   font-size: 11px;
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* --- Icon Aurora: a subtle animated nebula behind the grid & picker ------ */
+
+.si-aurora {
+  position: relative;
+  /* Isolate so the negative-z backdrop stays inside this element. */
+  isolation: isolate;
+}
+
+.si-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 40% at 22% 26%, color-mix(in srgb, var(--aurora, #f5b301) var(--aurora-a, 22%), transparent), transparent 72%),
+    radial-gradient(40% 34% at 80% 66%, color-mix(in srgb, var(--aurora-2, #40c4ff) var(--aurora-b, 17%), transparent), transparent 72%),
+    radial-gradient(36% 30% at 62% 14%, color-mix(in srgb, var(--aurora, #f5b301) var(--aurora-c, 11%), transparent), transparent 74%),
+    radial-gradient(32% 28% at 40% 84%, color-mix(in srgb, var(--aurora-2, #40c4ff) var(--aurora-d, 13%), transparent), transparent 74%);
+  animation: si-aurora-pulse 26s ease-in-out infinite alternate;
+}
+
+@keyframes si-aurora-pulse {
+  0% {
+    filter: hue-rotate(0deg) saturate(1.05);
+    opacity: 0.55;
+  }
+  100% {
+    filter: hue-rotate(26deg) saturate(1.2);
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .si-aurora::before {
+    animation: none;
+  }
 }

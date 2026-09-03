@@ -7,6 +7,7 @@
 
 import { App, Menu, Modal, Notice, setIcon } from "obsidian";
 import { IconStore } from "../core/iconStore";
+import { auroraColors } from "../core/galaxy";
 import { IconDef, PackId, PACK_LABELS } from "../types";
 import { clamp, debounce, svgForClipboard } from "../utils";
 import { emptyState, iconTile, renderIcon } from "./components";
@@ -57,7 +58,8 @@ export class IconPickerModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.addClass("si-picker");
+    contentEl.addClass("si-picker si-aurora");
+    this.applyAurora();
 
     const header = contentEl.createDiv({ cls: "si-picker-header" });
     header.createDiv({ cls: "si-picker-title", text: this.opts.title ?? "Pick an icon" });
@@ -80,6 +82,7 @@ export class IconPickerModal extends Modal {
         this.packFilter = pack;
         this.pickerLimit = 400;
         this.selectedIndex = 0;
+        this.applyAurora();
         this.renderGrid();
       },
     });
@@ -161,6 +164,13 @@ export class IconPickerModal extends Modal {
 
   onClose(): void {
     this.contentEl.empty();
+  }
+
+  /** Tint the Icon Aurora backdrop to the picker's current pack. */
+  private applyAurora(): void {
+    const [c1, c2] = auroraColors(this.packFilter);
+    this.contentEl.style.setProperty("--aurora", c1);
+    this.contentEl.style.setProperty("--aurora-2", c2);
   }
 
   private onKey(ev: KeyboardEvent, input: HTMLInputElement): void {

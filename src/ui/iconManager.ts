@@ -11,6 +11,7 @@ import type { StarIconsPlugin } from "../main";
 import { getIcon } from "../data/icons";
 import { ALL_PACKS, Collection, DataviewCollection, IconDef, PackId, PACK_LABELS, PACK_SAMPLE_ICON } from "../types";
 import { emptyState, brandIconId, iconTile, makeSortable, renderIcon, segmentedControl } from "./components";
+import { auroraColors } from "../core/galaxy";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
 import { promptText, confirmDialog, promptTextArea, promptSize } from "./promptModal";
@@ -210,19 +211,27 @@ export class IconManagerView extends ItemView {
 
     const body = root.createDiv({ cls: "si-manager-body" });
     this.sideEl = body.createDiv({ cls: "si-manager-side" });
-    this.mainEl = body.createDiv({ cls: "si-manager-main" });
+    this.mainEl = body.createDiv({ cls: "si-manager-main si-aurora" });
     this.detailEl = body.createDiv({ cls: "si-manager-detail" });
   }
 
   /* --- rendering ---------------------------------------------------------- */
 
   private render(): void {
+    this.applyAurora();
     this.renderHeader();
     this.renderSidebar();
     this.renderMain();
     this.renderDetail();
     this.packFilterControl?.update();
     this.collectionFilterControl?.update();
+  }
+
+  /** Tint the Icon Aurora backdrop to the currently filtered pack. */
+  private applyAurora(): void {
+    const [c1, c2] = auroraColors(this.filter.pack);
+    this.mainEl.style.setProperty("--aurora", c1);
+    this.mainEl.style.setProperty("--aurora-2", c2);
   }
 
   private renderHeader(): void {

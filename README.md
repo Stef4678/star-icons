@@ -109,6 +109,11 @@ itself (override > rules > file type > default) and recolors stroke/fill packs
 (Lucide, Tabler, Material, …); full-color packs like OpenMoji/Twemoji and OS
 emoji keep their own colors.
 
+### 🌈 Icon Aurora
+A subtle animated **nebula backdrop** that glows behind the Icon Manager grid
+and the icon picker, gently shifting hue and tinted to the **active pack's
+color** (auto-switches as you filter by pack). Respects `prefers-reduced-motion`.
+
 ### 📊 Dataview integration
 Turn any Dataview query into a **dynamic icon collection**: in
 **Settings → Dataview collections** write a DQL query whose rows carry icon ids
@@ -143,6 +148,9 @@ button or the *Open Galaxy View (3D)* command:
 - **Hover** a star for its name · **click** to select it (syncs to the
   Manager's detail panel; copy name/SVG, favorite, or jump back)
 - **Search** — the camera *flies* to the matching star
+- **Cinematic look**: UnrealBloom neon glow, glowing *constellation* lines that
+  link icons sharing a collection or tag, a soft nebula haze, and a gentle
+  **auto-orbit** that pauses while you drag
 - Ambient starfield, additive glow sprites, pack-colored planets with labels,
   and a slow galaxy rotation. Rendered with the bundled
   [Three.js](https://threejs.org) engine; requires WebGL.

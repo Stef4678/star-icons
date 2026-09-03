@@ -12,7 +12,10 @@
 import { App, Modal, Notice } from "obsidian";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { buildGalaxyData, GalaxyData } from "../core/galaxy";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { auroraColors, buildGalaxyData, GalaxyData } from "../core/galaxy";
 import { IconStore } from "../core/iconStore";
 import { getIcon } from "../data/icons";
 import { IconDef, PACK_LABELS } from "../types";
@@ -45,6 +48,8 @@ function easeInOutCubic(k: number): number {
 export class GalaxyViewModal extends Modal {
   private data!: GalaxyData;
   private renderer!: THREE.WebGLRenderer;
+  private composer!: EffectComposer;
+  private bloomPass!: UnrealBloomPass;
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
   private controls!: OrbitControls;
@@ -62,6 +67,8 @@ export class GalaxyViewModal extends Modal {
   private disposed = false;
   private resizeObserver: ResizeObserver | null = null;
   private objectUrls: string[] = [];
+  /** Timestamp to re-enable cinematic auto-orbit after the user touches it. */
+  private autoOrbitResumeAt = 0;
   private fly: {
     camFrom: THREE.Vector3;
     camTo: THREE.Vector3;
@@ -120,9 +127,105 @@ export class GalaxyViewModal extends Modal {
       else if (mat) disposeMaterial(mat);
     });
     this.renderer?.dispose();
+    this.composer?.dispose();
     for (const url of this.objectUrls) URL.revokeObjectURL(url);
     this.objectUrls = [];
     this.contentEl.empty();
+  }
+
+  /* --- neon extras (constellations + nebula) ----------------------------- */
+
+  /**
+   * Draw glowing lines linking icons that share a collection or a user tag,
+   * so curated sets appear as constellations in the galaxy. Icons in the
+   * galaxy only (disabled packs are skipped); each group fans from its first
+   * member so the lines read cleanly rather than criss-crossing.
+   */
+  private buildConstellations(): THREE.LineSegments | null {
+    const data = this.data;
+    if (data.indexById.size === 0) return null;
+    const has = (id: string): boolean => data.indexById.has(id);
+
+    const groups: string[][] = [];
+    for (const col of this.store.getSettings().collections) groups.push(col.iconIds);
+    const tagGroups = new Map<string, string[]>();
+    for (const [id, tags] of Object.entries(this.store.getSettings().iconTags ?? {})) {
+      for (const t of tags) {
+        const arr = tagGroups.get(t);
+        if (arr) arr.push(id);
+        else tagGroups.set(t, [id]);
+      }
+    }
+    for (const ids of tagGroups.values()) groups.push(ids);
+
+    const segs: number[] = [];
+    const pos = data.positions;
+    for (const g of groups) {
+      // Only link icons present here, and cap the group for readability.
+      const ids = g.filter(has).slice(0, 40);
+      const hub = data.indexById.get(ids[0]);
+      if (hub === undefined) continue;
+      for (let i = 1; i < ids.length; i++) {
+        const target = data.indexById.get(ids[i]);
+        if (target === undefined) continue;
+        segs.push(
+          pos[hub * 3], pos[hub * 3 + 1], pos[hub * 3 + 2],
+          pos[target * 3], pos[target * 3 + 1], pos[target * 3 + 2],
+        );
+      }
+    }
+    if (segs.length === 0) return null;
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(segs, 3));
+    const mat = new THREE.LineBasicMaterial({
+      color: 0x7fd0ff,
+      transparent: true,
+      opacity: 0.4,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    return new THREE.LineSegments(geo, mat);
+  }
+
+  /** A few huge, faint colored glows that read as a nebula behind the galaxy. */
+  private addNebula(group: THREE.Object3D): void {
+    const specs: [number, number, number, number, number][] = [
+      [-60, 30, -160, 95, 0.10],
+      [70, -12, -140, 115, 0.09],
+      [-24, 42, 120, 120, 0.08],
+      [52, 10, 95, 82, 0.09],
+      [0, -30, -60, 70, 0.07],
+    ];
+    // Nebula shares the Icon Aurora palette (gold → cyan) so the 3D galaxy
+    // and the 2D grid read as one cohesive visual identity.
+    const [aur1, aur2] = auroraColors("all");
+    const gold = new THREE.Color(aur1);
+    const cyan = new THREE.Color(aur2);
+    const violet = new THREE.Color("#8b5cf6");
+    const sky = new THREE.Color("#0ea5e9");
+    const colors = [
+      gold.clone(),
+      gold.clone().lerp(cyan, 0.55),
+      cyan.clone(),
+      cyan.clone().lerp(violet, 0.35),
+      gold.clone().lerp(sky, 0.45),
+    ];
+    specs.forEach(([x, y, z, scale, opacity], i) => {
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: this.glowTex,
+          color: colors[i % colors.length],
+          transparent: true,
+          opacity,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
+      );
+      sprite.position.set(x, y, z);
+      sprite.scale.set(scale, scale, 1);
+      group.add(sprite);
+    });
   }
 
   /* --- DOM --------------------------------------------------------------- */
@@ -153,7 +256,7 @@ export class GalaxyViewModal extends Modal {
     this.panelEl = content.createDiv({ cls: "si-galaxy-panel" });
     this.panelHintEl = content.createDiv({
       cls: "si-galaxy-hint",
-      text: "🖱 Drag to orbit · Scroll to zoom · Click a star to select",
+      text: "🖱 Drag to orbit · Scroll to zoom · Click a star to select · Lines link collections & tags",
     });
     void this.panelHintEl;
   }
@@ -172,6 +275,8 @@ export class GalaxyViewModal extends Modal {
 
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0x05060a, 90, 300);
+    // Opaque space backdrop so bloom has a clean base (no reliance on alpha).
+    this.scene.background = new THREE.Color(0x05060a);
 
     this.camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1200);
     this.camera.position.set(0, 55, 100);
@@ -183,6 +288,9 @@ export class GalaxyViewModal extends Modal {
     this.controls.maxDistance = 340;
     this.controls.maxPolarAngle = Math.PI * 0.94;
     this.controls.target.set(0, 0, 0);
+    // Cinematic idle orbit — paused while the user drags, resumes after a pause.
+    this.controls.autoRotate = true;
+    this.controls.autoRotateSpeed = 0.5;
 
     const group = new THREE.Group();
     this.scene.add(group);
@@ -285,10 +393,26 @@ export class GalaxyViewModal extends Modal {
     core.position.set(0, 12, 0);
     this.scene.add(core);
 
+    // Nebula haze: a few huge, faint colored glows for atmospheric depth.
+    this.addNebula(group);
+
+    // Constellation lines linking icons that share a collection or tag.
+    const constellations = this.buildConstellations();
+    if (constellations) group.add(constellations);
+
+    // Neon post-processing — UnrealBloom makes the stars, planets and glow pop.
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.85, 0.6, 0.72);
+    this.composer.addPass(this.bloomPass);
+
     // Events.
     this.renderer.domElement.addEventListener("pointerdown", (ev) => {
       this.downX = ev.clientX;
       this.downY = ev.clientY;
+      // Pause the cinematic auto-orbit while the user interacts.
+      this.controls.autoRotate = false;
+      this.autoOrbitResumeAt = performance.now() + 8000;
     });
     this.renderer.domElement.addEventListener("pointermove", this.onPointerMove);
     this.renderer.domElement.addEventListener("pointerleave", this.onPointerLeave);
@@ -341,6 +465,7 @@ export class GalaxyViewModal extends Modal {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+    this.composer?.setSize(w, h);
   };
 
   private pickAt(ev: { clientX: number; clientY: number }): number | null {
@@ -542,6 +667,10 @@ export class GalaxyViewModal extends Modal {
   private animate = (time: number): void => {
     if (this.disposed) return;
     this.rafId = window.requestAnimationFrame(this.animate);
+    // Resume cinematic auto-orbit after a short idle pause.
+    if (!this.controls.autoRotate && this.autoOrbitResumeAt && performance.now() > this.autoOrbitResumeAt) {
+      this.controls.autoRotate = true;
+    }
     this.controls.update();
     // Slow galaxy rotation + subtle twinkle.
     const group = this.galaxyPoints.parent;
@@ -551,7 +680,7 @@ export class GalaxyViewModal extends Modal {
       this.highlight.scale.set(s, s, 1);
     }
     if (this.fly) this.stepFly(time);
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   };
 }
 
