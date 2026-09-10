@@ -47,6 +47,18 @@ function plainShell(inner: string, viewBox: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${inner}</svg>`;
 }
 
+/**
+ * Shell for sets imported from @iconify-json data packages. Their markup is
+ * self-describing: every shape carries its own fill/stroke, using
+ * `currentColor` for monochrome sets and literal colors for brand/flag sets.
+ * The root `fill="currentColor"` is only a fallback for the occasional shape
+ * that omits a fill, so tinting keeps working and full-color sets are
+ * unaffected (their explicit fills win).
+ */
+function iconifyShell(inner: string, viewBox: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="currentColor">${inner}</svg>`;
+}
+
 export function iconId(pack: PackId, name: string): string {
   return `si-${pack}-${name}`;
 }
@@ -162,6 +174,22 @@ const SHELL_BY_PACK: Record<string, (inner: string, viewBox: string) => string> 
   "openmoji-black": plainShell,
   twemoji: plainShell,
   fluent: plainShell,
+  // Iconify JSON sets (self-describing markup; mono sets use currentColor)
+  mdi: iconifyShell,
+  hugeicons: iconifyShell,
+  iconoir: iconifyShell,
+  mingcute: iconifyShell,
+  carbon: iconifyShell,
+  tdesign: iconifyShell,
+  "gravity-ui": iconifyShell,
+  feather: iconifyShell,
+  "radix-icons": iconifyShell,
+  jam: iconifyShell,
+  pixelarticons: iconifyShell,
+  teenyicons: iconifyShell,
+  majesticons: iconifyShell,
+  "circle-flags": iconifyShell,
+  "vscode-icons": iconifyShell,
 };
 
 /** Build IconDefs for an external pack's raw JSON data (pure). */

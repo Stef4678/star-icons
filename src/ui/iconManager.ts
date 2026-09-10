@@ -15,7 +15,7 @@ import { auroraColors } from "../core/galaxy";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
 import { promptText, confirmDialog, promptTextArea, promptSize } from "./promptModal";
-import { svgForClipboard } from "../utils";
+import { svgForClipboard, debounce } from "../utils";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -43,6 +43,8 @@ export class IconManagerView extends ItemView {
   private detailEl!: HTMLElement;
   private visibleLimit = 600;
   private filterSignature = "";
+  /** Debounced grid re-render for the search box (see buildDom). */
+  private renderMainDebounced = debounce(() => this.renderMain(), 120);
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -124,7 +126,10 @@ export class IconManagerView extends ItemView {
     });
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
-      this.renderMain();
+      // Filtering the whole registry (100k+ icons) and re-rendering up to 600
+      // tiles per keystroke is what makes typing lag; the picker debounces its
+      // search the same way (120 ms).
+      this.renderMainDebounced();
     });
 
     const toolbar = header.createDiv({ cls: "si-manager-toolbar" });
@@ -656,6 +661,8 @@ export class IconManagerView extends ItemView {
     }
     if (this.filter.query.trim()) {
       const q = this.filter.query.trim().toLowerCase();
+      // Pack tags are normalized to lowercase at build time, so a plain
+      // substring test is both correct and the fastest option here.
       icons = icons.filter(
         (i) =>
           i.name.includes(q) ||

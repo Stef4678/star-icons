@@ -405,6 +405,13 @@ function buildOpenMoji() {
 
 function buildFontAwesome() {
   const icons = [];
+  // Solid is emitted first so its names keep the unsuffixed icon ids: solid is
+  // the primary variant, and every existing override/collection/favorite keeps
+  // resolving. Solid and regular share 273 basenames — previously both were
+  // emitted under one id, so the grid showed two tiles for a single id and the
+  // registry silently kept whichever mounted last. The regular variant is
+  // suffixed instead, so all 2,274 icons stay individually addressable.
+  const used = new Set();
   for (const [variant, rel] of [["solid", "svgs/solid"], ["regular", "svgs/regular"]]) {
     const dir = probe("@fortawesome/fontawesome-free", rel);
     if (!dir) continue;
@@ -412,7 +419,15 @@ function buildFontAwesome() {
       if (!f.endsWith(".svg")) continue;
       const parsed = parseSvg(join(dir, f));
       if (!parsed) continue;
-      icons.push({ name: f.slice(0, -4), svg: parsed.inner, viewBox: parsed.viewBox, tags: [variant] });
+      let name = f.slice(0, -4);
+      if (used.has(name)) {
+        let candidate = `${name}-${variant}`;
+        let n = 2;
+        while (used.has(candidate)) candidate = `${name}-${variant}-${n++}`;
+        name = candidate;
+      }
+      used.add(name);
+      icons.push({ name, svg: parsed.inner, viewBox: parsed.viewBox, tags: [variant] });
     }
   }
   icons.sort((a, b) => a.name.localeCompare(b.name));
@@ -667,6 +682,124 @@ function buildFluent() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Iconify JSON sets (generic builder)                                 */
+/*                                                                     */
+/* These icon sets are published as @iconify-json/<prefix> data        */
+/* packages: one icons.json with every icon body, plus info.json       */
+/* (license/author metadata) and metadata.json (category titles).      */
+/* Only permissively licensed sets (MIT / Apache-2.0) are listed here; */
+/* see THIRD-PARTY-NOTICES.md.                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * pack id -> @iconify-json package. `styles` are set-wide search tags
+ * (per-icon style tags are derived from the markup and the name suffix).
+ */
+const ICONIFY_SETS = [
+  { pack: "mdi", pkg: "mdi", styles: ["material"] },
+  { pack: "hugeicons", pkg: "hugeicons", styles: [] },
+  { pack: "iconoir", pkg: "iconoir", styles: [] },
+  { pack: "mingcute", pkg: "mingcute", styles: [] },
+  { pack: "carbon", pkg: "carbon", styles: [] },
+  { pack: "tdesign", pkg: "tdesign", styles: [] },
+  { pack: "gravity-ui", pkg: "gravity-ui", styles: [] },
+  { pack: "feather", pkg: "feather", styles: [] },
+  { pack: "radix-icons", pkg: "radix-icons", styles: [] },
+  { pack: "jam", pkg: "jam", styles: [] },
+  { pack: "pixelarticons", pkg: "pixelarticons", styles: ["pixel"] },
+  { pack: "teenyicons", pkg: "teenyicons", styles: [] },
+  { pack: "majesticons", pkg: "majesticons", styles: [] },
+  { pack: "circle-flags", pkg: "circle-flags", styles: ["color", "flag"] },
+  { pack: "vscode-icons", pkg: "vscode-icons", styles: ["color", "file-type"] },
+];
+
+/**
+ * Iconify viewBox: per-icon width/height/left/top override the set
+ * defaults, and a positive `left`/`top` shifts the glyph (Iconify renders
+ * it at -left/-top in user units).
+ */
+function iconifyViewBox(icon, data) {
+  const w = icon.width ?? data.width ?? 24;
+  const h = icon.height ?? data.height ?? 24;
+  return `${-(icon.left ?? 0)} ${-(icon.top ?? 0)} ${w} ${h}`;
+}
+
+/**
+ * Build one pack from an @iconify-json data package.
+ *
+ * Search tags come from three cheap sources that keep 100k icons
+ * searchable without duplicating any SVG markup:
+ *   • the icon's own markup (stroke vs filled),
+ *   • its name suffix (-line/-outline/-fill/-solid/-f),
+ *   • the set's category titles and alias names (synonyms such as
+ *     "house" for mdi:home become tags on the real icon).
+ */
+function buildIconifySet({ pack, pkg, styles = [] }) {
+  const dir = join(root, "node_modules", "@iconify-json", pkg);
+  const iconsFile = join(dir, "icons.json");
+  if (!existsSync(iconsFile)) {
+    console.warn(`[${pack}] @iconify-json/${pkg} not installed — skipping`);
+    return null;
+  }
+  const data = JSON.parse(readFileSync(iconsFile, "utf8"));
+
+  // Category titles ("Account / User") -> per-icon search tags.
+  const categoriesByIcon = new Map();
+  try {
+    const meta = JSON.parse(readFileSync(join(dir, "metadata.json"), "utf8"));
+    for (const [title, names] of Object.entries(meta.categories ?? {})) {
+      const words = title
+        .split("/")
+        .map((t) => slugify(t))
+        .filter(Boolean);
+      for (const name of names) {
+        const list = categoriesByIcon.get(name) ?? [];
+        for (const w of words) if (!list.includes(w)) list.push(w);
+        categoriesByIcon.set(name, list);
+      }
+    }
+  } catch {
+    /* category metadata is optional */
+  }
+
+  // Alias names -> tags on the icon they point at (search synonyms).
+  const aliasesByIcon = new Map();
+  for (const [alias, def] of Object.entries(data.aliases ?? {})) {
+    const parent = def?.parent;
+    if (!parent || !data.icons?.[parent]) continue;
+    const list = aliasesByIcon.get(parent) ?? [];
+    if (list.length < 12) list.push(alias);
+    aliasesByIcon.set(parent, list);
+  }
+
+  const icons = [];
+  for (const [name, icon] of Object.entries(data.icons ?? {})) {
+    const body = icon.body;
+    if (!body) continue;
+    const tags = [...styles];
+    tags.push(/stroke=/.test(body) ? "stroke" : "filled");
+    if (/-line$|-outline$/.test(name)) tags.push("outline");
+    if (/-fill$|-filled$|-solid$|-f$/.test(name)) tags.push("filled");
+    if (name.startsWith("folder")) tags.push("folder");
+    for (const c of (categoriesByIcon.get(name) ?? []).slice(0, 3)) tags.push(c);
+    for (const a of aliasesByIcon.get(name) ?? []) tags.push(a);
+    icons.push({
+      name,
+      svg: body,
+      viewBox: iconifyViewBox(icon, data),
+      tags: Array.from(new Set(tags)),
+    });
+  }
+  icons.sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    pack,
+    version: pkgVersion(`@iconify-json/${pkg}`),
+    count: icons.length,
+    icons,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Style tags: make 50k+ searchable without feeling like duplicates    */
 /* ------------------------------------------------------------------ */
 
@@ -707,6 +840,42 @@ const STYLE_TAGS = {
   fluent: ["color", "emoji"],
 };
 
+/**
+ * Namespace every internal SVG id with the icon's own identity and rewrite the
+ * matching `url(#…)` / `href="#…"` references.
+ *
+ * Icons from different sets get inlined into the same document (Obsidian's
+ * setIcon writes the markup into the file explorer, tab headers, notes, and the
+ * Icon Manager grid renders hundreds at once), and `url(#x)` binds to the FIRST
+ * element carrying that id in the document. Sets reuse generic ids — e.g. antd's
+ * drop-shadow `<filter id="a">` and Twemoji's `<clipPath id="a">`, both
+ * referenced — so whichever icon rendered first hijacked the other's
+ * filter/clip and the second icon rendered wrong. Prefixing makes every id
+ * unique per icon, which also stops a future set from reintroducing this.
+ *
+ * Only icons that actually declare an id are touched, and no id is referenced
+ * via SMIL (`begin="a.click"`) or a CSS `#id` selector in any bundled set, so
+ * rewriting `id`/`url(#…)`/`href="#…"` covers every reference.
+ */
+function namespaceSvgIds(icon, pack) {
+  const ids = [...icon.svg.matchAll(/\bid\s*=\s*"([^"]+)"/g)].map((m) => m[1]);
+  if (ids.length === 0) return icon;
+  const prefix = `si-${pack}-${icon.name}`;
+  let svg = icon.svg;
+  for (const id of new Set(ids)) {
+    const next = `${prefix}--${id}`.replace(/[^A-Za-z0-9_.-]/g, "_");
+    svg = svg
+      .split(`id="${id}"`)
+      .join(`id="${next}"`)
+      .split(`url(#${id})`)
+      .join(`url(#${next})`)
+      // Also covers `xlink:href="#…"` (the attribute ends with href="#…").
+      .split(`href="#${id}"`)
+      .join(`href="#${next}"`);
+  }
+  return { ...icon, svg };
+}
+
 function applyStyles(data) {
   if (!data) return data;
   const styles = STYLE_TAGS[data.pack];
@@ -730,6 +899,17 @@ function applyStyles(data) {
     }
     icon.tags = Array.from(new Set(icon.tags));
   }
+  // Normalize tags to lowercase: the Manager's search compares against a
+  // lowercased query, so capitalized source tags (Tabler/Remix category names
+  // like "Development", Twemoji region codes like "AF", Lucide's "Ø") were
+  // unmatchable there. Normalizing once here costs nothing at runtime.
+  for (const icon of data.icons) {
+    icon.tags = Array.from(
+      new Set(icon.tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean)),
+    );
+  }
+  // Namespace internal SVG ids last, so every icon is self-contained.
+  data.icons = data.icons.map((icon) => namespaceSvgIds(icon, data.pack));
   return data;
 }
 
@@ -773,7 +953,25 @@ const ALL_BUILT = [
   // Tier 3 — full-color emoji SVGs
   buildTwemoji(),
   buildFluent(),
+  // Tier 4 — additional permissively licensed sets (Iconify JSON packages)
+  ...ICONIFY_SETS.map(buildIconifySet),
 ].map(applyStyles);
+
+/* --- license/attribution report (checked against THIRD-PARTY-NOTICES) - */
+
+for (const { pack, pkg } of ICONIFY_SETS) {
+  try {
+    const info = JSON.parse(
+      readFileSync(join(root, "node_modules", "@iconify-json", pkg, "info.json"), "utf8"),
+    );
+    const lic = info.license?.spdx ?? info.license?.title ?? "unknown";
+    console.log(
+      `  [license] ${pack.padEnd(14)} ${String(lic).padEnd(12)} ${info.name ?? ""} — ${info.author?.name ?? ""}`,
+    );
+  } catch {
+    /* info.json is optional */
+  }
+}
 
 for (const data of ALL_BUILT) {
   if (!data) continue;

@@ -189,6 +189,29 @@ const fakeApp = {
   },
 };
 
+/* --- globals Obsidian provides (browser context) ------------------------- */
+// main.js runs inside Obsidian's renderer, so it may touch `window`/`document`
+// (ribbon icons, Galaxy View's requestAnimationFrame, focus timers). Node has
+// neither, so the simulation would die with "window is not defined" before it
+// could check anything about the plugin. These are the minimum globals needed
+// to reach the assertions below.
+globalThis.document = {
+  createElement: () => el(),
+  createElementNS: () => el(),
+  body: el(),
+  head: el(),
+  documentElement: { style: {} },
+  querySelector: () => null,
+  addEventListener() {},
+};
+globalThis.window = globalThis;
+window.requestAnimationFrame = () => 0;
+window.cancelAnimationFrame = () => {};
+window.setTimeout = setTimeout;
+window.clearTimeout = clearTimeout;
+window.devicePixelRatio = 1;
+window.WebGLRenderingContext = function WebGLRenderingContext() {};
+
 /* --- intercept require("obsidian") --------------------------------------- */
 const originalLoad = Module._load;
 Module._load = function (request, parent, isMain) {
@@ -236,7 +259,30 @@ try {
   }
   console.log(`OK: opt-in pack loads on demand (now ${plugin.store.totalCount().toLocaleString()} icons)`);
 
-  // Disabling must drop the "All" total again (settings toggle sync).
+  // Iconify-sourced pack: loads from packs/, mounts and resolves by id.
+  plugin.settings.enabledPacks["mdi"] = true;
+  await plugin.store.loadPack("mdi");
+  const mdiCount = plugin.store.search("", "mdi", 5).length;
+  const mdiTotal = plugin.store.totalCount();
+  if (!plugin.store.isPackLoaded("mdi") || mdiCount === 0) {
+    console.error("FAIL: Iconify pack (mdi) did not load/mount on demand");
+    process.exit(1);
+  }
+  if (mdiTotal !== 26932 + 4009 + 7638) {
+    console.error(
+      `FAIL: mdi did not add its icons to the total (got ${mdiTotal}, expected ${26932 + 4009 + 7638})`,
+    );
+    process.exit(1);
+  }
+  const mdiHome = plugin.store.search("home", "mdi", 5)[0];
+  if (!mdiHome || !mdiHome.svg.startsWith("<svg ") || !mdiHome.id.startsWith("si-mdi-")) {
+    console.error(`FAIL: mdi icons are not registered as expected (${mdiHome?.id})`);
+    process.exit(1);
+  }
+  console.log(
+    `OK: Iconify pack loads on demand (mdi: ${mdiTotal.toLocaleString()} icons total, e.g. ${mdiHome.id})`,
+  );
+  plugin.settings.enabledPacks["mdi"] = false;
   plugin.settings.enabledPacks["twemoji"] = false;
   const afterDisable = plugin.store.totalCount();
   if (afterDisable !== 26932) {

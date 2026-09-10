@@ -1020,7 +1020,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
     heading("Third-party packs");
     para(
-      "Lucide (ISC) · Material Symbols incl. Outlined/Sharp (Apache 2.0) · Tabler & Tabler Filled (MIT) · Bootstrap Icons (MIT) · Phosphor, all weights (MIT) · Heroicons & Solid (MIT) · Ionicons (MIT) · Ant Design (MIT) · Line Awesome (MIT) · Boxicons incl. Solid/Logos (MIT) · Octicons (MIT) · Eva Icons (MIT) · Fluent Emoji (MIT) · Remix Icon (Remix Icon License v1.0) · Unicons, all styles (IconScout Simple License) · OpenMoji Color/Mono (CC BY-SA 4.0) · Twemoji (CC BY 4.0) · Font Awesome Free (CC BY 4.0 · OFL 1.1 · MIT) · Simple Icons (CC0 1.0) · Animals/Nature/Science (your system emoji font) · Star Icons (MIT, original).",
+      "Lucide (ISC) · Material Symbols incl. Outlined/Sharp (Apache 2.0) · MDI, MingCute and Carbon (Apache 2.0) · Tabler & Tabler Filled (MIT) · Bootstrap Icons (MIT) · Phosphor, all weights (MIT) · Heroicons & Solid (MIT) · Ionicons (MIT) · Ant Design (MIT) · Line Awesome (MIT) · Boxicons incl. Solid/Logos (MIT) · Octicons (MIT) · Eva Icons (MIT) · Fluent Emoji (MIT) · Hugeicons, Iconoir, TDesign, Gravity UI, Feather, Radix Icons, Jam, Pixelarticons, Teenyicons, Majesticons, Circle Flags and VSCode Icons (MIT) · Remix Icon (Remix Icon License v1.0) · Unicons, all styles (IconScout Simple License) · OpenMoji Color/Mono (CC BY-SA 4.0) · Twemoji (CC BY 4.0) · Font Awesome Free (CC BY 4.0 · OFL 1.1 · MIT) · Simple Icons (CC0 1.0) · Animals/Nature/Science (your system emoji font) · Star Icons (MIT, original).",
     );
 
     heading("Required attribution");

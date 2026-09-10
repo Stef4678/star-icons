@@ -26,6 +26,21 @@ with it.
 | OpenMoji Color / Mono | [openmoji.org](https://openmoji.org) | 17.0.0 | CC BY-SA 4.0 | Attribution + share-alike | See required attribution below — `licenses/cc-by-sa-4.0.txt` |
 | Font Awesome Free | [fontawesome.com](https://fontawesome.com) | 7.3.1 | CC BY 4.0 (icons) · OFL 1.1 (fonts) · MIT (code) | **Credit line required** | © Fonticons, Inc. — see required attribution below — `licenses/fontawesome-free.txt` |
 | Simple Icons | [simpleicons.org](https://simpleicons.org) | 16.28.0 | CC0 1.0 | None | Brand logos — trademarks of their respective owners |
+| Material Design Icons (MDI) | [pictogrammers.com/library/mdi](https://pictogrammers.com/library/mdi/) | 1.2.3 † | Apache 2.0 | Keep license + copyright notices | © Pictogrammers — `licenses/apache-2.0.txt` |
+| Hugeicons | [hugeicons.com](https://hugeicons.com) | 1.2.34 † | MIT | Keep copyright notice | © Hugeicons — `licenses/mit.txt` |
+| Iconoir | [iconoir.com](https://iconoir.com) | 1.2.11 † | MIT | Keep copyright notice | © Luca Burgio — `licenses/mit.txt` |
+| MingCute | [mingcute.com](https://www.mingcute.com) | 1.2.8 † | Apache 2.0 | Keep license + copyright notices | © MingCute Design — `licenses/apache-2.0.txt` |
+| Carbon | [carbondesignsystem.com](https://carbondesignsystem.com/elements/icons/library/) | 1.2.27 † | Apache 2.0 | Keep license + copyright notices | © IBM — `licenses/apache-2.0.txt` |
+| TDesign Icons | [tdesign.tencent.com/icons](https://tdesign.tencent.com/icons) | 1.2.18 † | MIT | Keep copyright notice | © TDesign (Tencent) — `licenses/mit.txt` |
+| Gravity UI Icons | [gravity-ui.com/icons](https://gravity-ui.com/icons) | 1.2.14 † | MIT | Keep copyright notice | © YANDEX LLC — `licenses/mit.txt` |
+| Feather | [feathericons.com](https://feathericons.com) | 1.2.1 † | MIT | Keep copyright notice | © Cole Bemis — `licenses/mit.txt` |
+| Radix Icons | [radix-ui.com/icons](https://www.radix-ui.com/icons) | 1.2.6 † | MIT | Keep copyright notice | © WorkOS — `licenses/mit.txt` |
+| Jam Icons | [jam-icons.com](https://jam-icons.com) | 1.2.3 † | MIT | Keep copyright notice | © Michael Amprimo — `licenses/mit.txt` |
+| Pixelarticons | [pixelarticons.com](https://pixelarticons.com) | 1.2.9 † | MIT | Keep copyright notice | © Gerrit Halfmann — `licenses/mit.txt` |
+| Teenyicons | [teenyicons.com](https://teenyicons.com) | 1.2.2 † | MIT | Keep copyright notice | © smhmd — `licenses/mit.txt` |
+| Majesticons | [majesticons.com](https://majesticons.com) | 1.2.5 † | MIT | Keep copyright notice | © Gerrit Halfmann — `licenses/mit.txt` |
+| Circle Flags | [hatscripts.github.io/circle-flags](https://hatscripts.github.io/circle-flags/) | 1.2.11 † | MIT | Keep copyright notice | © HatScripts; national flags are public domain — `licenses/mit.txt` |
+| VSCode Icons | [github.com/vscode-icons/vscode-icons](https://github.com/vscode-icons/vscode-icons) | 1.2.77 † | MIT | Keep copyright notice | © Roberto Huertas — `licenses/mit.txt` |
 | Ionicons | [ionicons.com](https://ionicons.com) | 8.1.0 | MIT | Keep copyright notice | © Ben Sperry / Ionic — `licenses/mit.txt` |
 | Ant Design Icons | [ant.design](https://ant.design/components/icon) | 4.5.0 | MIT | Keep copyright notice | © Ant Design — `licenses/mit.txt` |
 | Line Awesome | [icons8.com/line-awesome](https://icons8.com/line-awesome) | 1.3.0 | MIT (or Good Boy License) | Keep copyright notice | © Icons8; includes brand icons — `licenses/mit.txt` |
@@ -37,6 +52,14 @@ with it.
 | Animals · Nature & Flowers · Science | — (system emoji) | — | OS emoji font | Depends on the OS font | The plugin renders Unicode emoji with the user's system font and does **not** redistribute emoji font files |
 | Star Icons | original | — | MIT | — | Custom icons owned by Star Icons — `LICENSE` |
 | Three.js | [threejs.org](https://threejs.org) | 0.185.1 | MIT | Keep copyright notice | 3D engine bundled for the Icon Galaxy view (code dependency, not an icon pack) — © 2010–2024 three.js authors — `licenses/mit.txt` |
+
+† Sets marked with a dagger are bundled from their official
+[Iconify](https://iconify.design) data package (`@iconify-json/<prefix>`); the
+version listed is that data package's version, which Iconify bumps when it
+re-syncs the upstream set. Iconify only republishes the SVG markup — each set
+keeps its own license and copyright, listed above. All daggered sets are MIT or
+Apache 2.0, so no additional obligation beyond keeping the copyright/license
+notice applies.
 
 ## Required attribution
 

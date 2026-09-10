@@ -6,7 +6,14 @@ import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-for (const pack of ["lucide", "material", "material-outlined", "material-sharp", "tabler", "tabler-filled", "unicons", "unicons-solid", "unicons-monochrome", "unicons-thinline", "remix", "phosphor", "phosphor-bold", "phosphor-fill", "phosphor-light", "phosphor-thin", "phosphor-duotone", "bootstrap", "boxicons", "boxicons-solid", "boxicons-logos", "heroicons", "heroicons-solid", "fontawesome", "simple-icons", "ionicons", "antd", "line-awesome", "eva", "octicons", "openmoji", "openmoji-black", "twemoji", "fluent"]) {
+// Every pack listed in the generated manifest (keeps this check in sync
+// automatically when new packs are added), plus the user-visible ordering.
+const manifest = JSON.parse(
+  readFileSync(path.join(root, "src", "data", "generated", "manifest.json"), "utf8"),
+);
+const packs = Object.keys(manifest.packs);
+
+for (const pack of packs) {
   const data = JSON.parse(readFileSync(path.join(root, "src", "data", "generated", `${pack}.json`), "utf8"));
   let malformed = 0;
   let control = 0;
