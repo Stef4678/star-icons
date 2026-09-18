@@ -250,6 +250,49 @@ try {
     `OK: packs loaded on demand (${plugin.store.totalCount().toLocaleString()} icons available)`,
   );
 
+  // The pack inventory is optional at runtime: a community install only receives
+  // main.js, manifest.json and styles.css, so packs/manifest.json exists only
+  // after the CDN fetch succeeds — and never exists if that fetch fails or the
+  // packs/ folder is cleared. Versions and counts must still be right; they used
+  // to render as "v?" and "0 icons" for every external pack. (requestUrl is not
+  // stubbed here, so a failed local read cannot silently fall back to the CDN.)
+  const generated = JSON.parse(
+    readFileSync(path.join(root, "src", "data", "generated", "manifest.json"), "utf8"),
+  ).packs;
+  const beforeVersion = plugin.store.getPackVersion("solar");
+  const beforeCount = plugin.store.getPackCount("solar");
+  if (beforeVersion !== generated.solar.version || beforeCount !== generated.solar.count) {
+    console.error(
+      `FAIL: bundled pack metadata not used before packs/manifest.json loads (got ${beforeVersion}/${beforeCount}, expected ${generated.solar.version}/${generated.solar.count})`,
+    );
+    process.exit(1);
+  }
+  const realRead = fakeApp.vault.adapter.read;
+  fakeApp.vault.adapter.read = async (p) => {
+    if (String(p).endsWith("manifest.json")) throw new Error("simulated: pack manifest missing");
+    return realRead(p);
+  };
+  await plugin.store.loadManifest();
+  const afterVersion = plugin.store.getPackVersion("solar");
+  const afterCount = plugin.store.getPackCount("solar");
+  const afterTotal = plugin.store.totalCount();
+  fakeApp.vault.adapter.read = realRead;
+  if (afterVersion !== generated.solar.version || afterCount !== generated.solar.count) {
+    console.error(
+      `FAIL: pack metadata lost when packs/manifest.json is unreadable (got ${afterVersion}/${afterCount})`,
+    );
+    process.exit(1);
+  }
+  if (afterTotal !== 26932) {
+    console.error(
+      `FAIL: icon total collapsed when packs/manifest.json is unreadable (got ${afterTotal}, expected 26932)`,
+    );
+    process.exit(1);
+  }
+  console.log(
+    `OK: pack metadata survives a missing packs/manifest.json (solar ${afterVersion}, ${afterCount.toLocaleString()} icons, ${afterTotal.toLocaleString()} total)`,
+  );
+
   // Opt-in path: enabling a new pack in settings loads it on the spot.
   plugin.settings.enabledPacks["twemoji"] = true;
   await plugin.store.loadPack("twemoji");

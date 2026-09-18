@@ -8,6 +8,7 @@
  */
 
 import { addIcon, App, normalizePath, PluginManifest, requestUrl } from "obsidian";
+import bundledPackManifest from "../data/generated/manifest.json";
 import {
   ALL_ICONS,
   buildPackFromRaw,
@@ -22,21 +23,18 @@ import {
   PACK_VERSIONS,
   RawPack,
 } from "../data/icons";
+import { PackManifest, PackManifestEntry, mergePackManifests } from "./packManifest";
 import { ALL_PACKS, Collection, IconDef, PackId, StarIconsSettings, UserIcon } from "../types";
 import { ensureSvg, searchIcons, slugifyName, uid } from "../utils";
 
-interface PackManifestEntry {
-  version: string;
-  count: number;
-}
-
-interface PackManifest {
-  packs: Partial<Record<PackId, PackManifestEntry>>;
-}
+/** Build-time baseline inventory (see ./packManifest). */
+const BUNDLED_PACK_MANIFEST = bundledPackManifest as PackManifest;
 
 export class IconStore {
   private listeners = new Set<() => void>();
-  private manifest: PackManifest = { packs: {} };
+  // Start from the bundled inventory so versions and counts are correct before
+  // (and even without) packs/manifest.json being read.
+  private manifest: PackManifest = mergePackManifests(BUNDLED_PACK_MANIFEST, undefined);
   private pending = new Map<PackId, Promise<void>>();
 
   constructor(
@@ -148,10 +146,13 @@ export class IconStore {
   /** Load packs/manifest.json (versions + counts, no icon data). */
   async loadManifest(): Promise<void> {
     try {
-      this.manifest = (await this.readPackFile("manifest.json")) as PackManifest;
+      const runtime = (await this.readPackFile("manifest.json")) as PackManifest;
+      // Never lose metadata: the runtime file wins per pack, the bundled
+      // inventory covers anything it is missing (or all of it, if unreadable).
+      this.manifest = mergePackManifests(BUNDLED_PACK_MANIFEST, runtime);
     } catch (err) {
       console.warn("[Star Icons] could not read packs/manifest.json", err);
-      this.manifest = { packs: {} };
+      this.manifest = mergePackManifests(BUNDLED_PACK_MANIFEST, undefined);
     }
     this.notify();
   }
@@ -214,7 +215,7 @@ export class IconStore {
   /* --- pack info ---------------------------------------------------------- */
 
   getPackInfo(pack: PackId): PackManifestEntry {
-    return this.manifest.packs[pack] ?? { version: "?", count: 0 };
+    return this.manifest.packs[pack] ?? { version: "", count: 0 };
   }
 
   getPackCount(pack: PackId): number {
@@ -222,9 +223,15 @@ export class IconStore {
     return this.manifest.packs[pack]?.count ?? ICONS_BY_PACK[pack]?.length ?? 0;
   }
 
+  /**
+   * Data-package version of a pack, or "" when it is genuinely unknown. Callers
+   * format it with `formatPackVersion`, which only adds a "v" prefix to actual
+   * versions — the emoji packs report "system emoji" and used to render as
+   * "vSystem emoji", while an unknown version rendered as "v?".
+   */
   getPackVersion(pack: PackId): string {
-    if (isCorePack(pack)) return PACK_VERSIONS[pack] ?? "1.0.0";
-    return this.manifest.packs[pack]?.version ?? "?";
+    if (isCorePack(pack)) return PACK_VERSIONS[pack] ?? "";
+    return this.manifest.packs[pack]?.version ?? "";
   }
 
   /** Total icons across enabled packs (from the manifest; no pack loading). */

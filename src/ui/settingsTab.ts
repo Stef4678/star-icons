@@ -34,7 +34,7 @@ import {
 } from "../types";
 import type { SoundKind } from "../types";
 import { mergeSettings } from "../settings";
-import { downloadJson, normalizeExt, uid } from "../utils";
+import { downloadJson, formatPackVersion, joinMeta, normalizeExt, uid } from "../utils";
 import { makeSortable, renderIcon } from "./components";
 import { openColorModal, renderColorPicker } from "./colorPicker";
 import { IconPickerModal } from "./iconPicker";
@@ -378,7 +378,11 @@ export class StarIconsSettingTab extends PluginSettingTab {
     const s = this.plugin.settings;
     return {
       name: PACK_LABELS[pack] ?? pack,
-      desc: `${this.packDescriptions[pack] ?? "Icon pack"} · v${this.plugin.store.getPackVersion(pack)} · ${this.plugin.store.getPackCount(pack).toLocaleString()} icons`,
+      desc: joinMeta([
+        this.packDescriptions[pack] ?? "Icon pack",
+        formatPackVersion(this.plugin.store.getPackVersion(pack)),
+        `${this.plugin.store.getPackCount(pack).toLocaleString()} icons`,
+      ]),
       render: (setting) => {
         setting.addToggle((t) =>
           t.setValue(s.enabledPacks[pack] !== false).onChange((v) => {

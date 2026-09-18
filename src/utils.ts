@@ -160,6 +160,27 @@ export function slugifyName(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Render a pack's data-package version for display.
+ *
+ * Prefixes a "v" only for actual versions (the `@iconify-json` packages are
+ * SemVer, e.g. "3.46.0"), so labels that are not versions keep their own words:
+ * the emoji packs report "system emoji" and previously rendered as the nonsense
+ * "vSystem emoji", while an unavailable version rendered as "v?". Both are now
+ * spelled out instead — unknown versions render as an empty string so callers
+ * can drop the segment entirely.
+ */
+export function formatPackVersion(version: string | undefined | null): string {
+  const value = (version ?? "").trim();
+  if (!value || value === "?") return "";
+  return /^\d/.test(value) ? `v${value}` : value;
+}
+
+/** Join non-empty parts with " · " (used for compact metadata lines). */
+export function joinMeta(parts: (string | undefined | null)[]): string {
+  return parts.map((p) => (p ?? "").trim()).filter(Boolean).join(" · ");
+}
+
 /** Ensure user-provided SVG text is a full <svg> element. */
 export function ensureSvg(text: string): string {
   const t = text.trim();

@@ -15,7 +15,7 @@ import { auroraColors } from "../core/galaxy";
 import { PackFilterControl } from "./packFilter";
 import { CollectionFilterControl } from "./collectionFilter";
 import { promptText, confirmDialog, promptTextArea, promptSize } from "./promptModal";
-import { svgForClipboard, debounce } from "../utils";
+import { svgForClipboard, debounce, formatPackVersion } from "../utils";
 import { IconPickerModal } from "./iconPicker";
 
 export const ICON_MANAGER_VIEW_TYPE = "star-icons-manager";
@@ -427,7 +427,7 @@ export class IconManagerView extends ItemView {
       const row = packDetails.createDiv({ cls: "si-side-item si-side-static" });
       const ic = row.createSpan({ cls: "si-side-item-icon" });
       renderIcon(ic, `si-${pack}-${PACK_SAMPLE_ICON[pack] ?? "home"}`);
-      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack] ?? pack} v${this.plugin.store.getPackVersion(pack)}` });
+      row.createSpan({ cls: "si-side-item-label", text: `${PACK_LABELS[pack] ?? pack} ${formatPackVersion(this.plugin.store.getPackVersion(pack))}`.trim() });
       row.createSpan({ cls: "si-side-item-count", text: String(this.plugin.store.getPackCount(pack)) });
     }
 
