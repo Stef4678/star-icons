@@ -99,6 +99,29 @@ export class StarIconsSettingTab extends PluginSettingTab {
     animals: "Emoji animals — pets & wildlife, rendered with your system emoji font.",
     nature: "Emoji flowers & plants — from your system emoji font.",
     science: "Emoji science & space — from your system emoji font.",
+    // Second batch of free sets.
+    "fluent-ui": "Fluent UI System Icons — 20,239 Microsoft icons (regular + filled).",
+    solar: "Solar — 8,425 icons in six styles (linear, bold, broken, outline, duotone).",
+    "icon-park-outline": "IconPark Outline — 2,658 icons from ByteDance.",
+    "icon-park-solid": "IconPark in the solid style.",
+    "icon-park-twotone": "IconPark in the two-tone style (keeps its own colors).",
+    healthicons: "Health Icons — 2,709 medical & public-health icons (outline + filled).",
+    mynaui: "Myna UI — 2,658 crisp interface icons (outline + solid).",
+    logos: "SVG Logos — 2,173 full-color brand logos (CC0).",
+    emojione: "EmojiOne — 1,834 full-color emoji SVGs (CC BY 4.0).",
+    iconamoon: "IconaMoon — 1,781 icons in five weights.",
+    "fluent-mdl2": "Fluent UI MDL2 — 1,735 Microsoft system icons (classic Windows style).",
+    "pepicons-pop": "Pepicons Pop! — 1,290 bold, rounded icons.",
+    "pepicons-pencil": "Pepicons Pencil — 1,275 hand-drawn pencil icons.",
+    f7: "Framework7 Icons — 1,253 filled mobile-app icons.",
+    devicon: "Devicon — 1,058 full-color technology & framework logos.",
+    "file-icons": "File Icons — 930 file-type glyphs for the file explorer.",
+    gg: "css.gg — 704 minimal outline icons.",
+    codicon: "Codicons — 657 VS Code icons.",
+    "akar-icons": "Akar Icons — 458 smooth outline and fill icons.",
+    "skill-icons": "Skill Icons — 400 full-color tech logos (dark + light).",
+    humbleicons: "Humbleicons — 287 friendly outline icons.",
+    "eos-icons": "EOS Icons — 253 system icons (filled + outlined).",
   };
 
   constructor(
@@ -1020,7 +1043,7 @@ export class StarIconsSettingTab extends PluginSettingTab {
 
     heading("Third-party packs");
     para(
-      "Lucide (ISC) · Material Symbols incl. Outlined/Sharp (Apache 2.0) · MDI, MingCute and Carbon (Apache 2.0) · Tabler & Tabler Filled (MIT) · Bootstrap Icons (MIT) · Phosphor, all weights (MIT) · Heroicons & Solid (MIT) · Ionicons (MIT) · Ant Design (MIT) · Line Awesome (MIT) · Boxicons incl. Solid/Logos (MIT) · Octicons (MIT) · Eva Icons (MIT) · Fluent Emoji (MIT) · Hugeicons, Iconoir, TDesign, Gravity UI, Feather, Radix Icons, Jam, Pixelarticons, Teenyicons, Majesticons, Circle Flags and VSCode Icons (MIT) · Remix Icon (Remix Icon License v1.0) · Unicons, all styles (IconScout Simple License) · OpenMoji Color/Mono (CC BY-SA 4.0) · Twemoji (CC BY 4.0) · Font Awesome Free (CC BY 4.0 · OFL 1.1 · MIT) · Simple Icons (CC0 1.0) · Animals/Nature/Science (your system emoji font) · Star Icons (MIT, original).",
+      "Lucide and File Icons (ISC) · Material Symbols incl. Outlined/Sharp (Apache 2.0) · MDI, MingCute, Carbon and IconPark (Apache 2.0) · Tabler & Tabler Filled (MIT) · Bootstrap Icons (MIT) · Phosphor, all weights (MIT) · Heroicons & Solid (MIT) · Ionicons (MIT) · Ant Design (MIT) · Line Awesome (MIT) · Boxicons incl. Solid/Logos (MIT) · Octicons (MIT) · Eva Icons (MIT) · Fluent Emoji (MIT) · Fluent UI Icons & MDL2 (MIT) · Hugeicons, Iconoir, TDesign, Gravity UI, Feather, Radix Icons, Jam, Pixelarticons, Teenyicons, Majesticons, Circle Flags, VSCode Icons, Myna UI, Health Icons, Framework7, Devicon, css.gg, Akar Icons, Skill Icons, Humbleicons and EOS Icons (MIT) · Remix Icon (Remix Icon License v1.0) · Unicons, all styles (IconScout Simple License) · OpenMoji Color/Mono (CC BY-SA 4.0) · Twemoji, Font Awesome Free, Solar, IconaMoon, Pepicons, Codicons and EmojiOne (CC BY 4.0) · Simple Icons and SVG Logos (CC0 1.0) · Animals/Nature/Science (your system emoji font) · Star Icons (MIT, original).",
     );
 
     heading("Required attribution");
@@ -1032,6 +1055,21 @@ export class StarIconsSettingTab extends PluginSettingTab {
     );
     para(
       "OpenMoji — https://openmoji.org, licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).",
+    );
+    para(
+      "Solar Icon Set — 480 Design (https://github.com/480-Design/Solar-Icon-Set), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "IconaMoon — Dariush Habibpour (https://github.com/dariushhpg1/IconaMoon), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "Pepicons — CyCraft (https://github.com/CyCraft/pepicons), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "Codicons — Microsoft Corporation (https://github.com/microsoft/vscode-codicons), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
+    );
+    para(
+      "EmojiOne graphics — Emoji One / JoyPixels (https://www.joypixels.com), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).",
     );
 
     heading("Trademarks");

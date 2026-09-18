@@ -282,6 +282,35 @@ try {
   console.log(
     `OK: Iconify pack loads on demand (mdi: ${mdiTotal.toLocaleString()} icons total, e.g. ${mdiHome.id})`,
   );
+
+  // A second-batch pack, with a non-24×24 viewBox (Solar is 24×24 but ships
+  // six style suffixes; Pepicons is 20×20, Logos up to 256×256).
+  plugin.settings.enabledPacks["solar"] = true;
+  await plugin.store.loadPack("solar");
+  const solarTotal = plugin.store.totalCount();
+  if (!plugin.store.isPackLoaded("solar") || solarTotal !== mdiTotal + 8425) {
+    console.error(
+      `FAIL: second-batch pack (solar) did not load/mount (got ${solarTotal}, expected ${mdiTotal + 8425})`,
+    );
+    process.exit(1);
+  }
+  const solarHome = plugin.store.search("home", "solar", 200).find((i) => i.name === "home-2-bold");
+  if (!solarHome || !solarHome.svg.includes('viewBox="0 0 24 24"')) {
+    console.error(`FAIL: solar icons are not registered as expected (${solarHome?.id})`);
+    process.exit(1);
+  }
+  plugin.settings.enabledPacks["pepicons-pop"] = true;
+  await plugin.store.loadPack("pepicons-pop");
+  const pep = plugin.store.search("house", "pepicons-pop", 200).find((i) => i.name === "house");
+  if (!pep || !pep.svg.includes('viewBox="0 0 20 20"')) {
+    console.error(`FAIL: pepicons-pop icons lost their 20x20 viewBox (${pep?.id})`);
+    process.exit(1);
+  }
+  console.log(
+    `OK: second-batch pack loads on demand (solar: ${solarHome.id}, pepicons: ${pep.id})`,
+  );
+  plugin.settings.enabledPacks["solar"] = false;
+  plugin.settings.enabledPacks["pepicons-pop"] = false;
   plugin.settings.enabledPacks["mdi"] = false;
   plugin.settings.enabledPacks["twemoji"] = false;
   const afterDisable = plugin.store.totalCount();

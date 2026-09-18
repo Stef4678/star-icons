@@ -711,6 +711,30 @@ const ICONIFY_SETS = [
   { pack: "majesticons", pkg: "majesticons", styles: [] },
   { pack: "circle-flags", pkg: "circle-flags", styles: ["color", "flag"] },
   { pack: "vscode-icons", pkg: "vscode-icons", styles: ["color", "file-type"] },
+  // Tier 5 — a second batch of free sets (licenses verified in
+  // THIRD-PARTY-NOTICES.md: MIT / Apache-2.0 / ISC / CC0 / CC BY 4.0).
+  { pack: "fluent-ui", pkg: "fluent", styles: [] },
+  { pack: "solar", pkg: "solar", styles: [] },
+  { pack: "icon-park-outline", pkg: "icon-park-outline", styles: ["outline"] },
+  { pack: "icon-park-solid", pkg: "icon-park-solid", styles: ["solid", "filled"] },
+  { pack: "icon-park-twotone", pkg: "icon-park-twotone", styles: ["twotone", "color"] },
+  { pack: "healthicons", pkg: "healthicons", styles: ["health"] },
+  { pack: "mynaui", pkg: "mynaui", styles: [] },
+  { pack: "logos", pkg: "logos", styles: ["color", "brand", "logo"] },
+  { pack: "emojione", pkg: "emojione", styles: ["color", "emoji"] },
+  { pack: "iconamoon", pkg: "iconamoon", styles: [] },
+  { pack: "fluent-mdl2", pkg: "fluent-mdl2", styles: [] },
+  { pack: "pepicons-pop", pkg: "pepicons-pop", styles: ["pop"] },
+  { pack: "pepicons-pencil", pkg: "pepicons-pencil", styles: ["pencil"] },
+  { pack: "f7", pkg: "f7", styles: ["filled"] },
+  { pack: "devicon", pkg: "devicon", styles: ["brand", "logo"] },
+  { pack: "file-icons", pkg: "file-icons", styles: ["file-type"] },
+  { pack: "gg", pkg: "gg", styles: ["outline"] },
+  { pack: "codicon", pkg: "codicon", styles: ["outline"] },
+  { pack: "akar-icons", pkg: "akar-icons", styles: [] },
+  { pack: "skill-icons", pkg: "skill-icons", styles: ["color", "brand", "logo"] },
+  { pack: "humbleicons", pkg: "humbleicons", styles: ["outline"] },
+  { pack: "eos-icons", pkg: "eos-icons", styles: [] },
 ];
 
 /**
@@ -841,6 +865,46 @@ const STYLE_TAGS = {
 };
 
 /**
+ * Per-name style tags for sets that ship several weights/renditions under one
+ * prefix (Fluent's `-regular`/`-filled`, Solar's six styles, IconaMoon's
+ * weights, …). Without these, searching "filled" or "duotone" inside those
+ * packs would miss everything and the grid would look like near-duplicates.
+ * The generic suffix detection in buildIconifySet still runs first; these rules
+ * add the vocabulary specific to each set.
+ */
+const NAME_STYLE_RULES = {
+  "fluent-ui": (n) =>
+    n.endsWith("-filled") ? ["filled"] : n.endsWith("-regular") ? ["regular", "outline"] : [],
+  solar: (n) => {
+    if (n.endsWith("-bold-duotone")) return ["bold", "duotone", "color"];
+    if (n.endsWith("-line-duotone")) return ["line", "duotone", "color"];
+    if (n.endsWith("-bold")) return ["bold"];
+    if (n.endsWith("-linear")) return ["linear", "outline"];
+    if (n.endsWith("-broken")) return ["broken", "outline"];
+    if (n.endsWith("-outline")) return ["outline"];
+    return [];
+  },
+  healthicons: (n) => (n.includes("-outline") ? ["outline"] : ["filled"]),
+  mynaui: (n) => (n.endsWith("-solid") ? ["solid", "filled"] : ["outline"]),
+  iconamoon: (n) => {
+    if (n.endsWith("-bold")) return ["bold"];
+    if (n.endsWith("-fill")) return ["fill", "filled"];
+    if (n.endsWith("-duotone")) return ["duotone", "color"];
+    if (n.endsWith("-light")) return ["light"];
+    if (n.endsWith("-thin")) return ["thin"];
+    return ["outline"];
+  },
+  "fluent-mdl2": (n) => (/-(solid|fill|filled)$/.test(n) ? ["solid", "filled"] : ["outline"]),
+  "pepicons-pop": (n) => (n.endsWith("-filled") ? ["filled"] : ["outline"]),
+  "pepicons-pencil": (n) => (n.endsWith("-filled") ? ["filled"] : ["outline"]),
+  "akar-icons": (n) => (n.endsWith("-fill") ? ["fill", "filled"] : ["outline"]),
+  codicon: (n) => (n.endsWith("-filled") ? ["filled"] : ["outline"]),
+  "eos-icons": (n) => (n.endsWith("-outlined") ? ["outline"] : ["filled"]),
+  devicon: (n) => (n.endsWith("-wordmark") ? ["wordmark"] : ["logo"]),
+  "skill-icons": (n) => (n.endsWith("-dark") ? ["dark"] : n.endsWith("-light") ? ["light"] : []),
+};
+
+/**
  * Namespace every internal SVG id with the icon's own identity and rewrite the
  * matching `url(#…)` / `href="#…"` references.
  *
@@ -876,6 +940,32 @@ function namespaceSvgIds(icon, pack) {
   return { ...icon, svg };
 }
 
+/**
+ * Repair a truncated `url(#id` reference (no closing paren before the quote).
+ * SVG Logos ships one such icon: `fill="url(#patternwaffle-pattern-1"/>`.
+ * Without the repair the reference cannot be matched — or namespaced — at all.
+ */
+function repairSvgUrls(icon) {
+  if (!/url\(#[^)"']*"/.test(icon.svg)) return icon;
+  return { ...icon, svg: icon.svg.replace(/url\(#([A-Za-z0-9_.:-]+)"/g, 'url(#$1)"') };
+}
+
+/**
+ * True when an icon references an id it does not define itself. Such a
+ * reference resolves against whatever else is in the rendered document, so the
+ * icon silently renders wrong (or not at all). One upstream SVG Logos icon
+ * (`waffle-icon`) points at ids its own markup never declares — those icons are
+ * dropped rather than shipped broken, and reported at build time.
+ */
+function hasDanglingRefs(icon) {
+  const own = new Set([...icon.svg.matchAll(/\bid\s*=\s*"([^"]+)"/g)].map((m) => m[1]));
+  const refs = [
+    ...[...icon.svg.matchAll(/url\(#([^)"']+)/g)].map((m) => m[1]),
+    ...[...icon.svg.matchAll(/(?:xlink:)?href\s*=\s*"#([^"]+)"/g)].map((m) => m[1]),
+  ];
+  return refs.some((ref) => !own.has(ref));
+}
+
 function applyStyles(data) {
   if (!data) return data;
   const styles = STYLE_TAGS[data.pack];
@@ -897,6 +987,8 @@ function applyStyles(data) {
     if (data.pack === "ionicons") {
       icon.tags.push(icon.name.endsWith("-outline") ? "outline" : icon.name.endsWith("-sharp") ? "sharp" : "filled");
     }
+    const extraStyles = NAME_STYLE_RULES[data.pack]?.(icon.name);
+    if (extraStyles?.length) icon.tags.push(...extraStyles);
     icon.tags = Array.from(new Set(icon.tags));
   }
   // Normalize tags to lowercase: the Manager's search compares against a
@@ -909,7 +1001,16 @@ function applyStyles(data) {
     );
   }
   // Namespace internal SVG ids last, so every icon is self-contained.
-  data.icons = data.icons.map((icon) => namespaceSvgIds(icon, data.pack));
+  data.icons = data.icons.map((icon) => namespaceSvgIds(repairSvgUrls(icon), data.pack));
+  const dropped = data.icons.filter(hasDanglingRefs);
+  if (dropped.length) {
+    console.warn(
+      `  [${data.pack}] dropped ${dropped.length} icon(s) with unresolvable SVG references: ` +
+        dropped.slice(0, 5).map((i) => i.name).join(", "),
+    );
+    data.icons = data.icons.filter((icon) => !hasDanglingRefs(icon));
+    data.count = data.icons.length;
+  }
   return data;
 }
 

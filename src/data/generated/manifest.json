@@ -195,6 +195,94 @@
     "vscode-icons": {
       "version": "1.2.77",
       "count": 1595
+    },
+    "fluent-ui": {
+      "version": "1.2.58",
+      "count": 20239
+    },
+    "solar": {
+      "version": "1.2.11",
+      "count": 8425
+    },
+    "icon-park-outline": {
+      "version": "1.2.4",
+      "count": 2658
+    },
+    "icon-park-solid": {
+      "version": "1.2.4",
+      "count": 1970
+    },
+    "icon-park-twotone": {
+      "version": "1.2.4",
+      "count": 1947
+    },
+    "healthicons": {
+      "version": "1.2.13",
+      "count": 2709
+    },
+    "mynaui": {
+      "version": "1.2.19",
+      "count": 2658
+    },
+    "logos": {
+      "version": "1.2.14",
+      "count": 2173
+    },
+    "emojione": {
+      "version": "1.2.3",
+      "count": 1834
+    },
+    "iconamoon": {
+      "version": "1.2.2",
+      "count": 1781
+    },
+    "fluent-mdl2": {
+      "version": "1.2.1",
+      "count": 1735
+    },
+    "pepicons-pop": {
+      "version": "1.2.4",
+      "count": 1290
+    },
+    "pepicons-pencil": {
+      "version": "1.2.4",
+      "count": 1275
+    },
+    "f7": {
+      "version": "1.2.2",
+      "count": 1253
+    },
+    "devicon": {
+      "version": "1.2.65",
+      "count": 1058
+    },
+    "file-icons": {
+      "version": "1.2.2",
+      "count": 930
+    },
+    "gg": {
+      "version": "1.2.2",
+      "count": 704
+    },
+    "codicon": {
+      "version": "1.2.73",
+      "count": 657
+    },
+    "akar-icons": {
+      "version": "1.2.7",
+      "count": 458
+    },
+    "skill-icons": {
+      "version": "1.2.4",
+      "count": 400
+    },
+    "humbleicons": {
+      "version": "1.2.20",
+      "count": 287
+    },
+    "eos-icons": {
+      "version": "1.2.4",
+      "count": 253
     }
   }
 }

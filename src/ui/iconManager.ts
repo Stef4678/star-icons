@@ -126,7 +126,7 @@ export class IconManagerView extends ItemView {
     });
     this.searchEl.addEventListener("input", () => {
       this.filter.query = this.searchEl.value;
-      // Filtering the whole registry (100k+ icons) and re-rendering up to 600
+      // Filtering the whole registry (160k+ icons) and re-rendering up to 600
       // tiles per keystroke is what makes typing lag; the picker debounces its
       // search the same way (120 ms).
       this.renderMainDebounced();

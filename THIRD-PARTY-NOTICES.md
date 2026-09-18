@@ -41,6 +41,25 @@ with it.
 | Majesticons | [majesticons.com](https://majesticons.com) | 1.2.5 † | MIT | Keep copyright notice | © Gerrit Halfmann — `licenses/mit.txt` |
 | Circle Flags | [hatscripts.github.io/circle-flags](https://hatscripts.github.io/circle-flags/) | 1.2.11 † | MIT | Keep copyright notice | © HatScripts; national flags are public domain — `licenses/mit.txt` |
 | VSCode Icons | [github.com/vscode-icons/vscode-icons](https://github.com/vscode-icons/vscode-icons) | 1.2.77 † | MIT | Keep copyright notice | © Roberto Huertas — `licenses/mit.txt` |
+| Fluent UI System Icons | [github.com/microsoft/fluentui-system-icons](https://github.com/microsoft/fluentui-system-icons) | 1.2.58 † | MIT | Keep copyright notice | Regular + filled weights (20,239) — © Microsoft Corporation — `licenses/mit.txt` |
+| Solar | [github.com/480-Design/Solar-Icon-Set](https://github.com/480-Design/Solar-Icon-Set) | 1.2.11 † | CC BY 4.0 | **Credit line required** | Six styles (linear, bold, broken, outline, duotone) — © 480 Design — see required attribution below — `licenses/cc-by-4.0.txt` |
+| IconPark (Outline / Solid / TwoTone) | [github.com/bytedance/IconPark](https://github.com/bytedance/IconPark) | 1.2.4 † | Apache 2.0 | Keep license + copyright notices | © ByteDance — `licenses/apache-2.0.txt` |
+| Health Icons | [github.com/resolvetosavelives/healthicons](https://github.com/resolvetosavelives/healthicons) | 1.2.13 † | MIT | Keep copyright notice | © Resolve to Save Lives — `licenses/mit.txt` |
+| Myna UI Icons | [github.com/praveenjuge/mynaui-icons](https://github.com/praveenjuge/mynaui-icons) | 1.2.19 † | MIT | Keep copyright notice | © Praveen Juge — `licenses/mit.txt` |
+| SVG Logos | [github.com/gilbarbara/logos](https://github.com/gilbarbara/logos) | 1.2.14 † | CC0 1.0 | None | Brand logos — trademarks of their respective owners — 2,173 icons (one upstream icon, `waffle-icon`, references undefined SVG ids and is not bundled) |
+| EmojiOne (Colored) | [github.com/joypixels/emojione](https://github.com/joypixels/emojione) | 1.2.3 † | CC BY 4.0 | **Credit line required** | EmojiOne 2.x artwork only — later JoyPixels releases are commercially licensed — see required attribution below — `licenses/cc-by-4.0.txt` |
+| IconaMoon | [github.com/dariushhpg1/IconaMoon](https://github.com/dariushhpg1/IconaMoon) | 1.2.2 † | CC BY 4.0 | **Credit line required** | Five weights — © Dariush Habibpour — see required attribution below — `licenses/cc-by-4.0.txt` |
+| Fluent UI MDL2 | [github.com/microsoft/fluentui-system-icons](https://github.com/microsoft/fluentui-system-icons) | 1.2.1 † | MIT | Keep copyright notice | Classic Windows/MDL2 system glyphs — © Microsoft Corporation — `licenses/mit.txt` |
+| Pepicons Pop! / Pencil | [github.com/CyCraft/pepicons](https://github.com/CyCraft/pepicons) | 1.2.4 † | CC BY 4.0 | **Credit line required** | © CyCraft — see required attribution below — `licenses/cc-by-4.0.txt` |
+| Framework7 Icons | [github.com/framework7io/framework7-icons](https://github.com/framework7io/framework7-icons) | 1.2.2 † | MIT | Keep copyright notice | © Vladimir Kharlampidi — `licenses/mit.txt` |
+| Devicon | [github.com/devicons/devicon](https://github.com/devicons/devicon) | 1.2.65 † | MIT | Keep copyright notice | Technology logos — trademarks of their respective owners — © konpa — `licenses/mit.txt` |
+| File Icons | [github.com/file-icons/atom](https://github.com/file-icons/atom) | 1.2.2 † | ISC | Keep copyright notice | © John Gardner — `licenses/isc.txt` |
+| css.gg | [github.com/astrit/css.gg](https://github.com/astrit/css.gg) | 1.2.2 † | MIT | Keep copyright notice | © Astrit — `licenses/mit.txt` |
+| Codicons | [github.com/microsoft/vscode-codicons](https://github.com/microsoft/vscode-codicons) | 1.2.73 † | CC BY 4.0 | **Credit line required** | © Microsoft Corporation — see required attribution below — `licenses/cc-by-4.0.txt` |
+| Akar Icons | [github.com/artcoholic/akar-icons](https://github.com/artcoholic/akar-icons) | 1.2.7 † | MIT | Keep copyright notice | © Arturo Wibawa — `licenses/mit.txt` |
+| Skill Icons | [github.com/tandpfun/skill-icons](https://github.com/tandpfun/skill-icons) | 1.2.4 † | MIT | Keep copyright notice | Tech logos (dark + light) — trademarks of their respective owners — © tandpfun — `licenses/mit.txt` |
+| Humbleicons | [github.com/jirizraly/humbleicons](https://github.com/jirizraly/humbleicons) | 1.2.20 † | MIT | Keep copyright notice | © Jiří Zralý — `licenses/mit.txt` |
+| EOS Icons | [github.com/SUSE/eos-icons](https://github.com/SUSE/eos-icons) | 1.2.4 † | MIT | Keep copyright notice | © SUSE UX/UI team — `licenses/mit.txt` |
 | Ionicons | [ionicons.com](https://ionicons.com) | 8.1.0 | MIT | Keep copyright notice | © Ben Sperry / Ionic — `licenses/mit.txt` |
 | Ant Design Icons | [ant.design](https://ant.design/components/icon) | 4.5.0 | MIT | Keep copyright notice | © Ant Design — `licenses/mit.txt` |
 | Line Awesome | [icons8.com/line-awesome](https://icons8.com/line-awesome) | 1.3.0 | MIT (or Good Boy License) | Keep copyright notice | © Icons8; includes brand icons — `licenses/mit.txt` |
@@ -57,9 +76,11 @@ with it.
 [Iconify](https://iconify.design) data package (`@iconify-json/<prefix>`); the
 version listed is that data package's version, which Iconify bumps when it
 re-syncs the upstream set. Iconify only republishes the SVG markup — each set
-keeps its own license and copyright, listed above. All daggered sets are MIT or
-Apache 2.0, so no additional obligation beyond keeping the copyright/license
-notice applies.
+keeps its own license and copyright, listed above. Most daggered sets are MIT,
+Apache 2.0 or ISC (keep the copyright/license notice); the CC0 sets (SVG Logos)
+carry no obligation, and the **CC BY 4.0** sets (Solar, IconaMoon, Pepicons,
+Codicons, EmojiOne) require the credit lines listed under *Required
+attribution*.
 
 ## Required attribution
 
@@ -70,6 +91,21 @@ The following credit lines must be kept wherever these packs are distributed:
   (https://creativecommons.org/licenses/by/4.0/).*
 - **Font Awesome Free (CC BY 4.0):** *Font Awesome Free — Fonticons, Inc.
   (https://fontawesome.com), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).*
+- **Solar (CC BY 4.0):** *Solar Icon Set — 480 Design
+  (https://github.com/480-Design/Solar-Icon-Set), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).*
+- **IconaMoon (CC BY 4.0):** *IconaMoon — Dariush Habibpour
+  (https://github.com/dariushhpg1/IconaMoon), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).*
+- **Pepicons (CC BY 4.0):** *Pepicons — CyCraft
+  (https://github.com/CyCraft/pepicons), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).*
+- **Codicons (CC BY 4.0):** *Codicons — Microsoft Corporation
+  (https://github.com/microsoft/vscode-codicons), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).*
+- **EmojiOne (CC BY 4.0):** *EmojiOne graphics — Emoji One / JoyPixels
+  (https://www.joypixels.com), licensed under CC BY 4.0
   (https://creativecommons.org/licenses/by/4.0/).*
 - **OpenMoji (CC BY-SA 4.0):** *OpenMoji — https://openmoji.org, licensed under
   CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).*
@@ -101,6 +137,17 @@ the same license).
   under MIT; the SVG icons are CC BY 4.0. Brand icons (for example GitHub,
   Apple, Microsoft, Docker, OpenAI) are additionally subject to the trademark
   rights of their owners.
+- **EmojiOne:** only the EmojiOne 2.x artwork — the release published under
+  CC BY 4.0 — is bundled. EmojiOne was renamed JoyPixels and later releases are
+  sold under a commercial license, so do not re-sync this pack from a
+  proprietary JoyPixels release without reviewing those terms.
+- **SVG Logos / Devicon / Skill Icons:** these packs are mostly third-party
+  company logos. The icon license covers the artwork only; the marks themselves
+  remain the property of their owners (see *Trademarks* below).
+- **SVG Logos data quality:** the upstream `waffle-icon` references SVG ids its
+  own markup never defines, which would make it resolve against unrelated
+  elements in the rendered document. The build step drops such icons and reports
+  them, so 2,173 of the set's 2,174 icons are bundled.
 
 *Draft written-confirmation requests for the two packs with interpretable
 terms (Remix Icon, Unicons) are in
@@ -110,12 +157,12 @@ terms (Remix Icon, Unicons) are in
 
 Brand icons are trademarks of their respective owners. Their inclusion does
 not imply sponsorship, endorsement, affiliation, or ownership by Star Icons.
-This applies especially to Simple Icons and the "brands" packs (Boxicons
-Logos, Line Awesome brands, Octicons), which contain logos of GitHub, Google,
-Microsoft, Apple, Docker, OpenAI and many other companies. An icon's license
-does not grant trademark rights, and the icon license alone does not permit
-using a mark in any commercial or promotional context beyond the icon's
-purpose.
+This applies especially to Simple Icons, SVG Logos, Devicon, Skill Icons and
+the "brands" packs (Boxicons Logos, Line Awesome brands, Octicons), which
+contain logos of GitHub, Google, Microsoft, Apple, Docker, OpenAI and many other
+companies. An icon's license does not grant trademark rights, and the icon
+license alone does not permit using a mark in any commercial or promotional
+context beyond the icon's purpose.
 
 ## Emoji fonts
 
@@ -131,9 +178,9 @@ The `licenses/` directory contains the full texts used by the packs above:
 | File | License |
 | --- | --- |
 | `licenses/mit.txt` | MIT License (used by many packs; see table above) |
-| `licenses/isc.txt` | ISC License (Lucide) |
-| `licenses/apache-2.0.txt` | Apache License 2.0 (Material Symbols) |
-| `licenses/cc-by-4.0.txt` | Reference for CC BY 4.0 (Twemoji, Font Awesome icons) — canonical text at creativecommons.org |
+| `licenses/isc.txt` | ISC License (Lucide, File Icons) |
+| `licenses/apache-2.0.txt` | Apache License 2.0 (Material Symbols, MDI, MingCute, Carbon, IconPark) |
+| `licenses/cc-by-4.0.txt` | Reference for CC BY 4.0 (Twemoji, Font Awesome icons, Solar, IconaMoon, Pepicons, Codicons, EmojiOne) — canonical text at creativecommons.org |
 | `licenses/cc-by-sa-4.0.txt` | CC BY-SA 4.0 (OpenMoji) |
 | `licenses/fontawesome-free.txt` | Font Awesome Free license (CC BY 4.0 + OFL 1.1 + MIT) |
 | `licenses/iconscout-simple.txt` | IconScout Simple License (Unicons) |

@@ -51,12 +51,39 @@ const ICONIFY_PACK_IDS = [
   "majesticons",
   "circle-flags",
   "vscode-icons",
+  "fluent-ui",
+  "solar",
+  "icon-park-outline",
+  "icon-park-solid",
+  "icon-park-twotone",
+  "healthicons",
+  "mynaui",
+  "logos",
+  "emojione",
+  "iconamoon",
+  "fluent-mdl2",
+  "pepicons-pop",
+  "pepicons-pencil",
+  "f7",
+  "devicon",
+  "file-icons",
+  "gg",
+  "codicon",
+  "akar-icons",
+  "skill-icons",
+  "humbleicons",
+  "eos-icons",
 ];
 
 function readPack(pack: string): RawPack {
   return JSON.parse(
     readFileSync(path.join(generatedDir, `${pack}.json`), "utf8"),
   ) as RawPack;
+}
+
+/** Mounted IconDefs for a generated pack (with shells applied). */
+function buildPackForTags(pack: string) {
+  return buildPackFromRaw(pack, readPack(pack));
 }
 
 describe("pack registration invariants", () => {
@@ -114,35 +141,64 @@ describe("generated pack data", () => {
       majesticons: 1045,
       "circle-flags": 718,
       "vscode-icons": 1595,
+      "fluent-ui": 20239,
+      solar: 8425,
+      "icon-park-outline": 2658,
+      "icon-park-solid": 1970,
+      "icon-park-twotone": 1947,
+      healthicons: 2709,
+      mynaui: 2658,
+      logos: 2173,
+      emojione: 1834,
+      iconamoon: 1781,
+      "fluent-mdl2": 1735,
+      "pepicons-pop": 1290,
+      "pepicons-pencil": 1275,
+      f7: 1253,
+      devicon: 1058,
+      "file-icons": 930,
+      gg: 704,
+      codicon: 657,
+      "akar-icons": 458,
+      "skill-icons": 400,
+      humbleicons: 287,
+      "eos-icons": 253,
     };
     for (const [pack, count] of Object.entries(expected)) {
       expect(manifest.packs[pack]?.count, `${pack} missing from the manifest`).toBe(count);
     }
   });
 
-  it("mounts Iconify packs with a currentColor shell and per-icon viewBox", () => {
-    for (const pack of ICONIFY_PACK_IDS) {
-      const raw = readPack(pack);
-      const defs = buildPackFromRaw(pack, raw);
-      expect(defs.length, pack).toBe(raw.icons.length);
+  // Seventy packs now, ~56k of them in the two largest sets (Fluent UI 20,239
+  // and Solar 8,425): mounting every icon of every Iconify pack is a few seconds
+  // of string work, so it gets an explicit budget instead of vitest's 5s default.
+  it(
+    "mounts Iconify packs with a currentColor shell and per-icon viewBox",
+    { timeout: 60_000 },
+    () => {
+      for (const pack of ICONIFY_PACK_IDS) {
+        const raw = readPack(pack);
+        const defs = buildPackFromRaw(pack, raw);
+        expect(defs.length, pack).toBe(raw.icons.length);
 
-      for (let i = 0; i < defs.length; i++) {
-        const def = defs[i];
-        const source = raw.icons[i];
-        expect(def.id, `${pack}/${source.name}`).toBe(`si-${pack}-${source.name}`);
-        expect(def.pack, pack).toBe(pack);
-        // Shell: namespace + the icon's own viewBox + currentColor fallback.
-        expect(def.svg.startsWith("<svg "), `${pack}/${source.name} shell`).toBe(true);
-        expect(def.svg, `${pack}/${source.name} viewBox`).toContain(
-          `viewBox="${source.viewBox}"`,
-        );
-        expect(def.svg, `${pack}/${source.name} currentColor`).toContain('fill="currentColor"');
-        // The raw body is embedded verbatim so shapes keep their own colors.
-        expect(def.svg).toContain(source.svg);
-        expect(def.svg.endsWith("</svg>")).toBe(true);
+        for (let i = 0; i < defs.length; i++) {
+          const def = defs[i];
+          const source = raw.icons[i];
+          expect(def.id, `${pack}/${source.name}`).toBe(`si-${pack}-${source.name}`);
+          expect(def.pack, pack).toBe(pack);
+          // Shell: namespace + the icon's own viewBox + currentColor fallback.
+          expect(def.svg.startsWith("<svg "), `${pack}/${source.name} shell`).toBe(true);
+          expect(def.svg, `${pack}/${source.name} viewBox`).toContain(
+            `viewBox="${source.viewBox}"`,
+          );
+          expect(def.svg, `${pack}/${source.name} currentColor`).toContain('fill="currentColor"');
+          // The raw body is embedded verbatim so shapes keep their own colors.
+          expect(def.svg).toContain(source.svg);
+          expect(def.svg.endsWith("</svg>")).toBe(true);
+        }
       }
-    }
-  });
+    },
+  );
 
   it("keeps markup safe for Obsidian's addIcon", () => {
     const problems: string[] = [];
@@ -208,5 +264,54 @@ describe("generated pack data", () => {
     // vscode-icons: folder variants are tagged for search.
     const vscode = buildPackFromRaw("vscode-icons", readPack("vscode-icons"));
     expect(vscode.some((i) => i.tags.includes("folder"))).toBe(true);
+  });
+
+  it("tags the weights of the multi-style sets added in the second batch", () => {
+    const tagsOf = (pack: string, name: string) =>
+      buildPackForTags(pack).find((i) => i.name === name)?.tags ?? [];
+
+    // Fluent UI System Icons ship every icon as -regular and -filled.
+    expect(tagsOf("fluent-ui", "home-24-filled")).toContain("filled");
+    expect(tagsOf("fluent-ui", "home-24-regular")).toContain("outline");
+    // Solar has six renditions per icon; the longest suffix must win.
+    expect(tagsOf("solar", "home-2-bold-duotone")).toEqual(
+      expect.arrayContaining(["bold", "duotone", "color"]),
+    );
+    expect(tagsOf("solar", "home-2-linear")).toContain("linear");
+    expect(tagsOf("solar", "home-2-broken")).toContain("broken");
+    expect(tagsOf("solar", "home-2-bold")).toContain("bold");
+    // Health Icons encode the variant before a "-24px" size suffix where
+    // present ("bandage-outline-24px"), otherwise as a plain suffix.
+    expect(tagsOf("healthicons", "home-outline")).toContain("outline");
+    const health = buildPackForTags("healthicons");
+    expect(health.some((i) => i.name.endsWith("-outline-24px") && i.tags.includes("outline"))).toBe(
+      true,
+    );
+    expect(health.some((i) => i.name.endsWith("-24px") && !i.name.includes("outline") && i.tags.includes("filled"))).toBe(
+      true,
+    );
+    // IconaMoon / Myna UI / Pepicons weight variants.
+    expect(tagsOf("iconamoon", "home-duotone")).toContain("duotone");
+    expect(tagsOf("mynaui", "home-solid")).toContain("filled");
+    expect(tagsOf("pepicons-pop", "house-circle-filled")).toContain("filled");
+    expect(tagsOf("pepicons-pop", "house")).toContain("outline");
+    // Brand sets keep their logo tags.
+    expect(tagsOf("logos", "homebrew")).toEqual(
+      expect.arrayContaining(["color", "brand", "logo"]),
+    );
+    expect(tagsOf("devicon", "github-wordmark")).toContain("wordmark");
+  });
+
+  it("resolves every pack preview sample to a real icon", () => {
+    // The settings list, pack filter and Icon Manager render their pack tiles
+    // from `si-<pack>-<PACK_SAMPLE_ICON[pack]>`, so a stale sample renders an
+    // empty tile (four had drifted out of sync before this check existed).
+    const broken: string[] = [];
+    for (const [pack, sample] of Object.entries(PACK_SAMPLE_ICON)) {
+      if (!packIds.includes(pack)) continue;
+      const raw = readPack(pack);
+      if (!raw.icons.some((i) => i.name === sample)) broken.push(`${pack} -> ${sample}`);
+    }
+    expect(broken).toEqual([]);
   });
 });
