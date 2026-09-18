@@ -113,7 +113,11 @@ describe("generated pack data", () => {
     expect(missing).toEqual([]);
   });
 
-  it("keeps the manifest count in sync with each pack file", () => {
+  // Reading every generated pack means parsing ~135 MB of JSON, so the checks
+  // that touch all of them get an explicit budget: they run in well under a
+  // second locally but a shared CI runner is several times slower, and a
+  // release build fails outright if one of these trips vitest's 5s default.
+  it("keeps the manifest count in sync with each pack file", { timeout: 60_000 }, () => {
     const mismatched: string[] = [];
     for (const pack of packIds) {
       const raw = readPack(pack);
@@ -200,7 +204,7 @@ describe("generated pack data", () => {
     },
   );
 
-  it("keeps markup safe for Obsidian's addIcon", () => {
+  it("keeps markup safe for Obsidian's addIcon", { timeout: 60_000 }, () => {
     const problems: string[] = [];
     for (const pack of ICONIFY_PACK_IDS) {
       for (const icon of readPack(pack).icons) {
@@ -223,7 +227,7 @@ describe("generated pack data", () => {
     expect(problems.slice(0, 10)).toEqual([]);
   });
 
-  it("keeps every SVG reference self-contained inside its own icon", () => {
+  it("keeps every SVG reference self-contained inside its own icon", { timeout: 60_000 }, () => {
     // A url(#x) / href="#x" that the icon does not define itself would resolve
     // against whatever else happens to be in the rendered document.
     const problems: string[] = [];
@@ -302,7 +306,7 @@ describe("generated pack data", () => {
     expect(tagsOf("devicon", "github-wordmark")).toContain("wordmark");
   });
 
-  it("resolves every pack preview sample to a real icon", () => {
+  it("resolves every pack preview sample to a real icon", { timeout: 60_000 }, () => {
     // The settings list, pack filter and Icon Manager render their pack tiles
     // from `si-<pack>-<PACK_SAMPLE_ICON[pack]>`, so a stale sample renders an
     // empty tile (four had drifted out of sync before this check existed).
